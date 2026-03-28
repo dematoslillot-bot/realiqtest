@@ -39,6 +39,7 @@ export default function ReportPage() {
     if (v.length >= 2) return v.substring(0, 2) + " / " + v.substring(2, 4);
     return v;
   }
+
   async function handlePay() {
     const newErrors: Record<string, boolean> = {};
     if (!email) newErrors.email = true;
@@ -90,7 +91,7 @@ export default function ReportPage() {
     "Logical Reasoning": "Practice daily logic puzzles and Sudoku. Apps like Lumosity or BrainHQ target this directly. Try to solve at least one logic problem per day.",
     "Verbal Intelligence": "Read widely — fiction, non-fiction, news. Learn 5 new words per week. Do crosswords and word association games regularly.",
     "Spatial Reasoning": "Play 3D puzzle games like Tetris or Monument Valley. Practice mental rotation exercises. Drawing and sketching also trains spatial thinking.",
-    "Numerical Ability": "Practice mental arithmetic daily. Use apps like Mathway. Challenge yourself with percentage calculations in everyday situations.",
+    "Numerical Ability": "Practice mental arithmetic daily. Challenge yourself with percentage calculations in everyday situations like shopping or tips.",
     "Working Memory": "Try the dual n-back exercise (free at brainworkshop.net). Memorise phone numbers, poems or shopping lists without writing them down.",
     "Processing Speed": "Play reaction-based games. Practice timed arithmetic. Speed reading exercises also help train your brain to process faster.",
   };
@@ -102,13 +103,13 @@ export default function ReportPage() {
       <div className="min-h-screen bg-[#0a0a0f] text-[#f0ede8] flex flex-col">
         <nav className="flex items-center justify-between px-8 py-4 border-b border-[rgba(201,169,110,0.2)] bg-[#111118]">
           <span className="font-serif text-lg font-bold text-[#c9a96e]">Real<span className="text-[#f0ede8]">IQ</span>Test</span>
-          <span className="text-xs text-[#8a8890]">Processing payment...</span>
+          <span className="text-xs text-[#8a8890]">Redirecting to secure payment...</span>
         </nav>
         <div className="flex-1 flex items-center justify-center text-center px-6">
           <div>
             <div className="w-12 h-12 border-2 border-[rgba(201,169,110,0.2)] border-t-[#c9a96e] rounded-full animate-spin mx-auto mb-6" />
-            <h3 className="font-serif text-2xl font-bold mb-2">Generating your premium report</h3>
-            <p className="text-sm text-[#8a8890] mt-1">Analysing all 6 cognitive dimensions...</p>
+            <h3 className="font-serif text-2xl font-bold mb-2">Connecting to Stripe</h3>
+            <p className="text-sm text-[#8a8890] mt-1">You will be redirected to the secure payment page...</p>
           </div>
         </div>
       </div>
@@ -135,8 +136,6 @@ export default function ReportPage() {
           <span className="text-xs text-[#1d9e75]">✓ Premium Report Unlocked</span>
         </nav>
         <div className="max-w-2xl mx-auto px-6 py-12">
-
-          {/* IQ Header */}
           <div className="text-center mb-12 pb-10 border-b border-[rgba(201,169,110,0.2)]">
             <p className="text-xs tracking-widest uppercase text-[#1d9e75] mb-4">✓ Full Premium Report — Unlocked</p>
             <div className="font-serif text-8xl font-black text-[#c9a96e] leading-none">{iq}</div>
@@ -150,23 +149,18 @@ export default function ReportPage() {
             </div>
           </div>
 
-          {/* Percentile */}
           <div className="mb-10">
             <h2 className="font-serif text-xl font-bold mb-5 flex items-center gap-4">Global percentile rank<span className="flex-1 h-px bg-[rgba(201,169,110,0.2)]" /></h2>
             <div className="bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded p-6 text-center">
               <div className="font-serif text-6xl font-black text-[#c9a96e]">{percentile}th</div>
               <p className="text-sm text-[#8a8890] mt-2">percentile — better than {percentile}% of all test takers</p>
-              <div className="mt-5 h-1.5 bg-[rgba(201,169,110,0.1)] rounded-full relative overflow-hidden">
+              <div className="mt-5 h-1.5 bg-[rgba(201,169,110,0.1)] rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-[rgba(29,158,117,0.5)] to-[#c9a96e] rounded-full" style={{ width: `${pctFill}%` }} />
               </div>
               <div className="flex justify-between text-xs text-[#8a8890] mt-1"><span>1st</span><span>50th</span><span>99th</span></div>
-              <p className="text-sm text-[#8a8890] mt-4 leading-relaxed max-w-sm mx-auto">
-                {percentile >= 90 ? `Your score places you in the top ${100 - percentile}% of the global population. You demonstrate strong analytical and abstract reasoning capabilities.` : `Your score places you at the ${percentile}th percentile — higher than ${percentile}% of all people who have taken this test.`}
-              </p>
             </div>
           </div>
 
-          {/* Radar Chart */}
           <div className="mb-10">
             <h2 className="font-serif text-xl font-bold mb-5 flex items-center gap-4">Cognitive radar<span className="flex-1 h-px bg-[rgba(201,169,110,0.2)]" /></h2>
             <div className="bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded p-6 flex justify-center">
@@ -179,16 +173,15 @@ export default function ReportPage() {
                 ))}
                 <polygon points={polyPoints} fill="rgba(201,169,110,0.15)" stroke="#c9a96e" strokeWidth="1.5" />
                 {points.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="4" fill="#c9a96e" />)}
-                {RADAR_CATS.map((label, i) => {
+                {RADAR_CATS.map((lab, i) => {
                   const lx = cx + (r + 22) * Math.cos(angles[i]);
                   const ly = cy + (r + 22) * Math.sin(angles[i]);
-                  return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fill="#8a8890" fontSize="10" fontFamily="DM Sans, sans-serif">{label}</text>;
+                  return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fill="#8a8890" fontSize="10" fontFamily="DM Sans, sans-serif">{lab}</text>;
                 })}
               </svg>
             </div>
           </div>
 
-          {/* All categories */}
           <div className="mb-10">
             <h2 className="font-serif text-xl font-bold mb-5 flex items-center gap-4">Breakdown by category<span className="flex-1 h-px bg-[rgba(201,169,110,0.2)]" /></h2>
             <div className="flex flex-col gap-3">
@@ -212,7 +205,6 @@ export default function ReportPage() {
             </div>
           </div>
 
-          {/* Tips to improve */}
           <div className="mb-10">
             <h2 className="font-serif text-xl font-bold mb-5 flex items-center gap-4">How to improve<span className="flex-1 h-px bg-[rgba(201,169,110,0.2)]" /></h2>
             <div className="flex flex-col gap-3">
@@ -225,23 +217,20 @@ export default function ReportPage() {
             </div>
           </div>
 
-          {/* Careers */}
           <div className="mb-10">
             <h2 className="font-serif text-xl font-bold mb-5 flex items-center gap-4">Best career matches<span className="flex-1 h-px bg-[rgba(201,169,110,0.2)]" /></h2>
             <div className="bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded p-5">
-              <p className="text-xs text-[#8a8890] leading-relaxed mb-4">Based on your IQ profile and cognitive strengths, these careers typically align well with your intellectual capabilities:</p>
+              <p className="text-xs text-[#8a8890] leading-relaxed mb-4">Based on your IQ profile, these careers typically align well with your intellectual capabilities:</p>
               <div className="grid grid-cols-2 gap-2">
                 {careers.map((career, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
-                    <span className="text-[#c9a96e]">→</span>
-                    <span>{career}</span>
+                    <span className="text-[#c9a96e]">→</span><span>{career}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Famous comparisons */}
           <div className="mb-10">
             <h2 className="font-serif text-xl font-bold mb-5 flex items-center gap-4">IQ comparisons<span className="flex-1 h-px bg-[rgba(201,169,110,0.2)]" /></h2>
             <div className="bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded p-5">
@@ -267,7 +256,6 @@ export default function ReportPage() {
             </div>
           </div>
 
-          {/* Certificate */}
           <div className="mb-10">
             <h2 className="font-serif text-xl font-bold mb-5 flex items-center gap-4">Certificate<span className="flex-1 h-px bg-[rgba(201,169,110,0.2)]" /></h2>
             <div className="bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded p-10 text-center relative overflow-hidden">
@@ -286,13 +274,11 @@ export default function ReportPage() {
               <button onClick={() => router.push("/test")} className="bg-[#c9a96e] text-[#0a0a0f] px-6 py-2.5 text-xs font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] transition-colors">Take Test Again</button>
             </div>
           </div>
-
         </div>
       </div>
     );
   }
 
-  // Payment screen
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-[#f0ede8]">
       <nav className="flex items-center justify-between px-8 py-4 border-b border-[rgba(201,169,110,0.2)] bg-[#111118]">

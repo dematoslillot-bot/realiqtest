@@ -82,14 +82,14 @@ export default function ResultsPage() {
 
         {/* Unlock CTA */}
         <div className="mt-8 p-5 bg-[rgba(201,169,110,0.04)] border border-dashed border-[rgba(201,169,110,0.2)] rounded text-left">
-          <p className="text-sm font-medium text-[#c9a96e] mb-1">Unlock your Full Cognitive Report — €9.99</p>
+          <p className="text-sm font-medium text-[#c9a96e] mb-1">Unlock your Full Cognitive Report — <span className="line-through text-[#8a8890] mr-2">€9.99</span>€5.99</p>
           <p className="text-xs text-[#8a8890] leading-relaxed">Detailed breakdown of all 6 categories · Percentile rank vs 2.4M users · Cognitive strengths & weaknesses · Downloadable PDF certificate</p>
         </div>
 
         <div className="mt-6 flex gap-3 justify-center">
           <button onClick={() => router.push("/report")}
             className="bg-[#c9a96e] text-[#0a0a0f] px-8 py-3 text-sm font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] transition-colors">
-            Unlock Full Report — €9.99
+            Unlock Full Report — €<span className="line-through text-[#8a8890] mr-2">€9.99</span>€5.99
           </button>
           <button onClick={() => router.push("/test")}
             className="border border-[rgba(240,237,232,0.2)] text-[#f0ede8] px-6 py-3 text-sm rounded-sm hover:border-[#c9a96e] hover:text-[#c9a96e] transition-colors">

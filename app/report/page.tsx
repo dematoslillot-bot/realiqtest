@@ -39,7 +39,7 @@ export default function ReportPage() {
     if (v.length >= 2) return v.substring(0, 2) + " / " + v.substring(2, 4);
     return v;
   }
-  function handlePay() {
+  async function handlePay() {
     const newErrors: Record<string, boolean> = {};
     if (!email) newErrors.email = true;
     if (card.length < 19) newErrors.card = true;
@@ -47,7 +47,21 @@ export default function ReportPage() {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
     setScreen("processing");
-    setTimeout(() => setScreen("report"), 2800);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setScreen("pay");
+      }
+    } catch {
+      setScreen("pay");
+    }
   }
 
   const pctFill = Math.round(((iq - 70) / 80) * 100);

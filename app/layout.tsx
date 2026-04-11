@@ -25,11 +25,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1926703547029071"
-          crossOrigin="anonymous"
-        />
+        <head>
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1926703547029071"
+    crossOrigin="anonymous"
+  />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D84N8ZT2B2" />
+  <script dangerouslySetInnerHTML={{__html: `window['dataLayer']=window['dataLayer']||[];function gtag(){window['dataLayer'].push(arguments);}gtag('js',new Date());gtag('config','G-D84N8ZT2B2');`}} />
+</head>
       </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

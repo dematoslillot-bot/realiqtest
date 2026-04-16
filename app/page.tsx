@@ -11,12 +11,12 @@ export default function Home() {
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-5 bg-[rgba(10,10,15,0.85)] backdrop-blur border-b border-[rgba(201,169,110,0.2)]">
         <span className="font-serif text-xl font-bold text-[#c9a96e]">Real<span className="text-[#f0ede8]">IQ</span>Test</span>
         <ul className="hidden md:flex gap-8 text-sm text-[#8a8890]">
-          <li className="hover:text-[#c9a96e] cursor-pointer transition-colors">The Test</li>
-          <li className="hover:text-[#c9a96e] cursor-pointer transition-colors">How it works</li>
-          <li className="hover:text-[#c9a96e] cursor-pointer transition-colors">Pricing</li>
+          <li className="hover:text-[#c9a96e] cursor-pointer transition-[color] duration-150">The Test</li>
+          <li className="hover:text-[#c9a96e] cursor-pointer transition-[color] duration-150">How it works</li>
+          <li className="hover:text-[#c9a96e] cursor-pointer transition-[color] duration-150">Pricing</li>
         </ul>
         <button onClick={() => router.push("/test")}
-          className="bg-[#c9a96e] text-[#0a0a0f] px-5 py-2 text-xs font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] transition-colors">
+          className="bg-[#c9a96e] text-[#0a0a0f] px-5 py-2 text-xs font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] active:scale-[0.97] transition-[background-color,transform] duration-150">
           Start Free
         </button>
       </nav>
@@ -26,21 +26,33 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_60%,rgba(201,169,110,0.07)_0%,transparent_70%)]" />
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(201,169,110,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(201,169,110,0.8) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-block border border-[rgba(201,169,110,0.2)] text-[#c9a96e] text-xs tracking-widest uppercase px-4 py-1.5 rounded-sm mb-8">
+          <div
+            className="inline-block border border-[rgba(201,169,110,0.2)] text-[#c9a96e] text-xs tracking-widest uppercase px-4 py-1.5 rounded-sm mb-8 animate-fade-up"
+            style={{ animationDelay: '80ms' }}
+          >
             Scientifically Validated · 30 Questions · 2.4M Tests Completed
           </div>
-          <h1 className="font-serif text-5xl md:text-7xl font-black leading-tight mb-6">
+          <h1
+            className="font-serif text-5xl md:text-7xl font-black leading-tight tracking-tight mb-6 animate-fade-up"
+            style={{ animationDelay: '180ms' }}
+          >
             Discover your<br /><em className="text-[#c9a96e]">true intelligence</em>
           </h1>
-          <p className="text-[#8a8890] text-lg max-w-lg mx-auto mb-10 leading-relaxed">
+          <p
+            className="text-[#8a8890] text-lg max-w-lg mx-auto mb-10 leading-relaxed animate-fade-up"
+            style={{ animationDelay: '260ms' }}
+          >
             A comprehensive IQ assessment across 6 cognitive dimensions. Get your score in under 15 minutes — completely free.
           </p>
-          <div className="flex gap-4 justify-center flex-wrap">
+          <div
+            className="flex gap-4 justify-center flex-wrap animate-fade-up"
+            style={{ animationDelay: '340ms' }}
+          >
             <button onClick={() => router.push("/test")}
-              className="bg-[#c9a96e] text-[#0a0a0f] px-8 py-4 text-sm font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] transition-all hover:-translate-y-0.5">
+              className="bg-[#c9a96e] text-[#0a0a0f] px-8 py-4 text-sm font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] active:scale-[0.97] transition-[background-color,transform] duration-150">
               Take the Test — Free
             </button>
-            <button className="border border-[rgba(240,237,232,0.2)] text-[#f0ede8] px-8 py-4 text-sm tracking-widest uppercase rounded-sm hover:border-[#c9a96e] hover:text-[#c9a96e] transition-all hover:-translate-y-0.5">
+            <button className="border border-[rgba(240,237,232,0.2)] text-[#f0ede8] px-8 py-4 text-sm tracking-widest uppercase rounded-sm hover:border-[#c9a96e] hover:text-[#c9a96e] active:scale-[0.97] transition-[color,border-color,transform] duration-150">
               See Sample Questions
             </button>
           </div>
@@ -48,7 +60,7 @@ export default function Home() {
       </section>
 
       {/* Stats */}
-      <div className="flex border-t border-b border-[rgba(201,169,110,0.2)] bg-[#111118]">
+      <div className="flex border-t border-b border-[rgba(201,169,110,0.2)] bg-[#111118] animate-fade-in" style={{ animationDelay: '420ms' }}>
         {[
           { num: "2.4M+", label: "Tests completed" },
           { num: "98%", label: "Accuracy rate" },
@@ -76,8 +88,12 @@ export default function Home() {
               { icon: "◌", name: "Working Memory", desc: "Hold and manipulate information under cognitive load.", q: "5 questions" },
               { icon: "◎", name: "Processing Speed", desc: "Rapid decisions and reaction-based cognitive efficiency.", q: "5 questions" },
             ].map((cat, i) => (
-              <div key={i} className="p-6 border-r border-b border-[rgba(201,169,110,0.2)] last:border-r-0 hover:bg-[#111118] transition-colors">
-                <div className="text-2xl mb-4">{cat.icon}</div>
+              <div
+                key={i}
+                className="p-6 border-r border-b border-[rgba(201,169,110,0.2)] last:border-r-0 hover:bg-[#111118] transition-[background-color] duration-200 animate-fade-up"
+                style={{ animationDelay: `${i * 55}ms` }}
+              >
+                <div className="text-2xl mb-4 text-[#c9a96e] opacity-60">{cat.icon}</div>
                 <div className="text-sm font-medium mb-2">{cat.name}</div>
                 <div className="text-xs text-[#8a8890] leading-relaxed mb-3">{cat.desc}</div>
                 <div className="text-xs tracking-widest uppercase text-[#c9a96e]">{cat.q}</div>
@@ -99,7 +115,11 @@ export default function Home() {
                 { n: "02", title: "Algorithm scores your responses", desc: "Our model weights accuracy, speed and category performance against 2M+ data points." },
                 { n: "03", title: "Receive your IQ score instantly", desc: "Free report with your overall IQ. Unlock the full premium report for €4.99." },
               ].map((s, i) => (
-                <div key={i} className="flex gap-6 py-6">
+                <div
+                  key={i}
+                  className="flex gap-6 py-6 animate-fade-up"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
                   <div className="font-serif text-4xl font-black text-[rgba(201,169,110,0.2)] min-w-[3rem]">{s.n}</div>
                   <div>
                     <div className="text-sm font-medium mb-1">{s.title}</div>
@@ -111,7 +131,10 @@ export default function Home() {
           </div>
 
           {/* Result preview */}
-          <div className="bg-[#0a0a0f] border border-[rgba(201,169,110,0.2)] rounded p-6 text-center">
+          <div
+            className="bg-[#0a0a0f] border border-[rgba(201,169,110,0.2)] rounded p-6 text-center animate-scale-in"
+            style={{ animationDelay: '220ms' }}
+          >
             <p className="text-xs tracking-widest uppercase text-[#8a8890] mb-4">Sample result</p>
             <div className="font-serif text-7xl font-black text-[#c9a96e] leading-none">127</div>
             <p className="text-xs tracking-widest uppercase text-[#8a8890] mt-2">Intelligence Quotient</p>
@@ -134,7 +157,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-[#8a8890] mt-3">🔒 Full breakdown unlocked with Premium Report</p>
+            <p className="text-xs text-[#8a8890] mt-3">Full breakdown unlocked with Premium Report</p>
           </div>
         </div>
       </section>
@@ -156,8 +179,12 @@ export default function Home() {
               { icon: "★", title: "Official PDF Certificate", desc: "Download your personalised IQ certificate to share or keep as a record." },
               { icon: "✦", title: "Strengths & Weaknesses Profile", desc: "Clear identification of your cognitive superpowers and areas with the most room to grow." },
             ].map((item, i) => (
-              <div key={i} className="flex items-start gap-4 p-4 bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded hover:border-[rgba(201,169,110,0.4)] transition-colors">
-                <div className="text-[#c9a96e] text-lg min-w-[24px]">{item.icon}</div>
+              <div
+                key={i}
+                className="flex items-start gap-4 p-4 bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded hover:border-[rgba(201,169,110,0.45)] hover:translate-x-0.5 transition-[border-color,transform] duration-200 animate-fade-up"
+                style={{ animationDelay: `${i * 45}ms` }}
+              >
+                <div className="text-[#c9a96e] text-lg min-w-[24px] opacity-70">{item.icon}</div>
                 <div>
                   <div className="text-sm font-medium mb-1">{item.title}</div>
                   <div className="text-xs text-[#8a8890] leading-relaxed">{item.desc}</div>
@@ -167,7 +194,7 @@ export default function Home() {
           </div>
           <div className="text-center mt-10">
             <button onClick={() => router.push("/test")}
-              className="bg-[#c9a96e] text-[#0a0a0f] px-10 py-4 text-sm font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] transition-colors">
+              className="bg-[#c9a96e] text-[#0a0a0f] px-10 py-4 text-sm font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] active:scale-[0.97] transition-[background-color,transform] duration-150">
               Take the Free Test First
             </button>
           </div>
@@ -196,7 +223,10 @@ export default function Home() {
                 btn: "Get Premium Report", primary: true
               },
             ].map((plan, i) => (
-              <div key={i} className={`bg-[#0a0a0f] border rounded p-6 text-left ${plan.primary ? "border-[#c9a96e]" : "border-[rgba(201,169,110,0.2)]"}`}>
+              <div
+                key={i}
+                className={`bg-[#0a0a0f] border rounded p-6 text-left transition-[border-color,transform] duration-200 hover:-translate-y-0.5 ${plan.primary ? "border-[#c9a96e]" : "border-[rgba(201,169,110,0.2)] hover:border-[rgba(201,169,110,0.4)]"}`}
+              >
                 {plan.primary && (
                   <div className="text-xs tracking-widest uppercase text-center bg-[rgba(29,158,117,0.1)] text-[#1d9e75] border border-[rgba(29,158,117,0.3)] px-2 py-1 rounded-sm mb-4">Limited offer — Save 50%</div>
                 )}
@@ -211,7 +241,7 @@ export default function Home() {
                   {plan.locked.map((f, j) => <li key={j} className="text-xs text-[#8a8890] flex gap-2 opacity-40"><span>—</span>{f}</li>)}
                 </ul>
                 <button onClick={() => router.push("/test")}
-                  className={`w-full py-3 text-xs font-medium tracking-widest uppercase rounded-sm transition-colors ${plan.primary ? "bg-[#c9a96e] text-[#0a0a0f] hover:bg-[#e8c98a]" : "border border-[rgba(240,237,232,0.2)] text-[#f0ede8] hover:border-[#c9a96e] hover:text-[#c9a96e]"}`}>
+                  className={`w-full py-3 text-xs font-medium tracking-widest uppercase rounded-sm active:scale-[0.97] transition-[background-color,border-color,color,transform] duration-150 ${plan.primary ? "bg-[#c9a96e] text-[#0a0a0f] hover:bg-[#e8c98a]" : "border border-[rgba(240,237,232,0.2)] text-[#f0ede8] hover:border-[#c9a96e] hover:text-[#c9a96e]"}`}>
                   {plan.btn}
                 </button>
               </div>
@@ -224,7 +254,7 @@ export default function Home() {
       <section className="py-20 px-6 text-center border-t border-[rgba(201,169,110,0.2)]">
         <h2 className="font-serif text-5xl font-black mb-6">Ready to discover<br />your <em className="text-[#c9a96e]">true IQ?</em></h2>
         <button onClick={() => router.push("/test")}
-          className="bg-[#c9a96e] text-[#0a0a0f] px-12 py-4 text-sm font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] transition-colors">
+          className="bg-[#c9a96e] text-[#0a0a0f] px-12 py-4 text-sm font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] active:scale-[0.97] transition-[background-color,transform] duration-150">
           Begin the Test — It&apos;s Free
         </button>
         <p className="text-xs text-[#8a8890] mt-4">No registration required · Results in 15 minutes · 2.4 million tests completed</p>

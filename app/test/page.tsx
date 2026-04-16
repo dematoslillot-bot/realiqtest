@@ -92,13 +92,13 @@ export default function TestPage() {
           <span className="font-serif text-lg font-bold text-[#c9a96e]">Real<span className="text-[#f0ede8]">IQ</span>Test</span>
         </nav>
         <div className="flex-1 flex items-center justify-center text-center px-6">
-          <div>
+          <div className="animate-fade-up">
             <p className="text-xs tracking-widest uppercase text-[#8a8890] mb-4">{prevCat.name} — Complete</p>
             <p className="font-serif text-5xl font-black text-[#c9a96e]">{catScores[q.cat]}/{catTotals[q.cat]}</p>
             <p className="text-sm text-[#8a8890] mt-2 mb-8">Correct answers</p>
             <h2 className="font-serif text-3xl font-bold mb-3">Next: <em className="text-[#c9a96e]">{nextCat.name}</em></h2>
             <p className="text-[#8a8890] text-sm mb-8 max-w-sm mx-auto">Get ready for the next category. Take a breath.</p>
-            <button onClick={continueAfterTransition} className="bg-[#c9a96e] text-[#0a0a0f] px-10 py-3 text-sm font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] transition-colors">
+            <button onClick={continueAfterTransition} className="bg-[#c9a96e] text-[#0a0a0f] px-10 py-3 text-sm font-medium tracking-widest uppercase rounded-sm hover:bg-[#e8c98a] active:scale-[0.97] transition-[background-color,transform] duration-150">
               Begin →
             </button>
           </div>
@@ -118,7 +118,7 @@ export default function TestPage() {
           <p className="text-xs tracking-widest uppercase text-[#8a8890]">Category {q.cat + 1} of 6</p>
           <p className="text-sm font-medium">{CATEGORIES[q.cat].name}</p>
         </div>
-        <div className={`w-11 h-11 rounded-full border-2 flex items-center justify-center font-serif font-bold text-base transition-colors ${timeLeft <= 8 ? "border-[#e24b4a] text-[#e24b4a]" : "border-[#c9a96e] text-[#c9a96e]"}`}>
+        <div className={`w-11 h-11 rounded-full border-2 flex items-center justify-center font-serif font-bold text-base transition-[border-color,color] duration-300 ${timeLeft <= 8 ? "border-[#e24b4a] text-[#e24b4a]" : "border-[#c9a96e] text-[#c9a96e]"}`}>
           {timeLeft}
         </div>
       </nav>
@@ -130,11 +130,11 @@ export default function TestPage() {
           <span>Score: {score}</span>
         </div>
         <div className="h-0.5 bg-[rgba(201,169,110,0.12)] rounded-full">
-          <div className="h-full bg-[#c9a96e] rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+          <div className="h-full bg-[#c9a96e] rounded-full transition-[width] duration-300 ease-out" style={{ width: `${progress}%` }} />
         </div>
         <div className="flex gap-1 mt-2 flex-wrap">
           {ALL_QUESTIONS.map((_, i) => (
-            <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === qIdx ? "bg-[#c9a96e]" : i < qIdx ? (results[i] ? "bg-[#1d9e75]" : "bg-[#e24b4a]") : "bg-[rgba(201,169,110,0.15)]"}`} />
+            <div key={i} className={`w-2 h-2 rounded-full transition-[background-color] duration-200 ${i === qIdx ? "bg-[#c9a96e]" : i < qIdx ? (results[i] ? "bg-[#1d9e75]" : "bg-[#e24b4a]") : "bg-[rgba(201,169,110,0.15)]"}`} />
           ))}
         </div>
       </div>
@@ -189,8 +189,8 @@ export default function TestPage() {
         <div className="grid grid-cols-2 gap-3 mb-6">
           {q.opts.map((opt, i) => (
             <button key={i} onClick={() => selectOpt(i)} disabled={answered}
-              className={`flex items-center gap-3 p-4 rounded border text-left transition-all ${answered && i === q.ans ? "border-[#1d9e75] bg-[rgba(29,158,117,0.1)]" : answered && i === selected && i !== q.ans ? "border-[#e24b4a] bg-[rgba(226,75,74,0.1)]" : selected === i ? "border-[#c9a96e] bg-[rgba(201,169,110,0.08)]" : "border-[rgba(201,169,110,0.2)] bg-[#111118] hover:border-[#c9a96e] hover:bg-[#1a1a26]"}`}>
-              <div className={`w-7 h-7 min-w-[28px] border rounded-sm flex items-center justify-center text-xs font-medium transition-colors ${answered && i === q.ans ? "border-[#1d9e75] text-[#1d9e75]" : answered && i === selected && i !== q.ans ? "border-[#e24b4a] text-[#e24b4a]" : "border-[rgba(201,169,110,0.2)] text-[#8a8890]"}`}>
+              className={`flex items-center gap-3 p-4 rounded border text-left transition-[border-color,background-color,transform] duration-150 active:scale-[0.98] ${answered && i === q.ans ? "border-[#1d9e75] bg-[rgba(29,158,117,0.1)]" : answered && i === selected && i !== q.ans ? "border-[#e24b4a] bg-[rgba(226,75,74,0.1)]" : selected === i ? "border-[#c9a96e] bg-[rgba(201,169,110,0.08)]" : "border-[rgba(201,169,110,0.2)] bg-[#111118] hover:border-[#c9a96e] hover:bg-[#1a1a26]"}`}>
+              <div className={`w-7 h-7 min-w-[28px] border rounded-sm flex items-center justify-center text-xs font-medium transition-[border-color,color] duration-150 ${answered && i === q.ans ? "border-[#1d9e75] text-[#1d9e75]" : answered && i === selected && i !== q.ans ? "border-[#e24b4a] text-[#e24b4a]" : "border-[rgba(201,169,110,0.2)] text-[#8a8890]"}`}>
                 {["A","B","C","D"][i]}
               </div>
               <span className="text-sm">{opt}</span>
@@ -200,7 +200,7 @@ export default function TestPage() {
 
         {/* Feedback */}
         {feedback && (
-          <div className={`flex gap-3 p-4 rounded mb-6 text-sm ${feedback.correct ? "bg-[rgba(29,158,117,0.1)] border border-[#1d9e75] text-[#5dcaa5]" : "bg-[rgba(226,75,74,0.08)] border border-[#e24b4a] text-[#f09595]"}`}>
+          <div className={`flex gap-3 p-4 rounded mb-6 text-sm animate-scale-in ${feedback.correct ? "bg-[rgba(29,158,117,0.1)] border border-[#1d9e75] text-[#5dcaa5]" : "bg-[rgba(226,75,74,0.08)] border border-[#e24b4a] text-[#f09595]"}`}>
             <span>{feedback.correct ? "✓" : "✕"}</span>
             <span>{feedback.text}</span>
           </div>
@@ -208,11 +208,11 @@ export default function TestPage() {
 
         {/* Actions */}
         <div className="flex justify-between items-center">
-          <button onClick={handleNext} className="text-xs tracking-widest uppercase text-[#8a8890] hover:text-[#f0ede8] transition-colors">
+          <button onClick={handleNext} className="text-xs tracking-widest uppercase text-[#8a8890] hover:text-[#f0ede8] transition-[color] duration-150">
             Skip →
           </button>
           <button onClick={handleNext} disabled={!answered}
-            className={`bg-[#c9a96e] text-[#0a0a0f] px-8 py-3 text-sm font-medium tracking-widest uppercase rounded-sm transition-all ${answered ? "opacity-100 hover:bg-[#e8c98a]" : "opacity-40 cursor-not-allowed"}`}>
+            className={`bg-[#c9a96e] text-[#0a0a0f] px-8 py-3 text-sm font-medium tracking-widest uppercase rounded-sm transition-[background-color,transform,opacity] duration-150 ${answered ? "opacity-100 hover:bg-[#e8c98a] active:scale-[0.97]" : "opacity-40 cursor-not-allowed"}`}>
             {qIdx === ALL_QUESTIONS.length - 1 ? "See Results →" : "Next →"}
           </button>
         </div>

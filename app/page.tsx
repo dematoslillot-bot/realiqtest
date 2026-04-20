@@ -48,6 +48,7 @@ function NeuralCanvas() {
     }
 
     function resize() {
+      if (!canvas) return;
       const dpr = window.devicePixelRatio || 1;
       const w = canvas.offsetWidth;
       const h = canvas.offsetHeight;

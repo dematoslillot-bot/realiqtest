@@ -48,7 +48,7 @@ function NeuralCanvas() {
     }
 
     function resize() {
-      if (!canvas) return;
+      if (!canvas || !ctx) return;
       const dpr = window.devicePixelRatio || 1;
       const w = canvas.offsetWidth;
       const h = canvas.offsetHeight;
@@ -74,6 +74,7 @@ function NeuralCanvas() {
     }
 
     function draw(ts: number) {
+      if (!canvas || !ctx) return;
       const w = canvas.offsetWidth;
       const h = canvas.offsetHeight;
       ctx.clearRect(0, 0, w, h);

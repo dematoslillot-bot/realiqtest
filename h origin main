@@ -1,0 +1,13 @@
+[33mbefa3eb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m redesign: clinical/academic direction with animations
+[33m83fe218[m[33m ([m[1;32mclaude/quizzical-bouman-90da83[m[33m, [m[1;32mclaude/adoring-carson[m[33m)[m polish UI: custom easing, stagger animations, active states, remove emojis
+[33m23ca890[m[33m ([m[1;32mclaude/mystifying-lewin[m[33m)[m fix head duplicate
+[33m5365556[m update analytics id
+[33mf222a47[m add google analytics
+[33m53a584e[m add google adsense
+[33m860dae9[m fix stripe api version
+[33m96753c5[m force redeploy
+[33m2295908[m fix stripe real payment
+[33m7b5c919[m stripe real checkout
+[33md03515a[m stripe integration
+[33mae8a50c[m premium report and 30 questions
+[33m2941974[m first commit

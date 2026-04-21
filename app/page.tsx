@@ -3,20 +3,20 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-/* ─── Neural Network Canvas ──────────────────────────────────────────────── */
+/* ── Neural Network Canvas ─────────────────────────────────────────────── */
 
 function NeuralCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const G = "201,169,110"; // #c9a96e
-    const MAX_DIST = 135;
-    const FIRE_INTERVAL = 380;
+    const G = "201,169,110";
+    const MAX_D = 138;
+    const FIRE_MS = 360;
 
     interface Node {
       x: number; y: number;
@@ -34,17 +34,18 @@ function NeuralCanvas() {
     let raf = 0;
     let lastFire = 0;
 
-    function initNodes(w: number, h: number) {
-      const count = Math.round(Math.max(30, Math.min(72, (w * h) / 7000)));
+    function build(w: number, h: number) {
+      const count = Math.round(Math.max(28, Math.min(68, (w * h) / 7500)));
       nodes = Array.from({ length: count }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
         vx: (Math.random() - 0.5) * 0.22,
         vy: (Math.random() - 0.5) * 0.22,
-        r: 1.8 + Math.random() * 2.8,
+        r: 1.8 + Math.random() * 2.6,
         phase: Math.random() * Math.PI * 2,
         phaseSpeed: 0.011 + Math.random() * 0.017,
       }));
+      pulses = [];
     }
 
     function resize() {
@@ -55,18 +56,18 @@ function NeuralCanvas() {
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      initNodes(w, h);
+      build(w, h);
     }
 
     function spawnPulse() {
       const n = nodes.length;
-      for (let tries = 0; tries < 40; tries++) {
+      for (let k = 0; k < 40; k++) {
         const i = Math.floor(Math.random() * n);
         const j = Math.floor(Math.random() * n);
         if (i === j) continue;
         const dx = nodes[i].x - nodes[j].x;
         const dy = nodes[i].y - nodes[j].y;
-        if (dx * dx + dy * dy < MAX_DIST * MAX_DIST) {
+        if (dx * dx + dy * dy < MAX_D * MAX_D) {
           pulses.push({ i, j, t: 0, speed: 0.011 + Math.random() * 0.017 });
           return;
         }
@@ -79,92 +80,82 @@ function NeuralCanvas() {
       const h = canvas.offsetHeight;
       ctx.clearRect(0, 0, w, h);
 
-      // Spawn new pulses
-      if (ts - lastFire > FIRE_INTERVAL) {
+      if (ts - lastFire > FIRE_MS) {
         spawnPulse();
         if (Math.random() < 0.55) spawnPulse();
         lastFire = ts;
       }
 
-      // Move nodes
-      for (const n of nodes) {
-        n.x += n.vx; n.y += n.vy; n.phase += n.phaseSpeed;
-        if (n.x < 0)  { n.x = 0;  n.vx *= -1; }
-        if (n.x > w)  { n.x = w;  n.vx *= -1; }
-        if (n.y < 0)  { n.y = 0;  n.vy *= -1; }
-        if (n.y > h)  { n.y = h;  n.vy *= -1; }
+      for (const nd of nodes) {
+        nd.x += nd.vx; nd.y += nd.vy;
+        nd.phase += nd.phaseSpeed;
+        if (nd.x < 0) { nd.x = 0; nd.vx *= -1; }
+        if (nd.x > w) { nd.x = w; nd.vx *= -1; }
+        if (nd.y < 0) { nd.y = 0; nd.vy *= -1; }
+        if (nd.y > h) { nd.y = h; nd.vy *= -1; }
       }
 
-      // Static edges
       ctx.lineWidth = 0.5;
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const dx = nodes[i].x - nodes[j].x;
           const dy = nodes[i].y - nodes[j].y;
           const d2 = dx * dx + dy * dy;
-          if (d2 < MAX_DIST * MAX_DIST) {
-            const a = (1 - Math.sqrt(d2) / MAX_DIST) * 0.11;
+          if (d2 < MAX_D * MAX_D) {
+            ctx.strokeStyle = `rgba(${G},${(1 - Math.sqrt(d2) / MAX_D) * 0.11})`;
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.strokeStyle = `rgba(${G},${a})`;
             ctx.stroke();
           }
         }
       }
 
-      // Firing pulses
       pulses = pulses.filter(p => {
         p.t += p.speed;
-        const a = nodes[p.i], b = nodes[p.j];
-        const env = Math.sin(p.t * Math.PI); // 0→1→0 envelope
+        const a = nodes[p.i];
+        const b = nodes[p.j];
+        const env = Math.sin(p.t * Math.PI);
 
-        // Lit edge
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
-        ctx.strokeStyle = `rgba(${G},${env * 0.65})`;
+        ctx.strokeStyle = `rgba(${G},${env * 0.6})`;
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Traveling dot
         const px = a.x + (b.x - a.x) * p.t;
         const py = a.y + (b.y - a.y) * p.t;
 
-        // Halo
-        const halo = ctx.createRadialGradient(px, py, 0, px, py, 8);
-        halo.addColorStop(0, `rgba(${G},${env * 0.55})`);
+        const halo = ctx.createRadialGradient(px, py, 0, px, py, 9);
+        halo.addColorStop(0, `rgba(${G},${env * 0.5})`);
         halo.addColorStop(1, `rgba(${G},0)`);
         ctx.beginPath();
-        ctx.arc(px, py, 8, 0, Math.PI * 2);
+        ctx.arc(px, py, 9, 0, Math.PI * 2);
         ctx.fillStyle = halo;
         ctx.fill();
 
-        // Core dot
         ctx.beginPath();
-        ctx.arc(px, py, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${G},${env * 0.95})`;
+        ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${G},${env * 0.92})`;
         ctx.fill();
 
         return p.t < 1;
       });
 
-      // Nodes
-      for (const n of nodes) {
-        const pulse = 0.5 + 0.5 * Math.sin(n.phase);
+      for (const nd of nodes) {
+        const pulse = 0.5 + 0.5 * Math.sin(nd.phase);
 
-        // Glow halo
-        const glo = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 5.5);
-        glo.addColorStop(0, `rgba(${G},${0.1 + pulse * 0.22})`);
+        const glo = ctx.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, nd.r * 5.5);
+        glo.addColorStop(0, `rgba(${G},${0.1 + pulse * 0.2})`);
         glo.addColorStop(1, `rgba(${G},0)`);
         ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r * 5.5, 0, Math.PI * 2);
+        ctx.arc(nd.x, nd.y, nd.r * 5.5, 0, Math.PI * 2);
         ctx.fillStyle = glo;
         ctx.fill();
 
-        // Core node
         ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r * (0.75 + pulse * 0.45), 0, Math.PI * 2);
+        ctx.arc(nd.x, nd.y, nd.r * (0.75 + pulse * 0.45), 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${G},${0.5 + pulse * 0.5})`;
         ctx.fill();
       }
@@ -185,14 +176,14 @@ function NeuralCanvas() {
 
   return (
     <canvas
-      ref={canvasRef}
+      ref={ref}
       style={{ display: "block", width: "100%", height: "100%" }}
       aria-hidden="true"
     />
   );
 }
 
-/* ─── Animated stat counter ─────────────────────────────────────────────── */
+/* ── Stat Counter ──────────────────────────────────────────────────────── */
 
 function StatCounter({
   value,
@@ -206,65 +197,93 @@ function StatCounter({
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (!ref.current) return;
+    const el = ref.current;
+    if (!el) return;
     let started = false;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !started) {
-          started = true;
-          const t0 = performance.now();
-          const dur = 1400;
-          const el = ref.current!;
-          const fmt = (v: number) =>
-            decimals ? v.toFixed(decimals) : String(Math.round(v));
-          const step = (now: number) => {
-            const p = Math.min((now - t0) / dur, 1);
-            const eased = 1 - Math.pow(1 - p, 3);
-            el.textContent = fmt(value * eased) + suffix;
-            if (p < 1) requestAnimationFrame(step);
-            else el.textContent = fmt(value) + suffix;
-          };
-          requestAnimationFrame(step);
-          io.disconnect();
-        }
+        if (!entry.isIntersecting || started) return;
+        started = true;
+        const dur = 1500;
+        const t0 = performance.now();
+        const fmt = (v: number) =>
+          decimals ? v.toFixed(decimals) : String(Math.round(v));
+        const tick = (now: number) => {
+          const p = Math.min((now - t0) / dur, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = fmt(value * eased) + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+          else el.textContent = fmt(value) + suffix;
+        };
+        requestAnimationFrame(tick);
+        io.disconnect();
       },
       { threshold: 0.5 }
     );
-    io.observe(ref.current);
+    io.observe(el);
     return () => io.disconnect();
-  }, [value, decimals, suffix]);
+  }, [value, suffix, decimals]);
 
   return (
-    <span
-      ref={ref}
-      style={{ fontVariantNumeric: "tabular-nums" }}
-    >
-      {decimals ? value.toFixed(decimals) : value}{suffix}
+    <span ref={ref} style={{ fontVariantNumeric: "tabular-nums" }}>
+      {decimals ? value.toFixed(decimals) : value}
+      {suffix}
     </span>
   );
 }
 
-/* ─── Page ───────────────────────────────────────────────────────────────── */
+/* ── Data ──────────────────────────────────────────────────────────────── */
+
+const PILLARS = [
+  { n: "01", name: "Logical Reasoning",   desc: "Identify patterns and solve abstract problems under time pressure." },
+  { n: "02", name: "Verbal Intelligence", desc: "Analogies, vocabulary depth and linguistic structure." },
+  { n: "03", name: "Spatial Reasoning",   desc: "Rotate and manipulate 2D and 3D shapes mentally." },
+  { n: "04", name: "Numerical Ability",   desc: "Number sequences, arithmetic and quantitative reasoning." },
+  { n: "05", name: "Working Memory",      desc: "Hold and manipulate information under cognitive load." },
+  { n: "06", name: "Processing Speed",    desc: "Rapid decisions and reaction-based cognitive efficiency." },
+];
+
+const STEPS = [
+  { n: "01", title: "Answer 30 questions",               desc: "5 questions across each of the 6 cognitive dimensions. All solvable mentally — no pen or paper needed." },
+  { n: "02", title: "Algorithm scores your responses",   desc: "Our model weights accuracy, speed and category performance against 2.4 million data points." },
+  { n: "03", title: "Receive your IQ score instantly",   desc: "Free report with your overall IQ. Unlock the full premium report for €4.99." },
+];
+
+const FEATURES = [
+  { title: "Cognitive Radar Chart",        desc: "Visual spider chart showing your strengths across all 6 dimensions at a glance." },
+  { title: "Full Category Breakdown",      desc: "Detailed score and analysis for each cognitive category with personalised feedback." },
+  { title: "Global Percentile Rank",       desc: "See exactly where you stand compared to 2.4 million test takers worldwide." },
+  { title: "Career Matches",               desc: "Discover which careers align best with your unique cognitive profile." },
+  { title: "Improvement Tips",             desc: "Personalised advice to strengthen each cognitive area — backed by neuroscience." },
+  { title: "Famous IQ Comparisons",        desc: "See how your score compares to well-known figures and historical geniuses." },
+  { title: "Official PDF Certificate",     desc: "Download your personalised IQ certificate to share or keep as a record." },
+  { title: "Strengths and Weaknesses",     desc: "Clear identification of your cognitive superpowers and areas for growth." },
+];
+
+const FREE_FEATURES    = ["Full 30-question test", "Overall IQ score", "Population percentile"];
+const LOCKED_FEATURES  = ["Radar chart", "Category breakdown", "Career matches", "PDF certificate"];
+const PREMIUM_FEATURES = [
+  "Full 30-question test", "Overall IQ score", "Population percentile",
+  "Radar chart", "Category breakdown", "Career matches",
+  "Improvement tips", "Famous comparisons", "PDF certificate",
+];
+
+/* ── Page ──────────────────────────────────────────────────────────────── */
 
 export default function Home() {
   const router = useRouter();
   const navRef = useRef<HTMLElement>(null);
 
-  /* Nav scroll border */
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
-    const onScroll = () => {
-      if (window.scrollY > 10) nav.classList.add("nav-scrolled");
-      else nav.classList.remove("nav-scrolled");
-    };
+    const onScroll = () =>
+      nav.classList.toggle("nav-scrolled", window.scrollY > 10);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* Scroll-reveal wiring */
   useEffect(() => {
-    const els = document.querySelectorAll(".reveal");
     const io = new IntersectionObserver(
       entries =>
         entries.forEach(e => {
@@ -275,165 +294,131 @@ export default function Home() {
         }),
       { threshold: 0.08, rootMargin: "0px 0px -48px 0px" }
     );
-    els.forEach(el => io.observe(el));
+    document.querySelectorAll(".reveal").forEach(el => io.observe(el));
     return () => io.disconnect();
   }, []);
 
   return (
     <div style={{ background: "#0a0a0a", color: "#e8e6e0" }}>
 
-      {/* ── Nav ─────────────────────────────────────────────────────────── */}
+      {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <nav
         ref={navRef}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
         style={{
-          background: "rgba(10,10,10,0.88)",
-          backdropFilter: "blur(14px)",
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "16px 24px",
+          background: "rgba(10,10,10,0.9)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
           borderBottom: "1px solid transparent",
-          transition: "border-color 0.3s ease",
+          transition: "border-color 0.3s",
         }}
       >
         <button
           onClick={() => router.push("/")}
-          className="font-serif text-lg tracking-tight"
-          style={{ color: "#e8e6e0" }}
+          style={{
+            background: "none", border: "none", cursor: "pointer", padding: 0,
+            fontSize: "17px", fontWeight: 600, color: "#e8e6e0",
+            letterSpacing: "-0.02em", fontFamily: "inherit",
+          }}
         >
           Real<span style={{ color: "#c9a96e" }}>IQ</span>Test
         </button>
 
-        <ul className="hidden md:flex gap-8 text-sm">
+        <ul
+          className="nav-links"
+          style={{ gap: "32px", listStyle: "none", margin: 0, padding: 0 }}
+        >
           {["The Test", "How it works", "Pricing"].map(l => (
             <li
               key={l}
-              className="cursor-pointer transition-colors duration-150"
-              style={{ color: "#6b6b6b" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "#e8e6e0")}
-              onMouseLeave={e => (e.currentTarget.style.color = "#6b6b6b")}
+              style={{ fontSize: "13px", color: "#6b6b6b", cursor: "pointer", transition: "color 0.15s" }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#e8e6e0")}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "#6b6b6b")}
             >
               {l}
             </li>
           ))}
         </ul>
 
-        <button
-          onClick={() => router.push("/test")}
-          className="btn-gold text-xs font-medium tracking-widest uppercase px-5 py-2.5"
-        >
+        <button onClick={() => router.push("/test")} className="btn btn-gold">
           Start Free
         </button>
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative flex items-center min-h-[100dvh] overflow-hidden">
-
-        {/* Neural canvas — right 52% on desktop, full-width dim bg on mobile */}
-        <div
-          className="absolute top-0 bottom-0 right-0 left-0 md:left-[48%] opacity-30 md:opacity-100"
-          style={{ pointerEvents: "none" }}
-        >
+      <section
+        style={{
+          position: "relative", minHeight: "100dvh",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        <div className="canvas-wrap">
           <NeuralCanvas />
-          {/* Gradient fade where canvas meets text (desktop) */}
-          <div
-            className="hidden md:block absolute inset-y-0 left-0 w-48"
-            style={{
-              background: "linear-gradient(to right, #0a0a0a 20%, rgba(10,10,10,0.7) 60%, transparent)",
-              pointerEvents: "none",
-            }}
-          />
         </div>
 
-        {/* Solid left-half background on desktop keeps text crisp */}
-        <div
-          className="hidden md:block absolute top-0 bottom-0 left-0"
-          style={{ width: "46%", background: "#0a0a0a", pointerEvents: "none" }}
-        />
+        <div style={{
+          position: "absolute", top: 0, right: 0, bottom: 0, left: 0,
+          background: "rgba(10,10,10,0.54)", pointerEvents: "none",
+        }} />
 
-        {/* Mobile dark overlay so text stays readable */}
-        <div
-          className="md:hidden absolute inset-0"
-          style={{ background: "rgba(10,10,10,0.62)", pointerEvents: "none" }}
-        />
-
-        {/* Text content */}
-        <div className="relative z-10 w-full md:w-1/2 flex flex-col justify-center pt-28 pb-16 px-8 md:px-16 min-h-[100dvh]">
-
-          <div className="hero-1 flex items-center gap-3 mb-10">
-            <span className="w-5 h-px" style={{ background: "#c9a96e" }} />
-            <span
-              className="text-xs tracking-[0.18em] uppercase font-medium"
-              style={{ color: "#c9a96e" }}
-            >
+        <div style={{
+          position: "relative", zIndex: 10,
+          display: "flex", flexDirection: "column", alignItems: "center",
+          textAlign: "center", padding: "96px 16px 64px",
+          width: "100%", minHeight: "100dvh", justifyContent: "center",
+        }}>
+          <div className="h1" style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+            <span style={{ width: 20, height: 1, background: "#c9a96e", display: "block" }} />
+            <span style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 500, color: "#c9a96e" }}>
               Scientifically calibrated
             </span>
+            <span style={{ width: 20, height: 1, background: "#c9a96e", display: "block" }} />
           </div>
 
-          <h1
-            className="hero-2 leading-[1.02] mb-6"
-            style={{ fontSize: "clamp(48px, 6vw, 80px)", fontWeight: 300, letterSpacing: "-2px" }}
-          >
-            Measure<br />what matters.
+          <h1 className="h2 hero-title">
+            Discover your<br />true intelligence
           </h1>
 
-          <p
-            className="hero-3 text-base leading-[1.75] mb-10 max-w-sm"
-            style={{ color: "#6b6b6b" }}
-          >
-            A 52-question cognitive assessment calibrated against a population
-            of 2.4 million. No fluff. No estimates. A score.
+          <p className="h3 hero-sub">
+            A 30-question cognitive assessment calibrated against 2.4 million tests.
+            No fluff. No estimates. Your actual score.
           </p>
 
-          <div className="hero-4 flex gap-4 flex-wrap items-center">
-            <button
-              onClick={() => router.push("/test")}
-              className="btn-gold text-xs font-medium tracking-widest uppercase"
-            >
-              Begin Assessment — Free
+          <div className="h4 hero-ctas">
+            <button onClick={() => router.push("/test")} className="btn btn-gold">
+              Take the Test — Free
             </button>
-            <button className="btn-outline text-xs tracking-widest uppercase">
-              Sample Report
+            <button className="btn btn-outline">
+              View Sample Report
             </button>
           </div>
 
-          {/* Social proof line */}
-          <p
-            className="hero-4 mt-8 text-xs tracking-wide"
-            style={{ color: "#444444" }}
-          >
-            2.4M tests completed &nbsp;·&nbsp; Results in 15 min &nbsp;·&nbsp; No signup
+          <p className="h4" style={{
+            marginTop: 28, fontSize: 11, letterSpacing: "0.08em",
+            color: "#555", textShadow: "0 1px 4px rgba(0,0,0,0.8)",
+          }}>
+            2.4M tests completed · Results in 15 min · No signup required
           </p>
         </div>
       </section>
 
       {/* ── Stats ────────────────────────────────────────────────────────── */}
-      <div
-        style={{
-          background: "#141414",
-          borderTop: "1px solid #141414",
-          borderBottom: "1px solid #141414",
-        }}
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px">
+      <div style={{ background: "#111", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #1a1a1a" }}>
+        <div className="stats-grid">
           {[
             { value: 2.4, suffix: "M+", decimals: 1, label: "Tests completed" },
             { value: 98,  suffix: "%",              label: "Accuracy rate" },
             { value: 15,  suffix: " min",           label: "Average duration" },
-            { value: 4.9, suffix: "/5", decimals: 1, label: "User rating" },
+            { value: 4.9, suffix: "★", decimals: 1, label: "User rating" },
           ].map((s, i) => (
-            <div
-              key={i}
-              className="py-8 px-6 text-center reveal"
-              style={{ background: "#0a0a0a", transitionDelay: `${i * 60}ms` }}
-            >
-              <div
-                className="font-mono text-3xl mb-1.5 font-medium"
-                style={{ color: "#c9a96e" }}
-              >
+            <div key={i} className="stat-cell reveal" style={{ transitionDelay: `${i * 60}ms` }}>
+              <div style={{ fontSize: 32, fontWeight: 500, color: "#c9a96e", fontVariantNumeric: "tabular-nums", marginBottom: 6 }}>
                 <StatCounter value={s.value} suffix={s.suffix} decimals={s.decimals} />
               </div>
-              <div
-                className="text-xs tracking-[0.14em] uppercase"
-                style={{ color: "#6b6b6b" }}
-              >
+              <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#6b6b6b" }}>
                 {s.label}
               </div>
             </div>
@@ -441,248 +426,116 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Categories ───────────────────────────────────────────────────── */}
-      <section className="py-24 px-8 md:px-16">
-        <div className="max-w-5xl mx-auto">
-          <div className="reveal mb-14">
-            <p
-              className="text-xs tracking-[0.18em] uppercase mb-3"
-              style={{ color: "#c9a96e" }}
-            >
-              What we measure
-            </p>
-            <h2
-              className="font-serif text-4xl leading-tight"
-              style={{ letterSpacing: "-0.01em" }}
-            >
-              Six pillars of intelligence
-            </h2>
+      {/* ── Six Pillars ──────────────────────────────────────────────────── */}
+      <section className="section">
+        <div className="container">
+          <div className="reveal sec-hd">
+            <p className="label">What we measure</p>
+            <h2 className="sec-title">Six pillars of intelligence</h2>
+            <p className="sec-sub">5 questions per dimension · 30 questions total</p>
           </div>
-
-          <div
-            className="grid grid-cols-2 md:grid-cols-3 gap-px"
-            style={{ background: "#141414" }}
-          >
-            {[
-              { n: "01", name: "Logical Reasoning",  desc: "Identify patterns and solve abstract problems under time pressure." },
-              { n: "02", name: "Verbal Intelligence", desc: "Analogies, vocabulary depth and linguistic structure." },
-              { n: "03", name: "Spatial Reasoning",   desc: "Rotate and manipulate 2D and 3D shapes mentally." },
-              { n: "04", name: "Numerical Ability",   desc: "Number sequences, arithmetic and quantitative reasoning." },
-              { n: "05", name: "Working Memory",      desc: "Hold and manipulate information under cognitive load." },
-              { n: "06", name: "Processing Speed",    desc: "Rapid decisions and reaction-based cognitive efficiency." },
-            ].map((cat, i) => (
-              <div
-                key={i}
-                className="p-7 reveal"
-                style={{ background: "#0a0a0a", transitionDelay: `${i * 50}ms` }}
-              >
-                <div
-                  className="font-mono text-xs mb-4 tracking-widest"
-                  style={{ color: "#c9a96e", opacity: 0.45 }}
-                >
-                  {cat.n}
+          <div className="pillars-grid">
+            {PILLARS.map((p, i) => (
+              <div key={i} className="card reveal" style={{ transitionDelay: `${i * 50}ms` }}>
+                <div style={{ fontFamily: "monospace", fontSize: 11, letterSpacing: "0.2em", color: "#c9a96e", opacity: 0.5, marginBottom: 14 }}>
+                  {p.n}
                 </div>
-                <div className="text-sm font-medium mb-2">{cat.name}</div>
-                <div
-                  className="text-xs leading-relaxed"
-                  style={{ color: "#6b6b6b" }}
-                >
-                  {cat.desc}
-                </div>
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>{p.name}</div>
+                <div style={{ fontSize: 13, color: "#6b6b6b", lineHeight: 1.65 }}>{p.desc}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── How it works ─────────────────────────────────────────────────── */}
-      <section className="py-24 px-8 md:px-16" style={{ background: "#0d0d0d" }}>
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
-
-          <div className="reveal">
-            <p
-              className="text-xs tracking-[0.18em] uppercase mb-3"
-              style={{ color: "#c9a96e" }}
-            >
-              How it works
-            </p>
-            <h2
-              className="font-serif text-4xl mb-12"
-              style={{ letterSpacing: "-0.01em" }}
-            >
-              Simple process,<br />deep insights
-            </h2>
-            <div style={{ borderTop: "1px solid #1e1e1e" }}>
-              {[
-                { n: "01", title: "Answer 52 questions", desc: "6 categories, varying question counts. All designed to be solved mentally — no pen or paper needed." },
-                { n: "02", title: "Algorithm scores your responses", desc: "Our model weights accuracy, speed and category performance against 2.4 million data points." },
-                { n: "03", title: "Receive your IQ score instantly", desc: "Free report with your overall IQ. Unlock the full premium report for €4.99." },
-              ].map((s, i) => (
-                <div
-                  key={i}
-                  className="flex gap-6 py-7"
-                  style={{ borderBottom: "1px solid #1e1e1e" }}
-                >
-                  <div
-                    className="font-mono text-2xl leading-none min-w-[3rem]"
-                    style={{ color: "#c9a96e", opacity: 0.22 }}
-                  >
-                    {s.n}
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium mb-1.5">{s.title}</div>
-                    <div className="text-xs leading-relaxed" style={{ color: "#6b6b6b" }}>
-                      {s.desc}
+      {/* ── How It Works ─────────────────────────────────────────────────── */}
+      <section className="section" style={{ background: "#0d0d0d" }}>
+        <div className="container">
+          <div className="how-grid">
+            <div className="reveal">
+              <p className="label">How it works</p>
+              <h2 className="sec-title" style={{ marginBottom: 48 }}>
+                Simple process,<br />deep insights
+              </h2>
+              <div style={{ borderTop: "1px solid #1e1e1e" }}>
+                {STEPS.map((s, i) => (
+                  <div key={i} style={{ display: "flex", gap: 24, padding: "28px 0", borderBottom: "1px solid #1e1e1e" }}>
+                    <span style={{ fontFamily: "monospace", fontSize: 22, color: "#c9a96e", opacity: 0.22, minWidth: 44, lineHeight: 1 }}>
+                      {s.n}
+                    </span>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 6 }}>{s.title}</div>
+                      <div style={{ fontSize: 13, color: "#6b6b6b", lineHeight: 1.65 }}>{s.desc}</div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Sample result card */}
-          <div
-            className="reveal p-7"
-            style={{
-              background: "#0a0a0a",
-              border: "1px solid #1e1e1e",
-              transitionDelay: "120ms",
-            }}
-          >
-            <p
-              className="text-xs tracking-[0.14em] uppercase mb-6"
-              style={{ color: "#6b6b6b" }}
-            >
-              Sample result
-            </p>
-            <div
-              className="font-serif leading-none mb-2"
-              style={{ fontSize: "88px", color: "#c9a96e" }}
-            >
-              127
-            </div>
-            <p
-              className="text-xs tracking-[0.14em] uppercase mb-3"
-              style={{ color: "#6b6b6b" }}
-            >
-              Intelligence Quotient
-            </p>
-            <div
-              className="inline-block text-xs tracking-widest uppercase px-4 py-1.5 mb-6"
-              style={{ border: "1px solid #c9a96e", color: "#c9a96e" }}
-            >
-              Superior Intelligence
-            </div>
-            <div
-              className="h-px relative overflow-hidden mb-1"
-              style={{ background: "#1e1e1e" }}
-            >
-              <div
-                className="absolute left-0 top-0 h-full"
-                style={{ width: "72%", background: "#c9a96e" }}
-              />
-            </div>
-            <div
-              className="flex justify-between text-xs mb-6"
-              style={{ color: "#444444" }}
-            >
-              <span>70</span><span>100</span><span>145+</span>
-            </div>
-            <div className="flex flex-col gap-2.5">
+            <div className="card reveal" style={{ transitionDelay: "100ms", padding: 28 }}>
+              <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#6b6b6b", marginBottom: 24 }}>
+                Sample result
+              </p>
+              <div style={{ fontSize: 88, fontWeight: 300, color: "#c9a96e", lineHeight: 1, marginBottom: 8, letterSpacing: "-0.03em" }}>
+                127
+              </div>
+              <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#6b6b6b", marginBottom: 12 }}>
+                Intelligence Quotient
+              </p>
+              <div style={{ display: "inline-block", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", padding: "6px 16px", marginBottom: 24, border: "1px solid #c9a96e", color: "#c9a96e" }}>
+                Superior Intelligence
+              </div>
+              <div style={{ height: 1, background: "#1e1e1e", position: "relative", overflow: "hidden", marginBottom: 4 }}>
+                <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "72%", background: "#c9a96e" }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#444", marginBottom: 24 }}>
+                <span>70</span><span>100</span><span>145+</span>
+              </div>
               {[["Logic", 88], ["Verbal", 75], ["Spatial", 70]].map(([n, w]) => (
-                <div key={String(n)} className="flex items-center gap-3 text-xs">
-                  <span className="w-16 text-right" style={{ color: "#6b6b6b" }}>{n}</span>
-                  <div className="flex-1 h-px relative" style={{ background: "#1e1e1e" }}>
-                    <div
-                      className="absolute left-0 top-0 h-full"
-                      style={{ width: `${w}%`, background: "#c9a96e" }}
-                    />
+                <div key={String(n)} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 12, marginBottom: 10 }}>
+                  <span style={{ width: 64, textAlign: "right", color: "#6b6b6b", flexShrink: 0 }}>{n}</span>
+                  <div style={{ flex: 1, height: 1, background: "#1e1e1e", position: "relative" }}>
+                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${w}%`, background: "#c9a96e" }} />
                   </div>
                 </div>
               ))}
               {[["Numerical", 82], ["Memory", 65]].map(([n, w]) => (
-                <div
-                  key={String(n)}
-                  className="flex items-center gap-3 text-xs blur-sm opacity-25 select-none"
-                >
-                  <span className="w-16 text-right" style={{ color: "#6b6b6b" }}>{n}</span>
-                  <div className="flex-1 h-px relative" style={{ background: "#1e1e1e" }}>
-                    <div
-                      className="absolute left-0 top-0 h-full"
-                      style={{ width: `${w}%`, background: "#c9a96e" }}
-                    />
+                <div key={String(n)} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 12, marginBottom: 10, filter: "blur(4px)", opacity: 0.18, userSelect: "none" }}>
+                  <span style={{ width: 64, textAlign: "right", color: "#6b6b6b", flexShrink: 0 }}>{n}</span>
+                  <div style={{ flex: 1, height: 1, background: "#1e1e1e", position: "relative" }}>
+                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${w}%`, background: "#c9a96e" }} />
                   </div>
                 </div>
               ))}
+              <p style={{ fontSize: 12, marginTop: 16, color: "#444" }}>
+                Full breakdown unlocked with Premium Report
+              </p>
             </div>
-            <p className="text-xs mt-5" style={{ color: "#444444" }}>
-              Full breakdown unlocked with Premium Report
-            </p>
           </div>
         </div>
       </section>
 
-      {/* ── Premium features ─────────────────────────────────────────────── */}
-      <section className="py-24 px-8 md:px-16">
-        <div className="max-w-5xl mx-auto">
-          <div className="reveal mb-12">
-            <p
-              className="text-xs tracking-[0.18em] uppercase mb-3"
-              style={{ color: "#c9a96e" }}
-            >
-              Premium Report
-            </p>
-            <h2
-              className="font-serif text-4xl mb-3"
-              style={{ letterSpacing: "-0.01em" }}
-            >
-              Everything in the full report
-            </h2>
-            <p className="text-sm" style={{ color: "#6b6b6b" }}>
-              One-time payment. €4.99. Instant access.
-            </p>
+      {/* ── Premium Features ─────────────────────────────────────────────── */}
+      <section className="section">
+        <div className="container">
+          <div className="reveal sec-hd">
+            <p className="label">Premium Report</p>
+            <h2 className="sec-title">Everything in the full report</h2>
+            <p className="sec-sub">One-time payment · €4.99 · Instant access</p>
           </div>
-
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 gap-px"
-            style={{ background: "#141414" }}
-          >
-            {[
-              { title: "Cognitive Radar Chart",          desc: "Visual spider chart showing your strengths and weaknesses across all 6 dimensions at a glance." },
-              { title: "Full Category Breakdown",        desc: "Detailed score and analysis for each of the 6 cognitive categories with personalised feedback." },
-              { title: "Global Percentile Rank",         desc: "See exactly where you stand compared to 2.4 million test takers worldwide." },
-              { title: "Career Matches",                 desc: "Discover which careers and professions align best with your unique cognitive profile." },
-              { title: "Improvement Tips",               desc: "Personalised, actionable advice to strengthen each cognitive area — backed by neuroscience." },
-              { title: "Famous IQ Comparisons",          desc: "See how your score compares to well-known figures and historical geniuses." },
-              { title: "Official PDF Certificate",       desc: "Download your personalised IQ certificate to share or keep as a record." },
-              { title: "Strengths and Weaknesses Profile", desc: "Clear identification of your cognitive superpowers and areas with the most room to grow." },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="p-7 flex gap-5 reveal"
-                style={{ background: "#0a0a0a", transitionDelay: `${i * 40}ms` }}
-              >
-                <span
-                  className="text-sm mt-0.5 select-none font-mono"
-                  style={{ color: "#c9a96e" }}
-                >
-                  +
-                </span>
+          <div className="features-grid">
+            {FEATURES.map((f, i) => (
+              <div key={i} className="card reveal" style={{ transitionDelay: `${i * 35}ms`, display: "flex", gap: 16 }}>
+                <span style={{ color: "#c9a96e", fontFamily: "monospace", fontSize: 14, marginTop: 2, flexShrink: 0 }}>+</span>
                 <div>
-                  <div className="text-sm font-medium mb-1.5">{item.title}</div>
-                  <div className="text-xs leading-relaxed" style={{ color: "#6b6b6b" }}>
-                    {item.desc}
-                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 6 }}>{f.title}</div>
+                  <div style={{ fontSize: 13, color: "#6b6b6b", lineHeight: 1.65 }}>{f.desc}</div>
                 </div>
               </div>
             ))}
           </div>
-
-          <div className="mt-10 reveal" style={{ transitionDelay: "200ms" }}>
-            <button
-              onClick={() => router.push("/test")}
-              className="btn-gold text-xs font-medium tracking-widest uppercase"
-            >
+          <div className="reveal" style={{ marginTop: 40, transitionDelay: "160ms" }}>
+            <button onClick={() => router.push("/test")} className="btn btn-gold">
               Take the Free Test First
             </button>
           </div>
@@ -690,120 +543,60 @@ export default function Home() {
       </section>
 
       {/* ── Pricing ──────────────────────────────────────────────────────── */}
-      <section className="py-24 px-8 md:px-16" style={{ background: "#0d0d0d" }}>
-        <div className="max-w-4xl mx-auto">
-          <div className="reveal mb-12">
-            <p
-              className="text-xs tracking-[0.18em] uppercase mb-3"
-              style={{ color: "#c9a96e" }}
-            >
-              Pricing
-            </p>
-            <h2 className="font-serif text-4xl" style={{ letterSpacing: "-0.01em" }}>
-              Free to start,<br />powerful when unlocked
-            </h2>
+      <section className="section" style={{ background: "#0d0d0d" }}>
+        <div className="container">
+          <div className="reveal sec-hd">
+            <p className="label">Pricing</p>
+            <h2 className="sec-title">Free to start,<br />powerful when unlocked</h2>
           </div>
-
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 gap-px"
-            style={{ background: "#1e1e1e" }}
-          >
-            {/* Free tier */}
-            <div
-              className="p-8 reveal"
-              style={{ background: "#0d0d0d", transitionDelay: "60ms" }}
-            >
-              <p
-                className="text-xs tracking-[0.14em] uppercase mb-4"
-                style={{ color: "#6b6b6b" }}
-              >
-                Basic
-              </p>
-              <div className="font-serif text-5xl mb-2" style={{ color: "#e8e6e0" }}>
-                Free
-              </div>
-              <p
-                className="text-xs leading-relaxed mb-8"
-                style={{ color: "#6b6b6b" }}
-              >
+          <div className="pricing-grid">
+            <div className="card reveal" style={{ transitionDelay: "60ms", padding: 32 }}>
+              <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#6b6b6b", marginBottom: 16 }}>Basic</p>
+              <div style={{ fontSize: 48, fontWeight: 300, letterSpacing: "-0.03em", marginBottom: 8 }}>Free</div>
+              <p style={{ fontSize: 13, color: "#6b6b6b", lineHeight: 1.65, marginBottom: 28 }}>
                 Take the full test and receive your overall IQ score instantly.
               </p>
-              <ul className="flex flex-col gap-2.5 mb-8">
-                {["Full 52-question test", "Overall IQ score", "Population percentile"].map(f => (
-                  <li key={f} className="flex gap-3 text-xs">
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {FREE_FEATURES.map(f => (
+                  <li key={f} style={{ display: "flex", gap: 12, fontSize: 13 }}>
                     <span style={{ color: "#c9a96e" }}>+</span><span>{f}</span>
                   </li>
                 ))}
-                {["Radar chart", "Category breakdown", "Career matches", "PDF certificate"].map(f => (
-                  <li key={f} className="flex gap-3 text-xs opacity-25">
+                {LOCKED_FEATURES.map(f => (
+                  <li key={f} style={{ display: "flex", gap: 12, fontSize: 13, opacity: 0.22 }}>
                     <span>+</span><span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => router.push("/test")}
-                className="btn-outline w-full py-3 text-xs font-medium tracking-widest uppercase"
-              >
+              <button onClick={() => router.push("/test")} className="btn btn-outline" style={{ width: "100%" }}>
                 Start Free
               </button>
             </div>
 
-            {/* Premium tier */}
-            <div
-              className="p-8 reveal"
-              style={{
-                background: "#0d0d0d",
-                borderLeft: "3px solid #c9a96e",
-                transitionDelay: "120ms",
-              }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <p
-                  className="text-xs tracking-[0.14em] uppercase"
-                  style={{ color: "#6b6b6b" }}
-                >
+            <div className="card reveal" style={{ transitionDelay: "120ms", padding: 32, borderLeft: "3px solid #c9a96e" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#6b6b6b" }}>
                   Premium Report
                 </p>
-                <span
-                  className="text-xs tracking-wider uppercase px-2.5 py-1"
-                  style={{
-                    background: "rgba(201,169,110,0.1)",
-                    color: "#c9a96e",
-                    border: "1px solid rgba(201,169,110,0.25)",
-                  }}
-                >
-                  Save 50%
+                <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 10px", background: "rgba(201,169,110,0.1)", color: "#c9a96e", border: "1px solid rgba(201,169,110,0.25)" }}>
+                  Best value
                 </span>
               </div>
-              <div className="flex items-baseline gap-3 mb-2">
-                <span className="text-sm line-through" style={{ color: "#444444" }}>
-                  €9.99
-                </span>
-                <span className="font-serif text-5xl" style={{ color: "#e8e6e0" }}>
-                  €4.99
-                </span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 8 }}>
+                <span style={{ fontSize: 14, textDecoration: "line-through", color: "#444" }}>€9.99</span>
+                <span style={{ fontSize: 48, fontWeight: 300, letterSpacing: "-0.03em" }}>€4.99</span>
               </div>
-              <p
-                className="text-xs leading-relaxed mb-8"
-                style={{ color: "#6b6b6b" }}
-              >
-                Complete cognitive profile with everything you need to understand your intelligence.
+              <p style={{ fontSize: 13, color: "#6b6b6b", lineHeight: 1.65, marginBottom: 28 }}>
+                Complete cognitive profile with everything you need.
               </p>
-              <ul className="flex flex-col gap-2.5 mb-8">
-                {[
-                  "Full 52-question test", "Overall IQ score", "Population percentile",
-                  "Radar chart", "Category breakdown", "Career matches",
-                  "Improvement tips", "Famous comparisons", "PDF certificate",
-                ].map(f => (
-                  <li key={f} className="flex gap-3 text-xs">
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {PREMIUM_FEATURES.map(f => (
+                  <li key={f} style={{ display: "flex", gap: 12, fontSize: 13 }}>
                     <span style={{ color: "#c9a96e" }}>+</span><span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => router.push("/test")}
-                className="btn-gold w-full py-3 text-xs font-medium tracking-widest uppercase"
-              >
+              <button onClick={() => router.push("/test")} className="btn btn-gold" style={{ width: "100%" }}>
                 Get Premium Report
               </button>
             </div>
@@ -812,45 +605,35 @@ export default function Home() {
       </section>
 
       {/* ── Footer CTA ───────────────────────────────────────────────────── */}
-      <section
-        className="py-24 px-8 md:px-16"
-        style={{ borderTop: "1px solid #1e1e1e" }}
-      >
-        <div className="max-w-4xl mx-auto reveal">
-          <h2
-            className="font-serif text-5xl md:text-6xl mb-6"
-            style={{ letterSpacing: "-0.02em" }}
-          >
-            Ready to discover<br />your true IQ?
-          </h2>
-          <p
-            className="text-sm mb-8 max-w-xs"
-            style={{ color: "#6b6b6b", lineHeight: "1.7" }}
-          >
-            No registration required. Results in 15 minutes. 2.4 million tests completed.
-          </p>
-          <button
-            onClick={() => router.push("/test")}
-            className="btn-gold text-xs font-medium tracking-widest uppercase"
-          >
-            Begin the Test — Free
-          </button>
+      <section className="section" style={{ borderTop: "1px solid #1a1a1a" }}>
+        <div className="container">
+          <div className="reveal" style={{ maxWidth: 560 }}>
+            <h2 style={{ fontSize: "clamp(34px, 5vw, 54px)", fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 20 }}>
+              Ready to discover<br />your true IQ?
+            </h2>
+            <p style={{ fontSize: 14, color: "#6b6b6b", lineHeight: 1.7, marginBottom: 32, maxWidth: 360 }}>
+              No registration required. Results in 15 minutes. Trusted by 2.4 million people.
+            </p>
+            <button onClick={() => router.push("/test")} className="btn btn-gold">
+              Begin the Test — Free
+            </button>
+          </div>
         </div>
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer
-        className="flex flex-wrap justify-between items-center px-8 py-6 gap-4"
-        style={{ borderTop: "1px solid #1e1e1e" }}
-      >
-        <span className="font-serif text-sm" style={{ color: "#e8e6e0" }}>
+      <footer style={{
+        display: "flex", flexWrap: "wrap", justifyContent: "space-between",
+        alignItems: "center", padding: "20px 24px", gap: 12,
+        borderTop: "1px solid #1a1a1a",
+      }}>
+        <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Real<span style={{ color: "#c9a96e" }}>IQ</span>Test
         </span>
-        <span className="text-xs" style={{ color: "#444444" }}>
-          © 2026 RealIQTest · Privacy · Terms
-        </span>
-        <span className="text-xs" style={{ color: "#444444" }}>realiqtest.co</span>
+        <span style={{ fontSize: 12, color: "#444" }}>© 2026 RealIQTest · Privacy · Terms</span>
+        <span style={{ fontSize: 12, color: "#444" }}>realiqtest.co</span>
       </footer>
+
     </div>
   );
 }

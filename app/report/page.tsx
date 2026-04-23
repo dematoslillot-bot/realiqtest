@@ -153,7 +153,7 @@ export default function ReportPage() {
             <h2 className="font-serif text-xl font-bold mb-5 flex items-center gap-4">Global percentile rank<span className="flex-1 h-px bg-[rgba(201,169,110,0.2)]" /></h2>
             <div className="bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded p-6 text-center">
               <div className="font-serif text-6xl font-black text-[#c9a96e]">{percentile}th</div>
-              <p className="text-sm text-[#8a8890] mt-2">percentile — better than {percentile}% of all test takers</p>
+              <p className="text-sm text-[#8a8890] mt-2">percentile — based on standardised IQ distribution norms</p>
               <div className="mt-5 h-1.5 bg-[rgba(201,169,110,0.1)] rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-[rgba(29,158,117,0.5)] to-[#c9a96e] rounded-full transition-[width] duration-1000 ease-out" style={{ width: `${pctFill}%` }} />
               </div>
@@ -165,18 +165,68 @@ export default function ReportPage() {
             <h2 className="font-serif text-xl font-bold mb-5 flex items-center gap-4">Cognitive radar<span className="flex-1 h-px bg-[rgba(201,169,110,0.2)]" /></h2>
             <div className="bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded p-6 flex justify-center">
               <svg width="320" height="320" viewBox="0 0 320 320">
+                <defs>
+                  <style>{`
+                    @keyframes radar-grow {
+                      from { opacity: 0; transform: scale(0.1); transform-origin: 160px 160px; }
+                      to   { opacity: 1; transform: scale(1);   transform-origin: 160px 160px; }
+                    }
+                    @keyframes radar-dot {
+                      from { opacity: 0; r: 0; }
+                      to   { opacity: 1; r: 4; }
+                    }
+                    .radar-shape { animation: radar-grow 0.9s cubic-bezier(0.34,1.56,0.64,1) 0.3s both; }
+                    .radar-dot   { animation: radar-grow 0.5s ease-out both; }
+                  `}</style>
+                </defs>
+                {/* Grid rings */}
                 {[0.25, 0.5, 0.75, 1].map((pct, i) => (
-                  <polygon key={i} points={gridPoints(pct)} fill="none" stroke="rgba(201,169,110,0.15)" strokeWidth="0.5" />
+                  <polygon key={i} points={gridPoints(pct)} fill="none" stroke="rgba(201,169,110,0.12)" strokeWidth="0.5" />
                 ))}
+                {/* Spokes */}
                 {angles.map((a, i) => (
                   <line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} stroke="rgba(201,169,110,0.1)" strokeWidth="0.5" />
                 ))}
-                <polygon points={polyPoints} fill="rgba(201,169,110,0.15)" stroke="#c9a96e" strokeWidth="1.5" />
-                {points.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="4" fill="#c9a96e" />)}
+                {/* Data polygon */}
+                <polygon
+                  className="radar-shape"
+                  points={polyPoints}
+                  fill="rgba(201,169,110,0.12)"
+                  stroke="#c9a96e"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+                {/* Data dots */}
+                {points.map((p, i) => (
+                  <circle
+                    key={i}
+                    className="radar-dot"
+                    cx={p.x} cy={p.y} r="4"
+                    fill="#c9a96e"
+                    style={{ animationDelay: `${0.3 + i * 0.08}s` }}
+                  />
+                ))}
+                {/* Labels */}
                 {RADAR_CATS.map((lab, i) => {
-                  const lx = cx + (r + 22) * Math.cos(angles[i]);
-                  const ly = cy + (r + 22) * Math.sin(angles[i]);
-                  return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fill="#8a8890" fontSize="10" fontFamily="DM Sans, sans-serif">{lab}</text>;
+                  const lx = cx + (r + 24) * Math.cos(angles[i]);
+                  const ly = cy + (r + 24) * Math.sin(angles[i]);
+                  return (
+                    <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
+                      fill="#8a8890" fontSize="10" fontFamily="Inter, sans-serif" fontWeight="500">
+                      {lab}
+                    </text>
+                  );
+                })}
+                {/* Value labels */}
+                {radarValues.map((v, i) => {
+                  const lx = cx + (r * v / 100 * 0.65) * Math.cos(angles[i]);
+                  const ly = cy + (r * v / 100 * 0.65) * Math.sin(angles[i]);
+                  return v > 20 ? (
+                    <text key={`v${i}`} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
+                      fill="rgba(201,169,110,0.6)" fontSize="8" fontFamily="Inter, sans-serif">
+                      {catResults[i]?.iq}
+                    </text>
+                  ) : null;
                 })}
               </svg>
             </div>
@@ -302,7 +352,7 @@ export default function ReportPage() {
             {[
               "Full breakdown across all 6 cognitive categories",
               "Cognitive radar chart — visualise your mind",
-              "Percentile rank vs 2.4 million users",
+              "Percentile rank vs global population norms",
               "Best career matches for your IQ profile",
               "Personalised tips to improve each category",
               "Famous IQ comparisons",
@@ -319,7 +369,7 @@ export default function ReportPage() {
             ))}
           </div>
           <div className="flex gap-4 flex-wrap text-xs text-[#8a8890]">
-            <span>SSL Encrypted</span><span>· Instant access</span><span>· No subscription</span><span>· 2.4M+ users</span>
+            <span>SSL Encrypted</span><span>· Instant access</span><span>· No subscription</span><span>· Instant access</span>
           </div>
         </div>
         <div className="bg-[#111118] border border-[rgba(201,169,110,0.2)] rounded-lg overflow-hidden animate-scale-in" style={{ animationDelay: '120ms' }}>
@@ -328,7 +378,7 @@ export default function ReportPage() {
               <p className="text-xs tracking-widest uppercase text-[#8a8890] mb-1">Premium Report — One time</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-sm line-through text-[#8a8890]">€9.99</span>
-                <span className="font-serif text-3xl font-bold text-[#c9a96e]">€4.99</span>
+                <span className="font-serif text-3xl font-bold text-[#c9a96e]">€1.99</span>
                 <span className="text-xs bg-[rgba(29,158,117,0.15)] text-[#1d9e75] border border-[rgba(29,158,117,0.3)] px-2 py-0.5 rounded-sm">Save 50%</span>
               </div>
             </div>
@@ -370,7 +420,7 @@ export default function ReportPage() {
             </label>
             <button onClick={handlePay}
               className={`w-full py-3 text-sm font-medium tracking-widest uppercase rounded active:scale-[0.97] transition-[background-color,transform,opacity] duration-150 ${consent ? "bg-[#c9a96e] text-[#0a0a0f] hover:bg-[#e8c98a]" : "bg-[#c9a96e] text-[#0a0a0f] opacity-40 cursor-not-allowed"}`}>
-              Pay €4.99 — Unlock Premium Report
+              Pay €1.99 — Unlock Premium Report
             </button>
             <p className="text-center text-xs text-[#8a8890]">Powered by Stripe · Your card data is never stored</p>
             <p className="text-center text-xs text-[#8a8890]">No subscription · One-time payment</p>

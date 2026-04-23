@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
               name: "RealIQTest Premium Report",
               description: "Full cognitive breakdown, radar chart, career matches, improvement tips and PDF certificate.",
             },
-            unit_amount: 499,
+            unit_amount: 199,
           },
           quantity: 1,
         },

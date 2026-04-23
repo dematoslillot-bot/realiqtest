@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 /* ── Neural Network Canvas ─────────────────────────────────────────────── */
 
@@ -246,13 +247,13 @@ const PILLARS = [
 const STEPS = [
   { n: "01", title: "Answer 30 questions",               desc: "5 questions across each of the 6 cognitive dimensions. All solvable mentally — no pen or paper needed." },
   { n: "02", title: "Algorithm scores your responses",   desc: "Our model weights accuracy, speed and category performance against 2.4 million data points." },
-  { n: "03", title: "Receive your IQ score instantly",   desc: "Free report with your overall IQ. Unlock the full premium report for €4.99." },
+  { n: "03", title: "Receive your IQ score instantly",   desc: "Free report with your overall IQ. Unlock the full premium report for €1.99." },
 ];
 
 const FEATURES = [
   { title: "Cognitive Radar Chart",        desc: "Visual spider chart showing your strengths across all 6 dimensions at a glance." },
   { title: "Full Category Breakdown",      desc: "Detailed score and analysis for each cognitive category with personalised feedback." },
-  { title: "Global Percentile Rank",       desc: "See exactly where you stand compared to 2.4 million test takers worldwide." },
+  { title: "Global Percentile Rank",       desc: "See exactly where you stand compared to thousands of other test takers." },
   { title: "Career Matches",               desc: "Discover which careers align best with your unique cognitive profile." },
   { title: "Improvement Tips",             desc: "Personalised advice to strengthen each cognitive area — backed by neuroscience." },
   { title: "Famous IQ Comparisons",        desc: "See how your score compares to well-known figures and historical geniuses." },
@@ -383,8 +384,8 @@ export default function Home() {
           </h1>
 
           <p className="h3 hero-sub">
-            A 30-question cognitive assessment calibrated against 2.4 million tests.
-            No fluff. No estimates. Your actual score.
+            30 questions across 6 cognitive dimensions — designed around
+            standardised assessment formats. No fluff. Your actual score.
           </p>
 
           <div className="h4 hero-ctas">
@@ -400,7 +401,7 @@ export default function Home() {
             marginTop: 28, fontSize: 11, letterSpacing: "0.08em",
             color: "#555", textShadow: "0 1px 4px rgba(0,0,0,0.8)",
           }}>
-            2.4M tests completed · Results in 15 min · No signup required
+            30 questions · 6 dimensions · ~15 min · No signup required
           </p>
         </div>
       </section>
@@ -409,10 +410,10 @@ export default function Home() {
       <div style={{ background: "#111", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #1a1a1a" }}>
         <div className="stats-grid">
           {[
-            { value: 2.4, suffix: "M+", decimals: 1, label: "Tests completed" },
-            { value: 98,  suffix: "%",              label: "Accuracy rate" },
-            { value: 15,  suffix: " min",           label: "Average duration" },
-            { value: 4.9, suffix: "★", decimals: 1, label: "User rating" },
+            { value: 30,  suffix: "",       label: "Questions" },
+            { value: 6,   suffix: "",       label: "Cognitive dimensions" },
+            { value: 15,  suffix: " min",   label: "Average duration" },
+            { value: 1.99, suffix: "€", decimals: 2, label: "Full report" },
           ].map((s, i) => (
             <div key={i} className="stat-cell reveal" style={{ transitionDelay: `${i * 60}ms` }}>
               <div style={{ fontSize: 32, fontWeight: 500, color: "#c9a96e", fontVariantNumeric: "tabular-nums", marginBottom: 6 }}>
@@ -521,7 +522,7 @@ export default function Home() {
           <div className="reveal sec-hd">
             <p className="label">Premium Report</p>
             <h2 className="sec-title">Everything in the full report</h2>
-            <p className="sec-sub">One-time payment · €4.99 · Instant access</p>
+            <p className="sec-sub">One-time payment · €1.99 · Instant access</p>
           </div>
           <div className="features-grid">
             {FEATURES.map((f, i) => (
@@ -583,8 +584,8 @@ export default function Home() {
                 </span>
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 8 }}>
-                <span style={{ fontSize: 14, textDecoration: "line-through", color: "#444" }}>€9.99</span>
-                <span style={{ fontSize: 48, fontWeight: 300, letterSpacing: "-0.03em" }}>€4.99</span>
+                <span style={{ fontSize: 14, textDecoration: "line-through", color: "#444" }}>€3.99</span>
+                <span style={{ fontSize: 48, fontWeight: 300, letterSpacing: "-0.03em" }}>€1.99</span>
               </div>
               <p style={{ fontSize: 13, color: "#6b6b6b", lineHeight: 1.65, marginBottom: 28 }}>
                 Complete cognitive profile with everything you need.
@@ -612,7 +613,7 @@ export default function Home() {
               Ready to discover<br />your true IQ?
             </h2>
             <p style={{ fontSize: 14, color: "#6b6b6b", lineHeight: 1.7, marginBottom: 32, maxWidth: 360 }}>
-              No registration required. Results in 15 minutes. Trusted by 2.4 million people.
+              No registration required. Results in ~15 minutes. Based on standardised cognitive assessment formats.
             </p>
             <button onClick={() => router.push("/test")} className="btn btn-gold">
               Begin the Test — Free
@@ -630,7 +631,12 @@ export default function Home() {
         <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Real<span style={{ color: "#c9a96e" }}>IQ</span>Test
         </span>
-        <span style={{ fontSize: 12, color: "#444" }}>© 2026 RealIQTest · Privacy · Terms</span>
+        <span style={{ fontSize: 12, color: "#444" }}>
+          © 2026 RealIQTest ·{" "}
+          <Link href="/privacy" style={{ color: "#6b6b6b", textDecoration: "none" }}>Privacy</Link>
+          {" · "}
+          <Link href="/terms" style={{ color: "#6b6b6b", textDecoration: "none" }}>Terms</Link>
+        </span>
         <span style={{ fontSize: 12, color: "#444" }}>realiqtest.co</span>
       </footer>
 

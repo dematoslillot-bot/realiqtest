@@ -648,21 +648,64 @@ export default function Home() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer style={{
-        display: "flex", flexWrap: "wrap", justifyContent: "space-between",
-        alignItems: "center", padding: "20px 24px", gap: 12,
-        borderTop: `1px solid ${blue2}`, background: "#020408",
-      }}>
-        <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em" }}>
-          Real<span style={{ color: blue, textShadow: `0 0 14px rgba(0,85,255,0.7)` }}>IQ</span>Test
-        </span>
-        <span style={{ fontSize: 12, color: "#1E3460" }}>
-          © 2026 RealIQTest ·{" "}
-          <Link href="/privacy" style={{ color: dim, textDecoration: "none" }}>Privacy</Link>
-          {" · "}
-          <Link href="/terms" style={{ color: dim, textDecoration: "none" }}>Terms</Link>
-        </span>
-        <span style={{ fontSize: 12, color: "#1E3460" }}>realiqtest.co</span>
+      <footer style={{ borderTop: `1px solid ${blue2}`, background: "#020408", padding: "40px 24px 24px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{
+            display: "grid", gap: 32, marginBottom: 36,
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+          }}>
+            <div>
+              <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em", display: "block", marginBottom: 12 }}>
+                Real<span style={{ color: blue, textShadow: `0 0 14px rgba(0,85,255,0.7)` }}>IQ</span>Test
+              </span>
+              <p style={{ fontSize: 12, color: dim, lineHeight: 1.7, maxWidth: 180 }}>
+                Scientifically calibrated cognitive assessment. Free IQ test with premium report.
+              </p>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: cyan, marginBottom: 12 }}>Resources</div>
+              {[
+                { href: "/what-is-iq", label: "What is IQ?" },
+                { href: "/cognitive-dimensions", label: "Cognitive Dimensions" },
+                { href: "/iq-score-ranges", label: "IQ Score Ranges" },
+                { href: "/how-to-improve-iq", label: "How to Improve IQ" },
+                { href: "/sample-questions", label: "Sample Questions" },
+              ].map(l => (
+                <Link key={l.href} href={l.href} style={{ display: "block", fontSize: 13, color: dim, textDecoration: "none", marginBottom: 6 }}>{l.label}</Link>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: cyan, marginBottom: 12 }}>Company</div>
+              {[
+                { href: "/about", label: "About" },
+                { href: "/contact", label: "Contact" },
+                { href: "/faq", label: "FAQ" },
+                { href: "/disclaimer", label: "Disclaimer" },
+                { href: "/privacy", label: "Privacy Policy" },
+                { href: "/terms", label: "Terms" },
+              ].map(l => (
+                <Link key={l.href} href={l.href} style={{ display: "block", fontSize: 13, color: dim, textDecoration: "none", marginBottom: 6 }}>{l.label}</Link>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: cyan, marginBottom: 12 }}>Take the Test</div>
+              <button onClick={() => router.push("/test")} className="btn btn-primary" style={{ fontSize: 11, padding: "12px 20px" }}>
+                Free IQ Test
+              </button>
+              <p style={{ fontSize: 12, color: dim, marginTop: 12, lineHeight: 1.6 }}>
+                30 questions · 6 dimensions<br />~15 min · No signup required
+              </p>
+            </div>
+          </div>
+          <div style={{
+            borderTop: `1px solid ${blue2}`, paddingTop: 18,
+            display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8,
+            fontSize: 12, color: "#1E3460",
+          }}>
+            <span>© 2026 RealIQTest · realiqtest.co</span>
+            <span>For informational purposes only. Not a clinical diagnostic tool.</span>
+          </div>
+        </div>
       </footer>
     </div>
   );

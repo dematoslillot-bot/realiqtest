@@ -13,8 +13,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RealIQTest — Discover Your True Intelligence",
-  description: "Free IQ test with 30 questions across 6 cognitive categories. Get your IQ score instantly.",
+  title: "RealIQTest — Free IQ Test: 30 Questions, 6 Cognitive Dimensions",
+  description: "Take a free IQ test with 30 visual questions across 6 cognitive dimensions. Get your IQ score instantly. Premium detailed report available for €1.99.",
+  keywords: "IQ test, free IQ test, intelligence test, cognitive assessment, Raven matrices, IQ score",
+  authors: [{ name: "RealIQTest", url: "https://realiqtest.co" }],
+  metadataBase: new URL("https://realiqtest.co"),
+  openGraph: {
+    title: "RealIQTest — Free IQ Test",
+    description: "30 visual questions across 6 cognitive dimensions. Discover your true intelligence quotient.",
+    url: "https://realiqtest.co",
+    siteName: "RealIQTest",
+    locale: "en_US",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 export default function RootLayout({

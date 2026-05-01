@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow test session and payment result pages from indexing
+Disallow: /results
+Disallow: /report
+
+# Sitemap
+Sitemap: https://realiqtest.co/sitemap.xml

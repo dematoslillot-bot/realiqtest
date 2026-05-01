@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import ContentShell from "../components/ContentShell";
 
 const blue  = "#0055FF";
@@ -8,7 +8,7 @@ const cyan  = "#00AAFF";
 const blue2 = "rgba(0,85,255,0.18)";
 const dim   = "#3A5A8A";
 
-const FAQS: { q: string; a: string | JSX.Element }[] = [
+const FAQS: { q: string; a: string | ReactNode }[] = [
   {
     q: "How does RealIQTest work?",
     a: `RealIQTest presents 30 questions across 6 cognitive dimensions: Logical Reasoning (Raven matrices), Verbal Intelligence (analogies and vocabulary), Spatial Reasoning (mental rotation), Numerical Ability (number series as bar charts), Working Memory (colour sequences), and Processing Speed (symbol matching). Each question has a time limit. Your score is calculated from the number of correct answers, the difficulty of each question, and your response speed. The final IQ score is normalised to the standard IQ scale (mean 100, standard deviation 15).`,
@@ -91,7 +91,7 @@ const FAQS: { q: string; a: string | JSX.Element }[] = [
   },
 ];
 
-function FAQItem({ q, a, open, onClick }: { q: string; a: string | JSX.Element; open: boolean; onClick: () => void }) {
+function FAQItem({ q, a, open, onClick }: { q: string; a: string | ReactNode; open: boolean; onClick: () => void }) {
   return (
     <div style={{
       border: `1px solid ${open ? "rgba(0,170,255,0.35)" : blue2}`,

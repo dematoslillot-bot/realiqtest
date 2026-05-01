@@ -80,7 +80,7 @@ const FAQS: { q: string; a: string | JSX.Element }[] = [
     a: (
       <p>
         If you experience a technical issue (the test freezes, the timer doesn&apos;t work, the payment doesn&apos;t go through, or you don&apos;t receive your Premium Report), please contact us at{" "}
-        <a href="mailto:support@realiqtest.co" style={{ color: cyan }}>support@realiqtest.co</a>
+        <a href="mailto:supportrealitest@gmail.com" style={{ color: cyan }}>supportrealitest@gmail.com</a>
         {" "}with a description of the problem and the approximate time it occurred. For payment issues, include the email address used for the purchase. We aim to resolve all issues within 24 hours.
       </p>
     ),
@@ -180,7 +180,7 @@ export default function FAQPage() {
         </p>
         <p style={{ fontSize: 14, color: dim, marginBottom: 20, lineHeight: 1.7 }}>
           We read every message. Reach us at{" "}
-          <a href="mailto:support@realiqtest.co" style={{ color: cyan, textDecoration: "underline" }}>support@realiqtest.co</a>
+          <a href="mailto:supportrealitest@gmail.com" style={{ color: cyan, textDecoration: "underline" }}>supportrealitest@gmail.com</a>
           {" "}or use our contact form.
         </p>
         <a href="/contact" style={{

@@ -100,7 +100,7 @@ export default function AboutPage() {
       <Section title="Contact & Feedback">
         <p>
           We are continuously improving the test based on user feedback and psychometric research. If you have questions, suggestions, or concerns, please reach us at{" "}
-          <a href="mailto:support@realiqtest.co" style={{ color: cyan, textDecoration: "underline" }}>support@realiqtest.co</a>
+          <a href="mailto:supportrealitest@gmail.com" style={{ color: cyan, textDecoration: "underline" }}>supportrealitest@gmail.com</a>
           {" "}or via our <a href="/contact" style={{ color: cyan, textDecoration: "underline" }}>contact page</a>.
         </p>
       </Section>

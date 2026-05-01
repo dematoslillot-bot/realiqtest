@@ -137,7 +137,7 @@ export default function ContactPage() {
         {/* Contact details */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 8 }}>
           {[
-            { icon: "✉", title: "Email", info: "support@realiqtest.co", sub: "General enquiries & support", href: "mailto:support@realiqtest.co" },
+            { icon: "✉", title: "Email", info: "supportrealitest@gmail.com", sub: "General enquiries & support", href: "mailto:supportrealitest@gmail.com" },
             { icon: "⏱", title: "Response Time", info: "24–48 hours", sub: "On business days (Mon–Fri)", href: null },
             { icon: "🌍", title: "Location", info: "European Union", sub: "GDPR compliant · Data stays in EU", href: null },
           ].map((card, i) => (

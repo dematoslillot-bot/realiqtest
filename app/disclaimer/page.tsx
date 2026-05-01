@@ -102,7 +102,7 @@ export default function DisclaimerPage() {
       <Section title="8. Contact">
         <p>
           Questions about this disclaimer? Contact us at{" "}
-          <a href="mailto:support@realiqtest.co" style={{ color: cyan, textDecoration: "underline" }}>support@realiqtest.co</a>
+          <a href="mailto:supportrealitest@gmail.com" style={{ color: cyan, textDecoration: "underline" }}>supportrealitest@gmail.com</a>
           {" "}or visit our <a href="/contact" style={{ color: cyan, textDecoration: "underline" }}>contact page</a>.
         </p>
       </Section>

@@ -591,11 +591,6 @@ export default function Home() {
                     <span style={{ color: blue }}>+</span><span>{f}</span>
                   </li>
                 ))}
-                {LOCKED_FEATURES.map(f => (
-                  <li key={f} style={{ display: "flex", gap: 12, fontSize: 13, opacity: 0.2 }}>
-                    <span>+</span><span>{f}</span>
-                  </li>
-                ))}
               </ul>
               <button onClick={() => router.push("/test")} className="btn btn-outline" style={{ width: "100%" }}>Start Free</button>
             </div>

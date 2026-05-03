@@ -80,7 +80,7 @@ export default function CookieBanner() {
       <div style={{ flex: "1 1 360px", maxWidth: 680 }}>
         <p style={{ fontSize: 13, color: "#8AAAD0", lineHeight: 1.65, margin: 0 }}>
           <span style={{ color: "#D6E4FF", fontWeight: 500 }}>We use cookies</span>{" "}
-          to analyse site traffic (Google Analytics) and display relevant advertising (Google AdSense).
+          to analyse site traffic (Google Analytics) and improve your experience.
           By clicking <strong style={{ color: "#D6E4FF" }}>Accept</strong>, you consent to the use of cookies for these purposes.
           You may <strong style={{ color: "#D6E4FF" }}>Reject</strong> non-essential cookies — the test will still work normally.
           See our{" "}

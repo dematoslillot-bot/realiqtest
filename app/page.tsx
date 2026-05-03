@@ -289,8 +289,25 @@ export default function Home() {
   const blue2 = "rgba(0,85,255,0.18)";
   const dim   = "#3A5A8A";
 
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "RealIQTest",
+    "url": "https://realiqtest.co",
+    "description": "Free IQ test with 30 visual questions across 6 cognitive dimensions. Get your IQ score instantly.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://realiqtest.co/test",
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <div style={{ background: "#03050F", color: "#D6E4FF" }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
 
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <nav ref={navRef} style={{

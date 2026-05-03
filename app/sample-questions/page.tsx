@@ -3,6 +3,22 @@ import ContentShell, { Section } from "../components/ContentShell";
 export const metadata = {
   title: "Sample IQ Test Questions — Examples from All 6 Dimensions | RealIQTest",
   description: "See sample questions from all 6 cognitive dimensions of RealIQTest: logical reasoning, verbal, spatial, numerical, working memory, and processing speed — with full explanations.",
+  openGraph: {
+    title: "Sample IQ Test Questions — Examples from All 6 Dimensions",
+    description: "18 sample questions with correct answers and full explanations — 3 per cognitive dimension.",
+  },
+};
+
+const schemaOrg = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Sample IQ Test Questions — Examples from All 6 Cognitive Dimensions",
+  "description": "Sample questions from all 6 cognitive dimensions of RealIQTest with correct answers and detailed explanations.",
+  "url": "https://realiqtest.co/sample-questions",
+  "author": { "@type": "Organization", "name": "RealIQTest" },
+  "publisher": { "@type": "Organization", "name": "RealIQTest", "url": "https://realiqtest.co" },
+  "datePublished": "2026-05-01",
+  "dateModified": "2026-05-03",
 };
 
 const blue  = "#0055FF";
@@ -79,6 +95,10 @@ export default function SampleQuestionsPage() {
       subtitle="Examples from every cognitive dimension — with the correct answer and a full explanation of the reasoning required."
       maxWidth={840}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+      />
       <div style={{
         padding: "16px 20px", marginBottom: 40,
         background: "rgba(0,85,255,0.05)", border: `1px solid ${blue2}`, borderRadius: 6,

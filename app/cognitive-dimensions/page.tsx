@@ -3,6 +3,22 @@ import ContentShell, { Section, InfoCard } from "../components/ContentShell";
 export const metadata = {
   title: "The 6 Cognitive Dimensions Measured by RealIQTest",
   description: "Detailed explanation of the six cognitive dimensions in RealIQTest: Logical Reasoning, Verbal Intelligence, Spatial Reasoning, Numerical Ability, Working Memory, and Processing Speed.",
+  openGraph: {
+    title: "The 6 Cognitive Dimensions of Intelligence — RealIQTest",
+    description: "What each cognitive dimension is, how we measure it, and why it matters for real-world performance.",
+  },
+};
+
+const schemaOrg = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "The 6 Cognitive Dimensions Measured by RealIQTest",
+  "description": "Detailed guide to Logical Reasoning, Verbal Intelligence, Spatial Reasoning, Numerical Ability, Working Memory, and Processing Speed.",
+  "url": "https://realiqtest.co/cognitive-dimensions",
+  "author": { "@type": "Organization", "name": "RealIQTest" },
+  "publisher": { "@type": "Organization", "name": "RealIQTest", "url": "https://realiqtest.co" },
+  "datePublished": "2026-05-01",
+  "dateModified": "2026-05-03",
 };
 
 export default function CognitiveDimensionsPage() {
@@ -86,6 +102,10 @@ export default function CognitiveDimensionsPage() {
       subtitle="RealIQTest measures six independent facets of intelligence. Here is what each one is, how we measure it, and why it matters."
       maxWidth={860}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+      />
       {/* Overview grid */}
       <div style={{
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",

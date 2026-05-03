@@ -128,6 +128,21 @@ function FAQItem({ q, a, open, onClick }: { q: string; a: string | ReactNode; op
   );
 }
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "How does RealIQTest work?", "acceptedAnswer": { "@type": "Answer", "text": "RealIQTest presents 30 questions across 6 cognitive dimensions: Logical Reasoning (Raven matrices), Verbal Intelligence, Spatial Reasoning (mental rotation), Numerical Ability (number series), Working Memory (colour sequences), and Processing Speed. Each question has a time limit. Your score is normalised to the standard IQ scale (mean 100, SD 15)." } },
+    { "@type": "Question", "name": "How is my IQ score calculated?", "acceptedAnswer": { "@type": "Answer", "text": "Your raw score is the sum of weighted correct answers (easy=1×, medium=1.5×, hard=2×) with a small speed bonus. It is normalised using 2.4 million test sessions and converted to the IQ scale (mean 100, SD 15)." } },
+    { "@type": "Question", "name": "How accurate is an online IQ test?", "acceptedAnswer": { "@type": "Answer", "text": "Our scores correlate at approximately r=0.72–0.78 with professionally administered tests. Treat your score as a directional estimate, not a clinical measurement. For formal assessments, consult a qualified psychologist." } },
+    { "@type": "Question", "name": "How long does the test take?", "acceptedAnswer": { "@type": "Answer", "text": "The test consists of 30 questions with time limits ranging from 8 to 35 seconds. Most users complete the test in 12–18 minutes." } },
+    { "@type": "Question", "name": "Is the test free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The full 30-question test is completely free with no registration required. Your overall IQ score and percentile are shown at no cost. You may optionally unlock a detailed Premium Report for €1.99." } },
+    { "@type": "Question", "name": "Is my data private?", "acceptedAnswer": { "@type": "Answer", "text": "We do not require account creation or personal information to take the free test. We collect anonymous test data to improve calibration. Payment is processed securely via Stripe. We do not sell your data." } },
+    { "@type": "Question", "name": "Can I retake the test?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, you can retake the test as many times as you like. Scores typically vary by ±5–15 points across sittings due to fatigue, familiarity with question types, and random variation." } },
+    { "@type": "Question", "name": "Can children take the test?", "acceptedAnswer": { "@type": "Answer", "text": "The test is calibrated for adults aged 18 and over. Children's scores may not accurately reflect their cognitive level relative to their age group. Age-normed tests like the WISC-V are more appropriate for children." } },
+  ],
+};
+
 export default function FAQPage() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
@@ -138,6 +153,10 @@ export default function FAQPage() {
       subtitle="Everything you need to know about RealIQTest, our scoring methodology, and your results."
       maxWidth={820}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* Quick links */}
       <div style={{
         display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 40,

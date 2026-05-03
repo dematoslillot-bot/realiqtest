@@ -1,8 +1,24 @@
 import ContentShell, { Section, InfoCard } from "../components/ContentShell";
 
 export const metadata = {
-  title: "How to Improve Your IQ — Science-Backed Strategies",
+  title: "How to Improve Your IQ — Science-Backed Strategies | RealIQTest",
   description: "Evidence-based methods to improve each of the 6 cognitive dimensions: logical reasoning, verbal skills, spatial ability, numerical reasoning, working memory, and processing speed.",
+  openGraph: {
+    title: "How to Improve Your IQ — Science-Backed Strategies",
+    description: "Sleep, exercise, working memory training, spatial practice — the evidence-based guide to cognitive improvement.",
+  },
+};
+
+const schemaOrg = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How to Improve Your IQ — Science-Backed Strategies",
+  "description": "Evidence-based methods to improve each of the six cognitive dimensions measured by IQ tests.",
+  "url": "https://realiqtest.co/how-to-improve-iq",
+  "author": { "@type": "Organization", "name": "RealIQTest" },
+  "publisher": { "@type": "Organization", "name": "RealIQTest", "url": "https://realiqtest.co" },
+  "datePublished": "2026-05-01",
+  "dateModified": "2026-05-03",
 };
 
 export default function HowToImproveIQPage() {
@@ -16,6 +32,10 @@ export default function HowToImproveIQPage() {
       subtitle="Science-backed strategies for developing each cognitive dimension. Based on peer-reviewed research in cognitive training, neuroplasticity, and lifestyle neuroscience."
       maxWidth={820}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+      />
       <Section title="Can You Actually Improve Your IQ?">
         <p style={{ marginBottom: 14 }}>
           This is one of the most debated questions in cognitive psychology. The honest answer is: <strong style={{ color: "#D6E4FF" }}>it depends on what you mean by &quot;improve&quot;</strong>.

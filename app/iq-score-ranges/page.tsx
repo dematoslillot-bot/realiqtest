@@ -3,6 +3,22 @@ import ContentShell, { Section, Table } from "../components/ContentShell";
 export const metadata = {
   title: "IQ Score Ranges — What Does Your Score Mean? | RealIQTest",
   description: "Complete IQ score ranges table: below 70 to 130+. Understand what each IQ range means, population percentiles, famous examples, and see the bell curve distribution.",
+  openGraph: {
+    title: "IQ Score Ranges — What Does Your Score Mean?",
+    description: "Every IQ score range explained: from below 70 to 130+. Population frequencies, what each range means, and important caveats.",
+  },
+};
+
+const schemaOrg = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "IQ Score Ranges — What Does Your Score Mean?",
+  "description": "Complete IQ score ranges table with population percentiles, descriptions, and bell curve distribution.",
+  "url": "https://realiqtest.co/iq-score-ranges",
+  "author": { "@type": "Organization", "name": "RealIQTest" },
+  "publisher": { "@type": "Organization", "name": "RealIQTest", "url": "https://realiqtest.co" },
+  "datePublished": "2026-05-01",
+  "dateModified": "2026-05-03",
 };
 
 /* Bell curve SVG — pure SVG Gaussian distribution with score marker */
@@ -169,6 +185,10 @@ export default function IQScoreRangesPage() {
       subtitle="What does your IQ score actually mean? A complete breakdown of every IQ range, its population frequency, and what it indicates about cognitive ability."
       maxWidth={860}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+      />
       {/* Bell curve */}
       <Section title="The Bell Curve Distribution">
         <p style={{ marginBottom: 20 }}>
@@ -237,11 +257,27 @@ export default function IQScoreRangesPage() {
       <Section title="Important Caveats">
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 10 }}>
           <li>IQ score ranges are <strong style={{ color: "#D6E4FF" }}>descriptive, not prescriptive</strong>. They describe group averages, not individual destinies.</li>
-          <li>Online tests, including ours, have a <strong style={{ color: "#D6E4FF" }}>measurement error of ±8–15 points</strong>. Your true score likely falls within a range around your result.</li>
+          <li>Online tests, including ours, have a <strong style={{ color: "#D6E4FF" }}>measurement error of ±8–15 points</strong>. Your true score likely falls within a range around your result — treat it as a range, not a single precise number.</li>
           <li>IQ measures a subset of cognitive abilities. <strong style={{ color: "#D6E4FF" }}>Emotional intelligence, creativity, practical wisdom, and character</strong> are not captured.</li>
           <li>IQ scores are <strong style={{ color: "#D6E4FF" }}>not fully fixed</strong>. Lifestyle, education, and cognitive training all influence cognitive performance over time.</li>
           <li>Never make major life decisions solely based on an online IQ score. For clinical purposes, consult a qualified psychologist.</li>
+          <li>Score inflation is common in online tests. Many popular IQ websites report scores 10–25 points higher than a user&apos;s true assessed level. Our calibration prioritises accuracy over flattery.</li>
         </ul>
+      </Section>
+
+      <Section title="How to Use Your Score Constructively">
+        <p style={{ marginBottom: 14 }}>
+          Whether your score is high, average, or lower than expected, the most useful question is not &quot;what does this number mean about me?&quot; but rather &quot;which of my cognitive dimensions need development, and how do I improve them?&quot;
+        </p>
+        <p style={{ marginBottom: 14 }}>
+          IQ is not a verdict. It is a snapshot of current cognitive performance under the conditions of this test, on this day. Many factors temporarily reduce scores: fatigue, anxiety, distraction, illness, or simply unfamiliarity with the test format. If your score surprised you negatively, consider taking the test again after a full night&apos;s sleep, in a quiet environment, with full attention.
+        </p>
+        <p style={{ marginBottom: 14 }}>
+          If your score surprised you positively, resist the temptation to over-identify with the number. The most productive use of an IQ result is to identify your cognitive strengths (which dimensions scored highest?) and areas for development (which scored lowest?). Our <a href="/how-to-improve-iq" style={{ color: cyan }}>cognitive improvement guide</a> provides evidence-based strategies for each dimension.
+        </p>
+        <p>
+          Finally, remember that IQ tests measure a specific, narrow slice of human cognition. The full spectrum of human intelligence — creativity, social intelligence, emotional depth, practical skill, artistic ability — is not captured by any IQ score. For a deeper understanding of the six cognitive abilities our test measures, see our <a href="/cognitive-dimensions" style={{ color: cyan }}>Cognitive Dimensions guide</a>.
+        </p>
       </Section>
 
       <div style={{ marginTop: 40, display: "flex", gap: 16, flexWrap: "wrap" }}>

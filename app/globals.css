@@ -343,12 +343,112 @@ body {
   .how-grid      { grid-template-columns: 1fr 1fr; align-items: start; }
 }
 
+/* ── Animated rainbow gradient text ────────────────────────────────────── */
+
+@keyframes rainbow-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+@keyframes text-breathe {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(0,85,255,0.55)) drop-shadow(0 0 22px rgba(0,170,255,0.25)); }
+  50%       { filter: drop-shadow(0 0 28px rgba(0,170,255,1))   drop-shadow(0 0 55px rgba(150,80,255,0.45)); }
+}
+
+.text-gradient-anim {
+  background: linear-gradient(
+    130deg,
+    #0055FF 0%,
+    #00AAFF 20%,
+    #9B59B6 40%,
+    #FF6B9D 60%,
+    #00CCFF 80%,
+    #0055FF 100%
+  );
+  background-size: 320% 320%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: rainbow-shift 4.5s ease-in-out infinite, text-breathe 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* ── Brain logo ────────────────────────────────────────────────────────── */
+
+@keyframes brain-pulse {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(0,85,255,0.9));  opacity: 0.9; }
+  50%       { filter: drop-shadow(0 0 14px rgba(0,170,255,1)) drop-shadow(0 0 28px rgba(0,85,255,0.55)); opacity: 1; }
+}
+
+/* ── Ripple ────────────────────────────────────────────────────────────── */
+
+@keyframes ripple-out {
+  from { transform: scale(0); opacity: 0.55; }
+  to   { transform: scale(5); opacity: 0; }
+}
+
+/* ── 3D tilt cards ─────────────────────────────────────────────────────── */
+
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.23,1,0.32,1), border-color 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+/* ── Custom cursor ─────────────────────────────────────────────────────── */
+
+@media (pointer: fine) {
+  body.has-cursor,
+  body.has-cursor * { cursor: none !important; }
+}
+
+.cursor-dot {
+  position: fixed;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #0055FF;
+  box-shadow: 0 0 16px rgba(0,85,255,1), 0 0 32px rgba(0,85,255,0.5);
+  pointer-events: none;
+  z-index: 999999;
+  transform: translate(-50%, -50%);
+  will-change: left, top;
+  top: -20px; left: -20px;
+}
+
+.cursor-ring {
+  position: fixed;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,85,255,0.55);
+  pointer-events: none;
+  z-index: 999998;
+  transform: translate(-50%, -50%);
+  will-change: left, top;
+  top: -20px; left: -20px;
+  transition: width 0.2s, height 0.2s, border-color 0.2s;
+}
+
+/* ── Neural brain visualization ────────────────────────────────────────── */
+
+.hero-brain-wrap {
+  display: none;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 /* ── Reduced motion ────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .h1,.h2,.h3,.h4    { animation: none; opacity: 1; }
-  .reveal             { opacity: 1; transform: none; transition: none; }
-  .btn-primary        { animation: none; }
-  .label              { animation: none; }
-  .hero-glow          { animation: none; }
+  .h1,.h2,.h3,.h4        { animation: none; opacity: 1; }
+  .reveal                 { opacity: 1; transform: none; transition: none; }
+  .btn-primary            { animation: none; }
+  .label                  { animation: none; }
+  .hero-glow              { animation: none; }
+  .text-gradient-anim     { animation: none; background: #0055FF; -webkit-text-fill-color: #0055FF; filter: none; }
+  .card-3d                { transform: none !important; }
+  .cursor-dot, .cursor-ring { display: none; }
+}
+
+@media (min-width: 1024px) {
+  .hero-brain-wrap { display: block; }
 }

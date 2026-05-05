@@ -359,8 +359,10 @@ function Dim3D({ index }: { index: number }) {
     canvas.height = H * dpr;
     canvas.style.width  = W + "px";
     canvas.style.height = H + "px";
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const ctxRaw = canvas.getContext("2d");
+    if (!ctxRaw) return;
+    // assign to a const so TS narrowing propagates into nested functions
+    const ctx: CanvasRenderingContext2D = ctxRaw;
     ctx.scale(dpr, dpr);
 
     const cx = W / 2, cy = H / 2;

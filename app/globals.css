@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /* ── Design tokens ─────────────────────────────────────────────────────────
@@ -210,12 +210,19 @@ body {
 /* ── Hero ──────────────────────────────────────────────────────────────── */
 
 .hero-title {
-  font-size: 42px;
-  font-weight: 300;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(44px, 9vw, 108px);
+  font-weight: 400;
   letter-spacing: -0.03em;
-  line-height: 1.05;
-  margin-bottom: 20px;
-  text-shadow: 0 0 60px rgba(0,85,255,0.35), 0 2px 32px rgba(0,0,0,0.9);
+  line-height: 1.0;
+  margin-bottom: 24px;
+  text-shadow: none;
+}
+.hero-discover {
+  display: block;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.04em;
 }
 .hero-sub {
   font-size: 15px;
@@ -269,7 +276,11 @@ body {
 
 /* ── Grids ─────────────────────────────────────────────────────────────── */
 
-.pillars-grid,
+.pillars-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
 .features-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -281,6 +292,28 @@ body {
   grid-template-columns: 1fr;
   gap: 1px;
   background: rgba(0,85,255,0.10);
+}
+
+/* ── Pillar cell (card + 3D object below) ──────────────────────────── */
+
+.pillar-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pillar-cell .card {
+  width: 100%;
+}
+.dim-3d-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  width: 100%;
+  background: rgba(3,5,20,0.6);
+  border: 1px solid rgba(0,85,255,0.14);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
 }
 .how-grid {
   display: grid;
@@ -327,7 +360,6 @@ body {
   .canvas-wrap { opacity: 1; }
   .nav-links   { display: flex !important; }
 
-  .hero-title { font-size: 80px; }
   .hero-sub   { font-size: 16px; }
   .hero-ctas  { flex-direction: row; width: auto; max-width: none; }
   .hero-ctas .btn { width: auto; }
@@ -337,7 +369,7 @@ body {
 
   .section    { padding: 96px 32px; }
 
-  .pillars-grid  { grid-template-columns: repeat(3, 1fr); }
+  .pillars-grid  { grid-template-columns: repeat(3, 1fr); gap: 20px; }
   .features-grid { grid-template-columns: repeat(2, 1fr); }
   .pricing-grid  { grid-template-columns: repeat(2, 1fr); }
   .how-grid      { grid-template-columns: 1fr 1fr; align-items: start; }
@@ -369,8 +401,10 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: rainbow-shift 4.5s ease-in-out infinite, text-breathe 3s ease-in-out infinite;
+  /* text-breathe removed — filter:drop-shadow() breaks background-clip:text in Chrome */
+  animation: rainbow-shift 4.5s ease-in-out infinite;
   display: inline-block;
+  font-weight: 400;
 }
 
 /* ── Brain logo ────────────────────────────────────────────────────────── */
@@ -428,12 +462,16 @@ body {
   transition: width 0.2s, height 0.2s, border-color 0.2s;
 }
 
-/* ── Neural brain visualization ────────────────────────────────────────── */
+/* ── Neural brain visualization — absolute right, doesn't affect centering ── */
 
-.hero-brain-wrap {
+.hero-brain-abs {
   display: none;
+  position: absolute;
+  right: 6%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.7;
   pointer-events: none;
-  flex-shrink: 0;
 }
 
 /* ── Reduced motion ────────────────────────────────────────────────────── */
@@ -444,11 +482,11 @@ body {
   .btn-primary            { animation: none; }
   .label                  { animation: none; }
   .hero-glow              { animation: none; }
-  .text-gradient-anim     { animation: none; background: #0055FF; -webkit-text-fill-color: #0055FF; filter: none; }
+  .text-gradient-anim     { animation: none; background: #0055FF; -webkit-text-fill-color: #0055FF; }
   .card-3d                { transform: none !important; }
   .cursor-dot, .cursor-ring { display: none; }
 }
 
-@media (min-width: 1024px) {
-  .hero-brain-wrap { display: block; }
+@media (min-width: 1100px) {
+  .hero-brain-abs { display: block; }
 }

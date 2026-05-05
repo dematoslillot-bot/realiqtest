@@ -834,10 +834,46 @@ export default function Home() {
               <span style={{ width:28, height:1, background:`linear-gradient(90deg, ${cyan}, transparent)` }} />
             </div>
 
-            {/* Title — Syne font, "Discover your" bold white, "true intelligence" gradient */}
+            {/* Title — "Discover your" bold white, "true intelligence" via SVG gradient fill
+                SVG bypass: background-clip:text fails in Chrome when ancestors animate.
+                SVG gradient fill is 100% reliable across all browsers. */}
             <h1 className="h2 hero-title">
               <span className="hero-discover">Discover your</span>
-              <span className="text-gradient-anim">true intelligence</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 720 66"
+                style={{ width:"100%", maxWidth:720, height:"auto", display:"block", margin:"4px auto 0", overflow:"visible" }}
+                aria-label="true intelligence"
+                role="img"
+              >
+                <defs>
+                  <linearGradient id="hero-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%"   stopColor="#0055FF">
+                      <animate attributeName="stop-color" values="#0055FF;#00AAFF;#9B59B6;#FF6B9D;#00CCFF;#0055FF" dur="5s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="33%"  stopColor="#9B59B6">
+                      <animate attributeName="stop-color" values="#9B59B6;#FF6B9D;#00CCFF;#0055FF;#00AAFF;#9B59B6" dur="5s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="66%"  stopColor="#FF6B9D">
+                      <animate attributeName="stop-color" values="#FF6B9D;#00CCFF;#0055FF;#00AAFF;#9B59B6;#FF6B9D" dur="5s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="100%" stopColor="#00CCFF">
+                      <animate attributeName="stop-color" values="#00CCFF;#0055FF;#00AAFF;#9B59B6;#FF6B9D;#00CCFF" dur="5s" repeatCount="indefinite" />
+                    </stop>
+                  </linearGradient>
+                </defs>
+                <text
+                  x="50%" y="54"
+                  textAnchor="middle"
+                  fill="url(#hero-grad)"
+                  fontFamily="'Syne', sans-serif"
+                  fontWeight="400"
+                  fontSize="52"
+                  letterSpacing="-2"
+                >
+                  true intelligence
+                </text>
+              </svg>
             </h1>
 
             <p className="h3 hero-sub">

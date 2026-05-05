@@ -188,63 +188,16 @@ function BrainLogo() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   CUSTOM CURSOR
+   CSS SPHERE — Spatial Reasoning 3D replacement (pure CSS, no canvas)
 ══════════════════════════════════════════════════════════════════════════ */
 
-function CustomCursor() {
-  const dotRef  = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
-  const posRef  = useRef({ x: -100, y: -100 });
-  const ringPos = useRef({ x: -100, y: -100 });
-  const rafRef  = useRef(0);
-
-  useEffect(() => {
-    const isTouch = window.matchMedia("(pointer: coarse)").matches;
-    if (isTouch) return;
-    document.body.classList.add("has-cursor");
-    const dot = dotRef.current, ring = ringRef.current;
-    if (!dot || !ring) return;
-
-    const onMove = (e: MouseEvent) => {
-      posRef.current = { x: e.clientX, y: e.clientY };
-      dot.style.left = e.clientX + "px"; dot.style.top = e.clientY + "px";
-    };
-    const animate = () => {
-      const { x, y } = posRef.current;
-      const rx = ringPos.current.x + (x - ringPos.current.x) * 0.14;
-      const ry = ringPos.current.y + (y - ringPos.current.y) * 0.14;
-      ringPos.current = { x: rx, y: ry };
-      ring.style.left = rx + "px"; ring.style.top = ry + "px";
-      rafRef.current = requestAnimationFrame(animate);
-    };
-    const onDown = () => {
-      dot.style.width = "6px"; dot.style.height = "6px";
-      ring.style.width = "20px"; ring.style.height = "20px";
-      ring.style.borderColor = "rgba(0,170,255,0.9)";
-    };
-    const onUp = () => {
-      dot.style.width = "10px"; dot.style.height = "10px";
-      ring.style.width = "32px"; ring.style.height = "32px";
-      ring.style.borderColor = "rgba(0,85,255,0.55)";
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("mouseup", onUp);
-    rafRef.current = requestAnimationFrame(animate);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mousedown", onDown);
-      window.removeEventListener("mouseup", onUp);
-      cancelAnimationFrame(rafRef.current);
-      document.body.classList.remove("has-cursor");
-    };
-  }, []);
-
+function CssSphere() {
   return (
-    <>
-      <div ref={dotRef}  className="cursor-dot"  aria-hidden="true" />
-      <div ref={ringRef} className="cursor-ring" aria-hidden="true" />
-    </>
+    <div className="css-sphere-container" aria-hidden="true">
+      <div className="css-sphere">
+        <div className="css-sphere-highlight" />
+      </div>
+    </div>
   );
 }
 
@@ -785,7 +738,7 @@ export default function Home() {
           io.unobserve(e.target);
         }
       }),
-      { threshold: 0.08, rootMargin: "0px 0px -48px 0px" }
+      { threshold: 0.10, rootMargin: "0px 0px -24px 0px" }
     );
     document.querySelectorAll(SELECTORS).forEach(el => io.observe(el));
     return () => io.disconnect();
@@ -811,7 +764,6 @@ export default function Home() {
 
   return (
     <div style={{ background: "#03050F", color: "#D6E4FF" }}>
-      <CustomCursor />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
 
       {/* ── Nav ── */}
@@ -983,9 +935,9 @@ export default function Home() {
                     <div style={{ fontSize:13, color:dim, lineHeight:1.65 }}>{p.desc}</div>
                   </div>
 
-                  {/* 3D canvas object — large & visible, reacts to hover */}
+                  {/* 3D object — CSS sphere for Spatial (index 2), canvas for others */}
                   <div className="dim-3d-container">
-                    <Dim3D index={i} />
+                    {i === 2 ? <CssSphere /> : <Dim3D index={i} />}
                   </div>
                 </div>
               );

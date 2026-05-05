@@ -77,6 +77,38 @@ body {
   50%       { opacity: 1.00; }
 }
 
+@keyframes hero-title-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes btn-shimmer {
+  0%        { left: -80%; }
+  40%, 100% { left: 130%; }
+}
+
+@keyframes sphere-rotate-lines {
+  from { transform: translateX(0); }
+  to   { transform: translateX(50%); }
+}
+
+@keyframes sphere-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 28px rgba(0,85,255,0.75),
+      0 0 55px rgba(0,85,255,0.3),
+      inset -10px -12px 22px rgba(0,0,60,0.8),
+      inset 6px 6px 18px rgba(0,170,255,0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 48px rgba(0,85,255,0.95),
+      0 0 90px rgba(0,170,255,0.45),
+      inset -10px -12px 22px rgba(0,0,60,0.8),
+      inset 6px 6px 18px rgba(0,170,255,0.55);
+  }
+}
+
 .animate-fade-up   { animation: fade-up  0.55s cubic-bezier(0.22,1,0.36,1) both; }
 .animate-scale-in  { animation: scale-in 0.45s cubic-bezier(0.22,1,0.36,1) both; }
 .animate-flip-out  { animation: flip-out 0.22s ease-in  both; }
@@ -128,33 +160,33 @@ body {
   100% { opacity: 1;   transform: translateX(0)    skewX(0deg);  }
 }
 
-/* 0 — Logical: slides from the left */
+/* 0 — Logical: slides from the left — strong displacement, spring ease */
 .reveal-left {
   opacity: 0;
-  transform: translateX(-64px);
+  transform: translateX(-88px);
   transition:
-    opacity   0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity   0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .reveal-left.visible { opacity: 1; transform: translateX(0); }
 
-/* 1 — Verbal: slides from the right */
+/* 1 — Verbal: slides from the right — mirror of logical */
 .reveal-right {
   opacity: 0;
-  transform: translateX(64px);
+  transform: translateX(88px);
   transition:
-    opacity   0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity   0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .reveal-right.visible { opacity: 1; transform: translateX(0); }
 
-/* 2 — Spatial: scale pop with spring overshoot */
+/* 2 — Spatial: pops in from small with spring overshoot */
 .reveal-scale {
   opacity: 0;
-  transform: scale(0.7);
+  transform: scale(0.55);
   transition:
-    opacity   0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
-    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity   0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .reveal-scale.visible { opacity: 1; transform: scale(1); }
 
@@ -217,6 +249,20 @@ body {
   box-shadow: 0 0 20px rgba(0,85,255,0.55), 0 4px 20px rgba(0,85,255,0.30),
               inset 0 1px 0 rgba(255,255,255,0.12);
   animation: pulse-ring 2.4s ease-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+/* Shimmer sweep — light races left→right every 2 seconds */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.32), transparent);
+  animation: btn-shimmer 2s ease-in-out infinite;
+  pointer-events: none;
 }
 .btn-primary:hover  {
   transform: scale(1.04);
@@ -298,12 +344,14 @@ body {
 
 .hero-title {
   font-family: 'Syne', sans-serif;
-  font-size: clamp(44px, 9vw, 108px);
+  font-size: clamp(30px, 5.5vw, 68px);
   font-weight: 400;
   letter-spacing: -0.03em;
-  line-height: 1.0;
+  line-height: 1.05;
   margin-bottom: 24px;
   text-shadow: none;
+  /* Override .h2 fade-up to remove transform — transform on parent breaks background-clip:text in Chrome */
+  animation: hero-title-fadein 0.8s ease 0.25s both !important;
 }
 .hero-discover {
   display: block;
@@ -381,7 +429,7 @@ body {
   background: rgba(0,85,255,0.10);
 }
 
-/* ── Pillar cell (card + 3D object below) ──────────────────────────── */
+/* ── Pillar cell — mobile: stacked, desktop: [text | 3D] side-by-side ── */
 
 .pillar-cell {
   display: flex;
@@ -391,16 +439,81 @@ body {
 .pillar-cell .card {
   width: 100%;
 }
+/* 3D objects hidden on mobile */
 .dim-3d-container {
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
-  padding: 0;
-  width: 100%;
+  overflow: hidden;
   background: rgba(3,5,20,0.6);
-  border: 1px solid rgba(0,85,255,0.14);
-  border-top: none;
-  border-radius: 0 0 6px 6px;
+}
+
+/* ── CSS Sphere (Spatial Reasoning replacement) ──────────────────────── */
+
+.css-sphere-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 160px;
+}
+.css-sphere {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #00DDFF, #0055FF 42%, #001050 78%);
+  box-shadow:
+    0 0 28px rgba(0,85,255,0.75),
+    0 0 55px rgba(0,85,255,0.3),
+    inset -10px -12px 22px rgba(0,0,60,0.8),
+    inset 6px 6px 18px rgba(0,170,255,0.35);
+  position: relative;
+  overflow: hidden;
+  animation: sphere-pulse 3s ease-in-out infinite;
+}
+/* Vertical lines sweeping — simulates rotation */
+.css-sphere::before {
+  content: '';
+  position: absolute;
+  width: 300%;
+  height: 100%;
+  left: -200%;
+  top: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 16px,
+    rgba(0,170,255,0.20) 16px,
+    rgba(0,170,255,0.20) 18px
+  );
+  animation: sphere-rotate-lines 3.5s linear infinite;
+}
+/* Horizontal latitude lines */
+.css-sphere::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 300%;
+  left: 0;
+  top: -100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 12px,
+    rgba(0,170,255,0.13) 12px,
+    rgba(0,170,255,0.13) 14px
+  );
+}
+.css-sphere-highlight {
+  position: absolute;
+  top: 11px;
+  left: 16px;
+  width: 22px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.55), transparent 70%);
+  pointer-events: none;
+  z-index: 1;
 }
 .how-grid {
   display: grid;
@@ -460,6 +573,25 @@ body {
   .features-grid { grid-template-columns: repeat(2, 1fr); }
   .pricing-grid  { grid-template-columns: repeat(2, 1fr); }
   .how-grid      { grid-template-columns: 1fr 1fr; align-items: start; }
+
+  /* ── Pillar: [card text | 3D object] side-by-side on desktop ── */
+  .pillar-cell {
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .pillar-cell .card {
+    flex: 1;
+    border-radius: 6px 0 0 6px !important;
+    border-right: none;
+  }
+  .dim-3d-container {
+    display: flex;
+    width: 160px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,85,255,0.14);
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+  }
 }
 
 /* ── Animated rainbow gradient text ────────────────────────────────────── */
@@ -488,9 +620,12 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  /* text-breathe removed — filter:drop-shadow() breaks background-clip:text in Chrome */
+  color: transparent;
   animation: rainbow-shift 4.5s ease-in-out infinite;
-  display: inline-block;
+  /* display:block + fit-content: prevents parent transform from breaking background-clip:text */
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
   font-weight: 400;
 }
 
@@ -565,6 +700,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .h1,.h2,.h3,.h4        { animation: none; opacity: 1; }
+  .hero-title             { animation: none !important; opacity: 1; }
   .reveal                 { opacity: 1; transform: none; transition: none; }
   .reveal-left, .reveal-right, .reveal-scale,
   .reveal-bounce, .reveal-glitch, .reveal-blur {
@@ -572,11 +708,13 @@ body {
     transition: none; animation: none;
   }
   .btn-primary            { animation: none; }
+  .btn-primary::after     { animation: none; display: none; }
   .label                  { animation: none; }
   .hero-glow              { animation: none; }
-  .text-gradient-anim     { animation: none; background: #0055FF; -webkit-text-fill-color: #0055FF; }
+  .text-gradient-anim     { animation: none; background: #0055FF; -webkit-text-fill-color: #0055FF; color: #0055FF; }
   .card-3d                { transform: none !important; }
-  .cursor-dot, .cursor-ring { display: none; }
+  .css-sphere             { animation: none; }
+  .css-sphere::before     { animation: none; }
 }
 
 @media (min-width: 1100px) {

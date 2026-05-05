@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /* ── Design tokens ─────────────────────────────────────────────────────────
@@ -90,6 +90,43 @@ body {
 @keyframes sphere-rotate-lines {
   from { transform: translateX(0); }
   to   { transform: translateX(50%); }
+}
+
+/* CSS custom property for smooth sphere light animation */
+@property --slx {
+  syntax: '<percentage>';
+  initial-value: 38%;
+  inherits: false;
+}
+@property --sly {
+  syntax: '<percentage>';
+  initial-value: 32%;
+  inherits: false;
+}
+
+@keyframes sphere-light {
+  0%   { --slx: 38%; --sly: 32%; }
+  25%  { --slx: 70%; --sly: 20%; }
+  50%  { --slx: 72%; --sly: 60%; }
+  75%  { --slx: 30%; --sly: 68%; }
+  100% { --slx: 38%; --sly: 32%; }
+}
+
+@keyframes ring-spin-a {
+  from { transform: rotateX(72deg) rotateZ(0deg); }
+  to   { transform: rotateX(72deg) rotateZ(360deg); }
+}
+@keyframes ring-spin-b {
+  from { transform: rotateY(70deg) rotateX(15deg) rotateZ(0deg); }
+  to   { transform: rotateY(70deg) rotateX(15deg) rotateZ(360deg); }
+}
+@keyframes dot-orbit-a {
+  from { transform: rotateX(72deg) rotateZ(0deg) translateX(56px) rotateZ(0deg) rotateX(-72deg); }
+  to   { transform: rotateX(72deg) rotateZ(360deg) translateX(56px) rotateZ(-360deg) rotateX(-72deg); }
+}
+@keyframes dot-orbit-b {
+  from { transform: rotateY(70deg) rotateX(15deg) rotateZ(0deg) translateX(54px) rotateZ(0deg) rotateX(-15deg) rotateY(-70deg); }
+  to   { transform: rotateY(70deg) rotateX(15deg) rotateZ(360deg) translateX(54px) rotateZ(-360deg) rotateX(-15deg) rotateY(-70deg); }
 }
 
 @keyframes sphere-pulse {
@@ -447,7 +484,7 @@ body {
   background: rgba(3,5,20,0.6);
 }
 
-/* ── CSS Sphere (Spatial Reasoning replacement) ──────────────────────── */
+/* ── CSS Sphere (Spatial Reasoning) — fully animated ────────────────── */
 
 .css-sphere-container {
   display: flex;
@@ -456,21 +493,33 @@ body {
   width: 160px;
   height: 160px;
 }
-.css-sphere {
+
+/* Scene wrapper: provides perspective for 3D ring orbits */
+.css-sphere-scene {
+  position: relative;
   width: 90px;
   height: 90px;
+  perspective: 380px;
+}
+
+/* Main sphere — light moves around it via CSS custom props */
+.css-sphere {
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #00DDFF, #0055FF 42%, #001050 78%);
+  background: radial-gradient(circle at var(--slx) var(--sly), #00EEFF, #0055FF 42%, #001050 78%);
   box-shadow:
     0 0 28px rgba(0,85,255,0.75),
     0 0 55px rgba(0,85,255,0.3),
     inset -10px -12px 22px rgba(0,0,60,0.8),
     inset 6px 6px 18px rgba(0,170,255,0.35);
-  position: relative;
   overflow: hidden;
-  animation: sphere-pulse 3s ease-in-out infinite;
+  animation:
+    sphere-pulse 3s ease-in-out infinite,
+    sphere-light 8s ease-in-out infinite;
 }
-/* Vertical lines sweeping — simulates rotation */
+
+/* Sweeping vertical lines — simulates longitude rotation */
 .css-sphere::before {
   content: '';
   position: absolute;
@@ -481,12 +530,13 @@ body {
   background: repeating-linear-gradient(
     90deg,
     transparent 0px,
-    transparent 16px,
-    rgba(0,170,255,0.20) 16px,
-    rgba(0,170,255,0.20) 18px
+    transparent 14px,
+    rgba(0,170,255,0.22) 14px,
+    rgba(0,170,255,0.22) 16px
   );
-  animation: sphere-rotate-lines 3.5s linear infinite;
+  animation: sphere-rotate-lines 3s linear infinite;
 }
+
 /* Horizontal latitude lines */
 .css-sphere::after {
   content: '';
@@ -498,21 +548,81 @@ body {
   background: repeating-linear-gradient(
     0deg,
     transparent 0px,
-    transparent 12px,
-    rgba(0,170,255,0.13) 12px,
-    rgba(0,170,255,0.13) 14px
+    transparent 10px,
+    rgba(0,170,255,0.14) 10px,
+    rgba(0,170,255,0.14) 12px
   );
 }
+
+/* Specular highlight */
 .css-sphere-highlight {
   position: absolute;
-  top: 11px;
-  left: 16px;
-  width: 22px;
-  height: 14px;
+  top: 10px;
+  left: 14px;
+  width: 24px;
+  height: 15px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.55), transparent 70%);
+  background: radial-gradient(circle, rgba(255,255,255,0.6), transparent 70%);
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
+}
+
+/* ── Orbital rings ── */
+.css-ring-a,
+.css-ring-b {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Ring A — tilted ~72° on X, spins around Y/Z */
+.css-ring-a {
+  width: 112px;
+  height: 112px;
+  top: -11px; left: -11px;
+  border: 1.5px solid transparent;
+  border-top-color:    rgba(0,170,255,0.70);
+  border-right-color:  rgba(0,170,255,0.35);
+  border-bottom-color: rgba(0,170,255,0.08);
+  border-left-color:   rgba(0,170,255,0.35);
+  animation: ring-spin-a 3.5s linear infinite;
+}
+
+/* Ring B — different tilt, slower */
+.css-ring-b {
+  width: 112px;
+  height: 112px;
+  top: -11px; left: -11px;
+  border: 1px solid transparent;
+  border-top-color:    rgba(0,85,255,0.55);
+  border-left-color:   rgba(0,85,255,0.25);
+  border-bottom-color: rgba(0,85,255,0.05);
+  border-right-color:  rgba(0,85,255,0.25);
+  animation: ring-spin-b 6s linear infinite;
+}
+
+/* Glowing dot on ring A */
+.css-orbit-dot {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  width: 6px;
+  height: 6px;
+  top: calc(50% - 3px);
+  left: calc(50% - 3px);
+}
+
+.css-orbit-dot-a {
+  background: #00AAFF;
+  box-shadow: 0 0 8px rgba(0,170,255,1), 0 0 16px rgba(0,170,255,0.6);
+  animation: dot-orbit-a 3.5s linear infinite;
+}
+
+.css-orbit-dot-b {
+  background: #9B59B6;
+  box-shadow: 0 0 8px rgba(155,89,182,1), 0 0 14px rgba(155,89,182,0.6);
+  animation: dot-orbit-b 6s linear infinite;
+  animation-delay: -3s;
 }
 .how-grid {
   display: grid;

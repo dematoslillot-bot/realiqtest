@@ -194,8 +194,17 @@ function BrainLogo() {
 function CssSphere() {
   return (
     <div className="css-sphere-container" aria-hidden="true">
-      <div className="css-sphere">
-        <div className="css-sphere-highlight" />
+      <div className="css-sphere-scene">
+        {/* Main sphere with animated light + sweeping grid lines */}
+        <div className="css-sphere">
+          <div className="css-sphere-highlight" />
+        </div>
+        {/* 3D orbital rings */}
+        <div className="css-ring-a" />
+        <div className="css-ring-b" />
+        {/* Glowing dots travelling along each ring */}
+        <div className="css-orbit-dot css-orbit-dot-a" />
+        <div className="css-orbit-dot css-orbit-dot-b" />
       </div>
     </div>
   );
@@ -839,10 +848,11 @@ export default function Home() {
                 SVG gradient fill is 100% reliable across all browsers. */}
             <h1 className="h2 hero-title">
               <span className="hero-discover">Discover your</span>
+              {/* SVG gradient text — Space Grotesk, bigger, animated rainbow */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 720 66"
-                style={{ width:"100%", maxWidth:720, height:"auto", display:"block", margin:"4px auto 0", overflow:"visible" }}
+                viewBox="0 0 760 82"
+                style={{ width:"100%", maxWidth:720, height:"auto", display:"block", margin:"6px auto 0", overflow:"visible" }}
                 aria-label="true intelligence"
                 role="img"
               >
@@ -863,13 +873,13 @@ export default function Home() {
                   </linearGradient>
                 </defs>
                 <text
-                  x="50%" y="54"
+                  x="50%" y="66"
                   textAnchor="middle"
                   fill="url(#hero-grad)"
-                  fontFamily="'Syne', sans-serif"
-                  fontWeight="400"
-                  fontSize="52"
-                  letterSpacing="-2"
+                  fontFamily="'Space Grotesk', sans-serif"
+                  fontWeight="600"
+                  fontSize="68"
+                  letterSpacing="-2.5"
                 >
                   true intelligence
                 </text>

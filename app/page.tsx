@@ -667,6 +667,25 @@ function StatCounter({ value, suffix, decimals = 0 }: { value: number; suffix: s
 
 /* ── Data ──────────────────────────────────────────────────────────────── */
 
+// One entrance animation per cognitive dimension (mobile-first impact)
+// 0 Logical      → from left      (pattern search = left-to-right scan)
+// 1 Verbal       → from right     (reading direction reversed)
+// 2 Spatial      → scale pop      (object "materialises")
+// 3 Numerical    → bounce up      (numbers bouncing off a surface)
+// 4 Memory       → glitch reveal  (digital memory flicker)
+// 5 Speed        → blur-to-focus  (instant snap, processing burst)
+const PILLAR_ANIMS = [
+  "reveal-left",
+  "reveal-right",
+  "reveal-scale",
+  "reveal-bounce",
+  "reveal-glitch",
+  "reveal-blur",
+] as const;
+
+// Stagger delay by column position (desktop = 3 cols, mobile = 1 col)
+const pillarDelay = (i: number) => `${(i % 3) * 120}ms`;
+
 const PILLAR_ICONS = ["⬡", "◈", "⟳", "∑", "◉", "⚡"];
 
 const PILLARS = [
@@ -752,13 +771,23 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // Observe all scroll-reveal variants — fires once, never re-triggers
+    const SELECTORS = [
+      ".reveal",
+      ".reveal-left", ".reveal-right", ".reveal-scale",
+      ".reveal-bounce", ".reveal-glitch", ".reveal-blur",
+    ].join(", ");
+
     const io = new IntersectionObserver(
       entries => entries.forEach(e => {
-        if (e.isIntersecting) { (e.target as HTMLElement).classList.add("visible"); io.unobserve(e.target); }
+        if (e.isIntersecting) {
+          (e.target as HTMLElement).classList.add("visible");
+          io.unobserve(e.target);
+        }
       }),
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.08, rootMargin: "0px 0px -48px 0px" }
     );
-    document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+    document.querySelectorAll(SELECTORS).forEach(el => io.observe(el));
     return () => io.disconnect();
   }, []);
 
@@ -898,7 +927,9 @@ export default function Home() {
             { value:15,   suffix:" min", label:"Average duration" },
             { value:1.99, suffix:"€",    decimals:2, label:"Full report" },
           ].map((s, i) => (
-            <div key={i} className="stat-cell reveal" style={{ transitionDelay:`${i*60}ms` }}>
+            /* stat cells: alternate left/right entrance, 80ms stagger */
+            <div key={i} className={`stat-cell ${i%2===0?"reveal-left":"reveal-right"}`}
+              style={{ transitionDelay:`${i*80}ms` }}>
               <div style={{ fontSize:32, fontWeight:500, color:i%2===0?blue:cyan, fontVariantNumeric:"tabular-nums", marginBottom:6, textShadow:`0 0 24px ${i%2===0?"rgba(0,85,255,0.6)":"rgba(0,170,255,0.6)"}` }}>
                 <StatCounter value={s.value} suffix={s.suffix} decimals={(s as { decimals?: number }).decimals} />
               </div>
@@ -917,31 +948,48 @@ export default function Home() {
             <p className="sec-sub">5 questions per dimension · 30 questions total</p>
           </div>
           <div className="pillars-grid">
-            {PILLARS.map((p, i) => (
-              /* pillar-cell: card on top, 3D canvas below */
-              <div key={i} className="pillar-cell">
-                <div
-                  className="card card-3d reveal"
-                  style={{ transitionDelay:`${i*55}ms`, borderRadius:"6px 6px 0 0" }}
-                  onMouseMove={onTilt}
-                  onMouseLeave={offTilt}
-                >
-                  <div className="pillar-icon">
-                    <span style={{ fontSize:16, color:i%2===0?blue:cyan, textShadow:`0 0 10px ${i%2===0?"rgba(0,85,255,0.8)":"rgba(0,170,255,0.8)"}` }}>
-                      {PILLAR_ICONS[i]}
-                    </span>
-                  </div>
-                  <div style={{ fontFamily:"monospace", fontSize:10, letterSpacing:"0.22em", color:blue, opacity:0.4, marginBottom:10 }}>{p.n}</div>
-                  <div style={{ fontSize:14, fontWeight:500, marginBottom:8 }}>{p.name}</div>
-                  <div style={{ fontSize:13, color:dim, lineHeight:1.65 }}>{p.desc}</div>
-                </div>
+            {PILLARS.map((p, i) => {
+              const anim  = PILLAR_ANIMS[i];
+              const delay = pillarDelay(i);
+              // transition-based variants use transitionDelay;
+              // animation-based (bounce/glitch) use animationDelay
+              const isAnimBased = anim === "reveal-bounce" || anim === "reveal-glitch";
+              const delayStyle  = isAnimBased
+                ? { animationDelay: delay }
+                : { transitionDelay: delay };
 
-                {/* 3D canvas object — large & visible, reacts to hover */}
-                <div className="dim-3d-container">
-                  <Dim3D index={i} />
+              return (
+                /* pillar-cell: card on top, 3D canvas below
+                   outer wrapper carries the per-pillar entrance animation */
+                <div
+                  key={i}
+                  className={`pillar-cell ${anim}`}
+                  style={delayStyle}
+                >
+                  {/* card — no reveal class, animation is on parent */}
+                  <div
+                    className="card card-3d"
+                    style={{ borderRadius:"6px 6px 0 0" }}
+                    onMouseMove={onTilt}
+                    onMouseLeave={offTilt}
+                  >
+                    <div className="pillar-icon">
+                      <span style={{ fontSize:16, color:i%2===0?blue:cyan, textShadow:`0 0 10px ${i%2===0?"rgba(0,85,255,0.8)":"rgba(0,170,255,0.8)"}` }}>
+                        {PILLAR_ICONS[i]}
+                      </span>
+                    </div>
+                    <div style={{ fontFamily:"monospace", fontSize:10, letterSpacing:"0.22em", color:blue, opacity:0.4, marginBottom:10 }}>{p.n}</div>
+                    <div style={{ fontSize:14, fontWeight:500, marginBottom:8 }}>{p.name}</div>
+                    <div style={{ fontSize:13, color:dim, lineHeight:1.65 }}>{p.desc}</div>
+                  </div>
+
+                  {/* 3D canvas object — large & visible, reacts to hover */}
+                  <div className="dim-3d-container">
+                    <Dim3D index={i} />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -1009,7 +1057,10 @@ export default function Home() {
           </div>
           <div className="features-grid">
             {FEATURES.map((f, i) => (
-              <div key={i} className="card reveal" style={{ transitionDelay:`${i*35}ms`, display:"flex", gap:16 }}>
+              /* features: even = from-left, odd = from-right, 100ms stagger */
+              <div key={i}
+                className={`card ${i%2===0?"reveal-left":"reveal-right"}`}
+                style={{ transitionDelay:`${i*100}ms`, display:"flex", gap:16 }}>
                 <span style={{ color:i%2===0?blue:cyan, fontFamily:"monospace", fontSize:14, marginTop:2, flexShrink:0, textShadow:`0 0 10px ${i%2===0?"rgba(0,85,255,0.7)":"rgba(0,170,255,0.7)"}` }}>+</span>
                 <div>
                   <div style={{ fontSize:14, fontWeight:500, marginBottom:6 }}>{f.title}</div>

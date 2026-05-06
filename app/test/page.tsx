@@ -63,12 +63,16 @@ function RavenDisplay({ cells }: { cells: (RavenCell | null)[] }) {
 
 /* ── Rotation shape display ─────────────────────────────────────────────── */
 
-function RotationSVG({ path, angle, size = 80 }: { path: string; angle: number; size?: number }) {
+function RotationSVG({ path, angle, size = 80, mirror = false }: { path: string; angle: number; size?: number; mirror?: boolean }) {
+  // mirror=true: horizontally flip around the viewport centre (x=30) after rotation
+  const transform = mirror
+    ? `scale(-1,1) translate(-60,0) rotate(${angle},30,30)`
+    : `rotate(${angle},30,30)`;
   return (
     <svg width={size} height={size} viewBox="0 0 60 60">
       <rect x={1} y={1} width={58} height={58} rx={2}
         fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
-      <g transform={`rotate(${angle},30,30)`}>
+      <g transform={transform}>
         <path d={path} fill="#6EB0FF" />
       </g>
     </svg>
@@ -267,7 +271,7 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
     return <RavenCellSVG cell={vis.optCells[idx]} size={60} />;
   }
   if (vis?.kind === "rotation") {
-    return <RotationSVG path={vis.path} angle={vis.optAngles[idx]} size={68} />;
+    return <RotationSVG path={vis.path} angle={vis.optAngles[idx]} size={68} mirror={vis.optMirrors?.[idx] ?? false} />;
   }
   return <span style={{ fontSize: 14, lineHeight: 1.4 }}>{opt}</span>;
 }

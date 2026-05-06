@@ -1,11 +1,26 @@
 export function calculateIQ(score: number, total: number): number {
   const pct = score / total;
+  // Bell-curve aligned thresholds (mean=100, σ=15)
+  // 96%+ → 145   (top 1%)
+  // 90%+ → 135   (top 3%)
+  // 83%+ → 128   (top 4%)
+  // 77%+ → 121   (top 9%) — adjusted so 30% fail (70% correct) gives ≤115
+  // 70%+ → 115   (top 16%) — new level: 70% correct caps here
+  // 62%+ → 113
+  // 55%+ → 108   — adjusted so 50% fail (50% correct) gives ≤105
+  // 47%+ → 105   — new level: 50% correct caps here
+  // 42%+ → 100
+  // 32%+ → 93
+  // 22%+ → 85
+  //  <22% → 78
   if (pct >= 0.96) return 145;
   if (pct >= 0.90) return 135;
-  if (pct >= 0.82) return 128;
-  if (pct >= 0.72) return 120;
+  if (pct >= 0.83) return 128;
+  if (pct >= 0.77) return 121;
+  if (pct >= 0.70) return 115;
   if (pct >= 0.62) return 113;
-  if (pct >= 0.52) return 107;
+  if (pct >= 0.55) return 108;
+  if (pct >= 0.47) return 105;
   if (pct >= 0.42) return 100;
   if (pct >= 0.32) return 93;
   if (pct >= 0.22) return 85;
@@ -26,10 +41,13 @@ export function getPercentile(iq: number): number {
   if (iq >= 145) return 99;
   if (iq >= 135) return 97;
   if (iq >= 128) return 96;
-  if (iq >= 120) return 91;
-  if (iq >= 110) return 75;
+  if (iq >= 121) return 92;
+  if (iq >= 115) return 84;
+  if (iq >= 108) return 70;
+  if (iq >= 105) return 63;
   if (iq >= 100) return 50;
-  if (iq >= 90)  return 25;
+  if (iq >= 93)  return 32;
+  if (iq >= 85)  return 16;
   return 10;
 }
 

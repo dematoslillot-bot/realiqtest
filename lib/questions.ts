@@ -15,7 +15,7 @@ export type RavenCell = ShapeDef[];
 export type VisualDef =
   | { kind: "raven";    cells: (RavenCell | null)[]; optCells: RavenCell[] }
   | { kind: "bars";     values: (number | null)[];   max: number }
-  | { kind: "rotation"; path: string; showAngle: number; optAngles: number[] }
+  | { kind: "rotation"; path: string; showAngle: number; optAngles: number[]; optMirrors?: boolean[] }
   | { kind: "memory";   colors: string[];             showMs?: number }
   | { kind: "symbols";  target: string;               compare?: string[] };
 
@@ -108,6 +108,16 @@ const T2m = [tr(18,30,11), tr(42,30,11)];
 const T3s = [tr(13,30,7),  tr(30,30,7),  tr(47,30,7)];
 const D3s = [di(13,30,7),  di(30,30,7),  di(47,30,7)];
 
+// Size variants — single outline (for triple-rule questions)
+const C_medo = [c(30,30,11,false)];
+const S_medo = [sq(30,30,11,false)];
+const T_medo = [tr(30,30,11,false)];
+const C_smo  = [c(30,30,7,false)];
+
+// Two/Three diamonds (for hard Latin square question)
+const D2   = [di(18,30,10), di(42,30,10)];
+const D3o  = [di(13,30,8,false), di(30,30,8,false), di(47,30,8,false)];
+
 // ── SVG paths for rotation questions ──────────────────────────────────────
 
 const ARROW   = "M8,21 L8,39 L36,39 L36,51 L54,30 L36,9 L36,21 Z";
@@ -171,37 +181,38 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q4 medium: shape rotation per row + size decreases left→right
-  // Row1: C-big, S-med, T-sm
-  // Row2: T-big, C-med, S-sm
-  // Row3: S-big, T-med, ??? → C-sm
+  // Q4 medium: THREE rules — shape cycle per row + size decreases left→right + fill by column
+  // Col1 filled, col2 outline, col3 filled
+  // Row1: C-big-f, S-med-o, T-sm-f
+  // Row2: T-big-f, C-med-o, S-sm-f
+  // Row3: S-big-f, T-med-o, ??? → C-sm-f
   {
-    cat: 0, type: "raven", diff: "medium", badge: "Rotation + Size", time: 25,
+    cat: 0, type: "raven", diff: "medium", badge: "Triple Rule Matrix", time: 22,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Each row contains all three shapes in a cyclic order. Size decreases left→right (big→med→small). Row 3 is S→T→? = circle (small).",
+    exp: "Three rules: shapes cycle C→S→T per row; size decreases big→med→sm left-to-right; columns alternate filled→outline→filled. Row 3 needs small filled circle.",
     vis: {
       kind: "raven",
-      cells: [C_big, S_med, T_sm,  T_big, C_med, S_sm,  S_big, T_med, null],
-      optCells: [C_sm, S_sm, T_sm, C_big],
+      cells: [C_big, S_medo, T_sm,  T_big, C_medo, S_sm,  S_big, T_medo, null],
+      optCells: [C_sm, C_smo, S_sm, T_sm],
     },
   },
 
-  // Q5 hard: Latin square C/S/D + fill per column (col1&3 filled, col2 outline)
-  // Row1: C1-f, D1o, S1-f
-  // Row2: S1-f, C1o, D1-f
-  // Row3: D1-f, S1o, ??? → C1 (filled)
+  // Q5 hard: THREE rules — Latin square C/S/D + count per column (1/2/3) + fill per row
+  // Row1 filled: C1,  D2,  S3
+  // Row2 outline: S1o, C2o, D3o
+  // Row3 filled: D1,  S2,  ??? → C3 (3 filled circles)
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Latin Square + Fill", time: 20,
+    cat: 0, type: "raven", diff: "hard", badge: "Three-Rule Matrix", time: 15,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Latin square: each shape once per row and column. Columns 1 & 3 are filled, column 2 is outline. Missing = filled circle.",
+    exp: "Three rules: Latin square (C/S/D, one per row+col); count increases left→right (1→2→3); rows alternate filled/outline/filled. Missing = 3 filled circles.",
     vis: {
       kind: "raven",
-      cells: [C1, D1o, S1,  S1, C1o, D1,  D1, S1o, null],
-      optCells: [C1, C1o, D1, S1],
+      cells: [C1, D2, S3,  S1o, C2o, D3o,  D1, S2, null],
+      optCells: [C3, C3o, D3, S3],
     },
   },
 
@@ -271,35 +282,49 @@ export const ALL_QUESTIONS: Question[] = [
     vis: { kind: "rotation", path: L_SHAPE, showAngle: 0, optAngles: [0, 180, 90, 270] },
   },
 
-  // Q3 medium: Z-shape shown at 45° → which is 90° CW further? (45+90=135°)
-  // Options only 45° apart — requires precise mental rotation
+  // Q3 medium: STEP-shape shown at 45° → rotate further 90° CW (= 135°)
+  // Option B is a mirror of 135° — close visual distractor requiring axis awareness
   {
-    cat: 2, type: "rotation", diff: "medium", badge: "Compound Rotation", time: 25,
-    text: "This Z-shape is shown at 45°. Which option shows it rotated a further 90° clockwise?",
-    opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "45° + 90° clockwise = 135°. Options are only 45° apart, demanding precise rotation.",
-    vis: { kind: "rotation", path: Z_SHAPE, showAngle: 45, optAngles: [45, 90, 135, 180] },
-  },
-
-  // Q4 medium/hard: Notch-shape 0° → 135° CW — options 45° apart
-  {
-    cat: 2, type: "rotation", diff: "medium", badge: "Precise Rotation", time: 22,
-    text: "Which option shows this flag-shape rotated exactly 135° clockwise from the original?",
-    opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "135° clockwise is three-eighths of a full turn. Options are 45° apart — choose carefully.",
-    vis: { kind: "rotation", path: NOTCH, showAngle: 0, optAngles: [90, 135, 180, 225] },
-  },
-
-  // Q5 hard: Complex G-shape shown at 270° — find original (0°)
-  {
-    cat: 2, type: "rotation", diff: "hard", badge: "Inverse Rotation", time: 18,
-    text: "This complex shape has been rotated 270° clockwise. Which option shows its original position?",
+    cat: 2, type: "rotation", diff: "medium", badge: "Compound Rotation", time: 22,
+    text: "This step-shape is shown at 45°. Which option shows it rotated a further 90° clockwise?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "To undo 270° CW, rotate 90° CW (or equivalently 270° CCW). Original orientation = 0°.",
-    vis: { kind: "rotation", path: G_SHAPE, showAngle: 270, optAngles: [0, 90, 180, 270] },
+    exp: "45° + 90° clockwise = 135°. Option B is the mirror image of the correct answer — check orientation carefully.",
+    vis: {
+      kind: "rotation", path: STEP, showAngle: 45,
+      optAngles:   [135, 135, 90, 180],
+      optMirrors:  [false, true, false, false],
+    },
+  },
+
+  // Q4 medium: F-shape (complex, asymmetric) shown at 0° → rotate 120° CW
+  // Options tight (30° apart) + one mirrored distractor
+  {
+    cat: 2, type: "rotation", diff: "medium", badge: "Precise Rotation", time: 20,
+    text: "Which option shows this F-shape rotated exactly 120° clockwise?",
+    opts: ["A", "B", "C", "D"],
+    ans: 2,
+    exp: "120° clockwise. Options are only 30° apart — and option D is the mirror image at 120°, not a rotation.",
+    vis: {
+      kind: "rotation", path: F_SHAPE, showAngle: 0,
+      optAngles:   [90, 150, 120, 120],
+      optMirrors:  [false, false, false, true],
+    },
+  },
+
+  // Q5 hard: G-shape (most complex) shown at 315° — find original (0°)
+  // Options only 30° apart + mirrored distractor; time reduced to 15s
+  {
+    cat: 2, type: "rotation", diff: "hard", badge: "Inverse Rotation", time: 15,
+    text: "This complex shape has been rotated 315° clockwise. Which option shows its original position?",
+    opts: ["A", "B", "C", "D"],
+    ans: 1,
+    exp: "Undoing 315° CW means rotating 45° CW (360−315=45). Original = 0°. Option A is the mirror at 0°, C is 30°, D is 330°.",
+    vis: {
+      kind: "rotation", path: G_SHAPE, showAngle: 315,
+      optAngles:   [0, 0, 30, 330],
+      optMirrors:  [true, false, false, false],
+    },
   },
 
   // ── CAT 3 · NUMERICAL ABILITY — bar charts ────────────────────────────────

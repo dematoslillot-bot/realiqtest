@@ -1,18 +1,6 @@
 export function calculateIQ(score: number, total: number): number {
   const pct = score / total;
   // Bell-curve aligned thresholds (mean=100, σ=15)
-  // 96%+ → 145   (top 1%)
-  // 90%+ → 135   (top 3%)
-  // 83%+ → 128   (top 4%)
-  // 77%+ → 121   (top 9%) — adjusted so 30% fail (70% correct) gives ≤115
-  // 70%+ → 115   (top 16%) — new level: 70% correct caps here
-  // 62%+ → 113
-  // 55%+ → 108   — adjusted so 50% fail (50% correct) gives ≤105
-  // 47%+ → 105   — new level: 50% correct caps here
-  // 42%+ → 100
-  // 32%+ → 93
-  // 22%+ → 85
-  //  <22% → 78
   if (pct >= 0.96) return 145;
   if (pct >= 0.90) return 135;
   if (pct >= 0.83) return 128;
@@ -25,6 +13,23 @@ export function calculateIQ(score: number, total: number): number {
   if (pct >= 0.32) return 93;
   if (pct >= 0.22) return 85;
   return 78;
+}
+
+/**
+ * Weighted adjustment based on difficulty profile.
+ * Hard-question bonuses and easy-question penalties, capped at ±5 IQ points.
+ * Rewards well-rounded performance and genuine expertise, is not frustrating.
+ */
+export function getDifficultyAdjustment(
+  hardCorrect: number, hardTotal: number,
+  easyWrong: number, easyTotal: number,
+): number {
+  if (hardTotal === 0 || easyTotal === 0) return 0;
+  const hardRate = hardCorrect / hardTotal;        // 0→1, how well on hard
+  const easyErrRate = easyWrong / easyTotal;       // 0→1, how badly on easy
+  // +up to 5 IQ for acing hard; −up to 5 for failing easy; capped at ±5
+  const raw = hardRate * 5 - easyErrRate * 5;
+  return Math.round(Math.max(-5, Math.min(5, raw)));
 }
 
 export function getIQLabel(iq: number): string {

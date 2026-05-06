@@ -285,6 +285,11 @@ export default function TestPage() {
   const [results, setResults] = useState<boolean[]>([]);
   const [catScores, setCatScores] = useState([0, 0, 0, 0, 0, 0]);
   const [catTotals, setCatTotals] = useState([0, 0, 0, 0, 0, 0]);
+  // Difficulty-split tracking (for weighted IQ adjustment)
+  const [easyScore, setEasyScore] = useState(0);
+  const [easyTotal, setEasyTotal] = useState(0);
+  const [hardScore, setHardScore] = useState(0);
+  const [hardTotal, setHardTotal] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(ALL_QUESTIONS[0].time);
@@ -314,10 +319,14 @@ export default function TestPage() {
   const handleNext = useCallback(() => {
     const nextIdx = qIdx + 1;
     if (nextIdx >= ALL_QUESTIONS.length) {
-      localStorage.setItem("iq_score",     score.toString());
-      localStorage.setItem("iq_total",     ALL_QUESTIONS.length.toString());
-      localStorage.setItem("iq_catScores", JSON.stringify(catScores));
-      localStorage.setItem("iq_catTotals", JSON.stringify(catTotals));
+      localStorage.setItem("iq_score",      score.toString());
+      localStorage.setItem("iq_total",      ALL_QUESTIONS.length.toString());
+      localStorage.setItem("iq_catScores",  JSON.stringify(catScores));
+      localStorage.setItem("iq_catTotals",  JSON.stringify(catTotals));
+      localStorage.setItem("iq_easyScore",  easyScore.toString());
+      localStorage.setItem("iq_easyTotal",  easyTotal.toString());
+      localStorage.setItem("iq_hardScore",  hardScore.toString());
+      localStorage.setItem("iq_hardTotal",  hardTotal.toString());
       router.push("/results");
       return;
     }
@@ -326,7 +335,7 @@ export default function TestPage() {
     } else {
       advanceTo(nextIdx);
     }
-  }, [qIdx, score, catScores, catTotals, q, router, advanceTo]);
+  }, [qIdx, score, catScores, catTotals, easyScore, easyTotal, hardScore, hardTotal, q, router, advanceTo]);
 
   // Countdown timer (paused during memory reveal)
   useEffect(() => {
@@ -335,6 +344,9 @@ export default function TestPage() {
       setAnswered(true);
       setResults(prev => [...prev, false]);
       setCatTotals(prev => { const n = [...prev]; n[q.cat]++; return n; });
+      // Track difficulty totals for timed-out questions
+      if (q.diff === "easy") setEasyTotal(v => v + 1);
+      else if (q.diff === "hard") setHardTotal(v => v + 1);
       setFeedback({ correct: false, text: `Time's up! ${q.exp}` });
       return;
     }
@@ -353,6 +365,14 @@ export default function TestPage() {
     nt[q.cat]++;
     setCatScores(ns);
     setCatTotals(nt);
+    // Track difficulty splits
+    if (q.diff === "easy") {
+      setEasyTotal(v => v + 1);
+      if (correct) setEasyScore(v => v + 1);
+    } else if (q.diff === "hard") {
+      setHardTotal(v => v + 1);
+      if (correct) setHardScore(v => v + 1);
+    }
     setFeedback({ correct, text: correct ? `Correct! ${q.exp}` : `Incorrect. ${q.exp}` });
   }
 

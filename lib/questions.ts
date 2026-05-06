@@ -118,6 +118,15 @@ const C_smo  = [c(30,30,7,false)];
 const D2   = [di(18,30,10), di(42,30,10)];
 const D3o  = [di(13,30,8,false), di(30,30,8,false), di(47,30,8,false)];
 
+// Compound cells — two shapes in one cell (TL = top-left, BR = bottom-right)
+// Used for the advanced Raven "merge rule" hard question
+const CD_cell = [c(18,20,10),  di(42,42,10)];  // circle TL + diamond BR
+const ST_cell = [sq(18,20,10), tr(42,40,10)];  // square TL + triangle BR
+const TC_cell = [tr(18,20,10), c(42,40,10)];   // triangle TL + circle BR  ← answer
+const TD_cell = [tr(18,20,10), di(42,40,10)];  // triangle TL + diamond BR ← trap (wrong 2nd)
+const SC_cell = [sq(18,20,10), c(42,40,10)];   // square TL + circle BR   ← trap (wrong 1st)
+const DC_cell = [di(18,20,10), c(42,40,10)];   // diamond TL + circle BR  ← trap (reversed)
+
 // ── SVG paths for rotation questions ──────────────────────────────────────
 
 const ARROW   = "M8,21 L8,39 L36,39 L36,51 L54,30 L36,9 L36,21 Z";
@@ -150,17 +159,17 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q2 easy: Latin square C/S/T
+  // Q2 easy: Latin square C/S/T — distractor D is outline square (very similar to solid)
   {
     cat: 0, type: "raven", diff: "easy", badge: "Shape Sequence", time: 30,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 2,
-    exp: "Each shape appears exactly once per row and column. Row 3, Col 3 must be square.",
+    exp: "Each shape appears exactly once per row and column (Latin square). Row 3, Col 3 must be a filled square — not outline.",
     vis: {
       kind: "raven",
       cells: [C1, S1, T1,  S1, T1, C1,  T1, C1, null],
-      optCells: [C1, T1, S1, D1],
+      optCells: [C1, T1, S1, S1o],
     },
   },
 
@@ -199,20 +208,22 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q5 hard: THREE rules — Latin square C/S/D + count per column (1/2/3) + fill per row
-  // Row1 filled: C1,  D2,  S3
-  // Row2 outline: S1o, C2o, D3o
-  // Row3 filled: D1,  S2,  ??? → C3 (3 filled circles)
+  // Q5 hard (Advanced Raven): MERGE RULE
+  // Rule: Col 3 = Col 1 shape (top-left) combined with Col 2 shape (bottom-right)
+  // Row1: circle, diamond  → circle◤ + diamond◣
+  // Row2: square, triangle → square◤ + triangle◣
+  // Row3: triangle, circle → ???  = triangle◤ + circle◣
+  // Traps: B=Row1's compound (wrong shapes), C=square+circle (row2 shapes), D=triangle+diamond (wrong 2nd)
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Three-Rule Matrix", time: 15,
-    text: "Which image completes the matrix?",
+    cat: 0, type: "raven", diff: "hard", badge: "Raven Advanced", time: 35,
+    text: "Each row follows the same hidden rule. Which image belongs in the empty cell?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Three rules: Latin square (C/S/D, one per row+col); count increases left→right (1→2→3); rows alternate filled/outline/filled. Missing = 3 filled circles.",
+    exp: "Rule: the 3rd cell merges the two shapes from columns 1 and 2. Left shape → top-left, right shape → bottom-right. Row 3: triangle (col 1) + circle (col 2) = triangle top-left, circle bottom-right.",
     vis: {
       kind: "raven",
-      cells: [C1, D2, S3,  S1o, C2o, D3o,  D1, S2, null],
-      optCells: [C3, C3o, D3, S3],
+      cells: [C1, D1, CD_cell,  S1, T1, ST_cell,  T1, C1, null],
+      optCells: [TC_cell, CD_cell, SC_cell, TD_cell],
     },
   },
 
@@ -313,17 +324,17 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   // Q5 hard: G-shape (most complex) shown at 315° — find original (0°)
-  // Options only 30° apart + mirrored distractor; time reduced to 15s
+  // Options only 15° apart + mirrored distractor at correct angle; time 30s to think
   {
-    cat: 2, type: "rotation", diff: "hard", badge: "Inverse Rotation", time: 15,
-    text: "This complex shape has been rotated 315° clockwise. Which option shows its original position?",
+    cat: 2, type: "rotation", diff: "hard", badge: "Inverse Rotation", time: 30,
+    text: "This complex shape has been rotated 315° clockwise. Which option shows its original (0°) position?",
     opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "Undoing 315° CW means rotating 45° CW (360−315=45). Original = 0°. Option A is the mirror at 0°, C is 30°, D is 330°.",
+    ans: 2,
+    exp: "Undoing 315° CW = rotating 45° CW back (360−315=45). So original = 0°. Option A is only 15° off, B is the mirror at 0°, D is 15° past. Only C is the true original.",
     vis: {
       kind: "rotation", path: G_SHAPE, showAngle: 315,
-      optAngles:   [0, 0, 30, 330],
-      optMirrors:  [true, false, false, false],
+      optAngles:   [345, 0, 0, 15],
+      optMirrors:  [false, true, false, false],
     },
   },
 

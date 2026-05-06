@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { calculateIQ, getIQLabel, getPercentile } from "@/lib/iq-calculator";
+import { calculateIQ, getDifficultyAdjustment, getIQLabel, getPercentile } from "@/lib/iq-calculator";
 import { CATEGORIES } from "@/lib/questions";
+import { detectCountryCode, getCountryByCode, LEADERBOARD, type CountryEntry } from "@/lib/leaderboard-data";
 
 /* ── Animated IQ counter ───────────────────────────────────────────────── */
 
@@ -119,6 +120,89 @@ function BellCurve({ iq }: { iq: number }) {
   );
 }
 
+/* ── Leaderboard popup ─────────────────────────────────────────────── */
+
+function LeaderboardPopup({ iq, onClose }: { iq: number; onClose: () => void }) {
+  const [country, setCountry] = useState<CountryEntry | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const code = detectCountryCode();
+    if (code) setCountry(getCountryByCode(code) ?? null);
+  }, []);
+
+  const blue  = "#0055FF";
+  const blue2 = "rgba(0,85,255,0.16)";
+  const dim   = "#3A5A8A";
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 50,
+      background: "rgba(5,10,20,0.82)", backdropFilter: "blur(12px)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 20,
+    }}>
+      <div className="animate-fade-up" style={{
+        maxWidth: 380, width: "100%",
+        background: "#080E1A", border: `1px solid ${blue2}`,
+        borderRadius: 10, padding: "28px 24px", textAlign: "center",
+        boxShadow: "0 0 60px rgba(0,85,255,0.18)",
+      }}>
+        <div style={{ fontSize: 36, marginBottom: 12 }}>🌍</div>
+        <p style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: dim, marginBottom: 10 }}>
+          Global Ranking
+        </p>
+
+        {country ? (
+          <>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 18 }}>
+              <span style={{ fontSize: 32 }}>{country.flag}</span>
+              <div style={{ textAlign: "left" }}>
+                <p style={{ fontSize: 16, fontWeight: 600, color: "#D6E4FF" }}>{country.name}</p>
+                <p style={{ fontSize: 11, color: dim }}>
+                  Rank <span style={{ color: blue, fontWeight: 700 }}>#{country.rank}</span> of {LEADERBOARD.length} countries
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 20 }}>
+              <div style={{ background: "rgba(0,85,255,0.07)", border: `1px solid ${blue2}`, borderRadius: 6, padding: "12px 8px" }}>
+                <p style={{ fontSize: 9, color: dim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Country avg</p>
+                <p style={{ fontSize: 22, fontWeight: 300, color: blue }}>{country.avgIQ}</p>
+              </div>
+              <div style={{ background: "rgba(0,85,255,0.07)", border: `1px solid ${blue2}`, borderRadius: 6, padding: "12px 8px" }}>
+                <p style={{ fontSize: 9, color: dim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Your score</p>
+                <p style={{ fontSize: 22, fontWeight: 300, color: iq >= country.avgIQ ? "#00D87A" : "#FF8C00" }}>{iq}</p>
+              </div>
+            </div>
+
+            <p style={{ fontSize: 12, color: dim, marginBottom: 20, lineHeight: 1.6 }}>
+              {iq > country.avgIQ
+                ? `You scored ${iq - country.avgIQ} pts above your country's average — top performance! 🚀`
+                : iq === country.avgIQ
+                  ? "You matched your country's average exactly."
+                  : `You're ${country.avgIQ - iq} pts below your country's average — keep practicing!`}
+            </p>
+          </>
+        ) : (
+          <p style={{ fontSize: 13, color: dim, marginBottom: 20 }}>
+            See how your score compares to 50+ countries worldwide.
+          </p>
+        )}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <button onClick={() => router.push("/leaderboard")} className="btn btn-primary" style={{ width: "100%" }}>
+            🏆 View Global Leaderboard
+          </button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: dim, fontSize: 12, cursor: "pointer", padding: "8px 0" }}>
+            Continue to my results →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Results page ──────────────────────────────────────────────────────── */
 
 export default function ResultsPage() {
@@ -130,15 +214,24 @@ export default function ResultsPage() {
   const [total, setTotal]     = useState(0);
   const [catScores, setCatScores] = useState([0,0,0,0,0,0]);
   const [catTotals, setCatTotals] = useState([0,0,0,0,0,0]);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   useEffect(() => {
-    const s  = parseInt(localStorage.getItem("iq_score") || "0");
-    const t  = parseInt(localStorage.getItem("iq_total") || "30");
+    const s  = parseInt(localStorage.getItem("iq_score")     || "0");
+    const t  = parseInt(localStorage.getItem("iq_total")     || "30");
     const cs = JSON.parse(localStorage.getItem("iq_catScores") || "[0,0,0,0,0,0]");
     const ct = JSON.parse(localStorage.getItem("iq_catTotals") || "[0,0,0,0,0,0]");
-    const q  = calculateIQ(s, t);
+    const easyScore = parseInt(localStorage.getItem("iq_easyScore") || "0");
+    const easyTotal = parseInt(localStorage.getItem("iq_easyTotal") || "1");
+    const hardScore = parseInt(localStorage.getItem("iq_hardScore") || "0");
+    const hardTotal = parseInt(localStorage.getItem("iq_hardTotal") || "1");
+    const base  = calculateIQ(s, t);
+    const adj   = getDifficultyAdjustment(hardScore, hardTotal, easyTotal - easyScore, easyTotal);
+    const final = Math.max(78, Math.min(145, base + adj));
     setScore(s); setTotal(t); setCatScores(cs); setCatTotals(ct);
-    setIq(q); setLabel(getIQLabel(q)); setPercentile(getPercentile(q));
+    setIq(final); setLabel(getIQLabel(final)); setPercentile(getPercentile(final));
+    const timer = setTimeout(() => setShowLeaderboard(true), 2200);
+    return () => clearTimeout(timer);
   }, []);
 
   const meterFill  = iq > 0 ? Math.round(((iq - 70) / 80) * 100) : 0;
@@ -149,6 +242,11 @@ export default function ResultsPage() {
 
   return (
     <div style={{ minHeight: "100dvh", background: "#050A14", color: "#D6E4FF" }}>
+
+      {/* Leaderboard popup */}
+      {showLeaderboard && iq > 0 && (
+        <LeaderboardPopup iq={iq} onClose={() => setShowLeaderboard(false)} />
+      )}
 
       {/* Nav */}
       <nav style={{

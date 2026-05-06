@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LEADERBOARD } from "@/lib/leaderboard-data";
 
 /* ══════════════════════════════════════════════════════════════════════════
    NEURAL NETWORK CANVAS
@@ -599,6 +600,73 @@ function Dim3D({ index }: { index: number }) {
   );
 }
 
+/* ── Leaderboard Banner ────────────────────────────────────────────────── */
+
+function LeaderboardBanner() {
+  const top10 = LEADERBOARD.slice(0, 10);
+  const medals = ["🥇", "🥈", "🥉"];
+  return (
+    <div style={{
+      paddingTop: 64,              // clear fixed nav
+      background: "rgba(3,5,15,0.96)",
+      borderBottom: "1px solid rgba(0,85,255,0.12)",
+    }}>
+      <div style={{
+        maxWidth: 1100, margin: "0 auto",
+        padding: "10px 20px",
+        display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
+      }}>
+        {/* Label */}
+        <span style={{
+          fontSize: 9, letterSpacing: "0.22em", textTransform: "uppercase",
+          color: "#3A5A8A", flexShrink: 0, whiteSpace: "nowrap",
+        }}>
+          🌍 Global IQ
+        </span>
+
+        {/* Divider */}
+        <div style={{ width: 1, height: 14, background: "rgba(0,85,255,0.2)", flexShrink: 0 }} />
+
+        {/* Country chips */}
+        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", flex: 1 }}>
+          {top10.map((c, i) => (
+            <Link
+              key={c.code}
+              href="/leaderboard"
+              style={{ textDecoration: "none" }}
+            >
+              <div style={{
+                display: "flex", alignItems: "center", gap: 4,
+                background: i < 3 ? "rgba(0,85,255,0.09)" : "rgba(0,85,255,0.04)",
+                border: `1px solid ${i < 3 ? "rgba(0,85,255,0.22)" : "rgba(0,85,255,0.09)"}`,
+                borderRadius: 3, padding: "3px 7px",
+                cursor: "pointer", transition: "background 0.15s",
+              }}>
+                <span style={{ fontSize: 8, color: i < 3 ? "#FFD700" : "#3A5A8A", fontWeight: 700 }}>
+                  {i < 3 ? medals[i] : `#${i + 1}`}
+                </span>
+                <span style={{ fontSize: 14, lineHeight: 1 }}>{c.flag}</span>
+                <span style={{ fontSize: 10, color: "#8AB0E0", maxWidth: 68, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#6EB0FF" }}>{c.avgIQ}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* See all */}
+        <Link href="/leaderboard" style={{
+          fontSize: 10, color: "#0055FF", textDecoration: "none",
+          letterSpacing: "0.06em", flexShrink: 0, whiteSpace: "nowrap",
+          padding: "3px 8px", border: "1px solid rgba(0,85,255,0.3)",
+          borderRadius: 3,
+        }}>
+          All 55 →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 /* ── Stat Counter ──────────────────────────────────────────────────────── */
 
 function StatCounter({ value, suffix, decimals = 0 }: { value: number; suffix: string; decimals?: number }) {
@@ -809,6 +877,9 @@ export default function Home() {
         <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">Start Free</button>
       </nav>
 
+      {/* ── Leaderboard Banner ── */}
+      <LeaderboardBanner />
+
       {/* ── Hero ── */}
       <section style={{
         position: "relative", minHeight: "100dvh",
@@ -830,7 +901,7 @@ export default function Home() {
           position: "relative", zIndex: 10,
           width: "100%", minHeight: "100dvh",
           display: "flex", alignItems: "center", justifyContent: "center",
-          padding: "120px 24px 80px",
+          padding: "100px 24px 80px",
         }}>
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", maxWidth: 720, width:"100%" }}>
 

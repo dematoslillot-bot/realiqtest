@@ -118,14 +118,21 @@ const C_smo  = [c(30,30,7,false)];
 const D2   = [di(18,30,10), di(42,30,10)];
 const D3o  = [di(13,30,8,false), di(30,30,8,false), di(47,30,8,false)];
 
-// Compound cells — two shapes in one cell (TL = top-left, BR = bottom-right)
-// Used for the advanced Raven "merge rule" hard question
-const CD_cell = [c(18,20,10),  di(42,42,10)];  // circle TL + diamond BR
-const ST_cell = [sq(18,20,10), tr(42,40,10)];  // square TL + triangle BR
-const TC_cell = [tr(18,20,10), c(42,40,10)];   // triangle TL + circle BR  ← answer
-const TD_cell = [tr(18,20,10), di(42,40,10)];  // triangle TL + diamond BR ← trap (wrong 2nd)
-const SC_cell = [sq(18,20,10), c(42,40,10)];   // square TL + circle BR   ← trap (wrong 1st)
-const DC_cell = [di(18,20,10), c(42,40,10)];   // diamond TL + circle BR  ← trap (reversed)
+// ── XOR / Cancellation cells (side-by-side, r=11) ────────────────────────
+// Rule: shapes appearing in BOTH col1 and col2 cancel; only unique shapes survive in col3
+// Row1: circle|square  +  circle|diamond  →  square|diamond  (circle cancels)
+// Row2: square|triangle+  square|circle   →  triangle|circle (square cancels)
+// Row3: triangle|diamond+ triangle|square →  diamond|square  (triangle cancels) ← ANSWER
+const xCS = [c(18,30,11),  sq(42,30,11)];  // circle | square
+const xCD = [c(18,30,11),  di(42,30,11)];  // circle | diamond
+const xSD = [sq(18,30,11), di(42,30,11)];  // square | diamond   (row1 result)
+const xST = [sq(18,30,11), tr(42,30,11)];  // square | triangle  (row2 col1)
+const xSC = [sq(18,30,11), c(42,30,11)];   // square | circle    (row2 col2)
+const xTC = [tr(18,30,11), c(42,30,11)];   // triangle| circle   (row2 result)
+const xTD = [tr(18,30,11), di(42,30,11)];  // triangle| diamond  (row3 col1)
+const xTS = [tr(18,30,11), sq(42,30,11)];  // triangle| square   (row3 col2)
+const xDS = [di(18,30,11), sq(42,30,11)];  // diamond | square   ← CORRECT ANSWER
+// Distractors: xTD (triangle persists), xTC (from row2), xCS (from row1 input)
 
 // ── SVG paths for rotation questions ──────────────────────────────────────
 
@@ -208,22 +215,23 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q5 hard (Advanced Raven): MERGE RULE
-  // Rule: Col 3 = Col 1 shape (top-left) combined with Col 2 shape (bottom-right)
-  // Row1: circle, diamond  → circle◤ + diamond◣
-  // Row2: square, triangle → square◤ + triangle◣
-  // Row3: triangle, circle → ???  = triangle◤ + circle◣
-  // Traps: B=Row1's compound (wrong shapes), C=square+circle (row2 shapes), D=triangle+diamond (wrong 2nd)
+  // Q5 hard (APM-level): CANCELLATION / XOR MATRIX
+  // Each cell holds two shapes. In every row, any shape that appears in BOTH col1 AND col2
+  // is "cancelled" and disappears from col3 — only shapes unique to one column survive.
+  // Row1: {C,S} | {C,D} → C cancels → col3 = {S,D}
+  // Row2: {S,T} | {S,C} → S cancels → col3 = {T,C}
+  // Row3: {T,D} | {T,S} → T cancels → col3 = {D,S} ← ANSWER
+  // Traps: B keeps triangle (rule misapplied), C copies row2 result, D uses row1 input
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Raven Advanced", time: 35,
-    text: "Each row follows the same hidden rule. Which image belongs in the empty cell?",
+    cat: 0, type: "raven", diff: "hard", badge: "Cancellation Matrix", time: 40,
+    text: "Find the hidden rule, then choose the image that belongs in the empty cell.",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Rule: the 3rd cell merges the two shapes from columns 1 and 2. Left shape → top-left, right shape → bottom-right. Row 3: triangle (col 1) + circle (col 2) = triangle top-left, circle bottom-right.",
+    exp: "Cancellation rule: any shape present in BOTH col 1 AND col 2 of a row is removed in col 3 — only unique shapes survive. Row 3 has triangle+diamond and triangle+square → triangle cancels → answer is diamond+square.",
     vis: {
       kind: "raven",
-      cells: [C1, D1, CD_cell,  S1, T1, ST_cell,  T1, C1, null],
-      optCells: [TC_cell, CD_cell, SC_cell, TD_cell],
+      cells: [xCS, xCD, xSD,  xST, xSC, xTC,  xTD, xTS, null],
+      optCells: [xDS, xTD, xTC, xCS],
     },
   },
 
@@ -264,11 +272,11 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 1, type: "text", diff: "hard", badge: "Antonym", time: 20,
-    text: "Which word is most OPPOSITE in meaning to EPHEMERAL?",
-    opts: ["Fleeting", "Transient", "Permanent", "Brief"],
+    cat: 1, type: "text", diff: "hard", badge: "Syllogistic Logic", time: 35,
+    text: "All Glimbs are Forbs. No Forbs are Splacts. Some Splacts are Yends. Which statement MUST be true?",
+    opts: ["Some Glimbs are Splacts", "All Yends are Forbs", "No Glimbs are Splacts", "Some Forbs are Yends"],
     ans: 2,
-    exp: "Ephemeral means lasting a very short time. Its antonym is Permanent.",
+    exp: "Chain: All Glimbs → Forbs. No Forbs → Splacts. Therefore by transitivity: No Glimbs → Splacts (C). A contradicts this. B and D go beyond what the premises support.",
   },
 
   // ── CAT 2 · SPATIAL REASONING — rotation ─────────────────────────────────
@@ -323,18 +331,19 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q5 hard: G-shape (most complex) shown at 315° — find original (0°)
-  // Options only 15° apart + mirrored distractor at correct angle; time 30s to think
+  // Q5 hard: G-shape shown at 255° — find original (0°)
+  // Options within 15° of each other + one mirror trap at the correct angle
+  // To undo 255° CW you need 105° more CW (360−255), so original = 0°
   {
-    cat: 2, type: "rotation", diff: "hard", badge: "Inverse Rotation", time: 30,
-    text: "This complex shape has been rotated 315° clockwise. Which option shows its original (0°) position?",
+    cat: 2, type: "rotation", diff: "hard", badge: "Inverse Rotation", time: 25,
+    text: "This asymmetric shape has been rotated 255° clockwise. Which option shows its ORIGINAL orientation?",
     opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "Undoing 315° CW = rotating 45° CW back (360−315=45). So original = 0°. Option A is only 15° off, B is the mirror at 0°, D is 15° past. Only C is the true original.",
+    ans: 3,
+    exp: "360° − 255° = 105° to undo. Original = 0°. A is 0° but mirrored (reflection, not rotation). B is 345° (15° short). C is 15° (15° past). Only D is the exact original at 0°.",
     vis: {
-      kind: "rotation", path: G_SHAPE, showAngle: 315,
-      optAngles:   [345, 0, 0, 15],
-      optMirrors:  [false, true, false, false],
+      kind: "rotation", path: G_SHAPE, showAngle: 255,
+      optAngles:  [0,   345, 15, 0],
+      optMirrors: [true, false, false, false],
     },
   },
 

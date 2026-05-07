@@ -145,6 +145,29 @@ const aTbCd = [tr(30,16,12), c(30,44,9)];    // triangle top + circle bottom ←
 const aCbTd = [c(30,16,12),  tr(30,44,9)];   // distractor: circle top + triangle bottom
 const aTbDd = [tr(30,16,12), di(30,44,9)];   // distractor: triangle top + diamond bottom
 
+// Quadrant position cells (4 circles r=8 at corners of 60×60 cell)
+// Filled position rotates clockwise: TL(0)→TR(1)→BR(2)→BL(3)→TL(0)
+const qTL   = [c(15,15,8),         c(45,15,8,false), c(15,45,8,false), c(45,45,8,false)];
+const qTR   = [c(15,15,8,false), c(45,15,8),         c(15,45,8,false), c(45,45,8,false)];
+const qBR   = [c(15,15,8,false), c(45,15,8,false), c(15,45,8,false), c(45,45,8)        ];
+const qBL   = [c(15,15,8,false), c(45,15,8,false), c(15,45,8),         c(45,45,8,false)];
+const qAll4 = [c(15,15,8),         c(45,15,8),         c(15,45,8),         c(45,45,8)  ];
+
+// Fill-shift tri-shape cells: 3 shapes at l/m/r positions (r=7), exactly one filled per cell
+// Row 1 — shapes C S T
+const fsR1C1 = [c(13,30,7),           sq(30,30,7,false), tr(47,30,7,false)];
+const fsR1C2 = [c(13,30,7,false), sq(30,30,7),           tr(47,30,7,false)];
+const fsR1C3 = [c(13,30,7,false), sq(30,30,7,false), tr(47,30,7)          ];
+// Row 2 — shapes T C S
+const fsR2C1 = [tr(13,30,7),           c(30,30,7,false),  sq(47,30,7,false)];
+const fsR2C2 = [tr(13,30,7,false), c(30,30,7),            sq(47,30,7,false)];
+const fsR2C3 = [tr(13,30,7,false), c(30,30,7,false),  sq(47,30,7)          ];
+// Row 3 — shapes S T C
+const fsR3C1 = [sq(13,30,7),           tr(30,30,7,false), c(47,30,7,false) ];
+const fsR3C2 = [sq(13,30,7,false), tr(30,30,7),           c(47,30,7,false) ];
+const fsR3C3 = [sq(13,30,7,false), tr(30,30,7,false), c(47,30,7)           ]; // ← ANSWER
+const fsAllF = [sq(13,30,7),           tr(30,30,7),           c(47,30,7)    ]; // distractor
+
 // ── SVG paths for rotation questions ──────────────────────────────────────
 
 const ARROW   = "M8,21 L8,39 L36,39 L36,51 L54,30 L36,9 L36,21 Z";
@@ -246,6 +269,39 @@ export const ALL_QUESTIONS: Question[] = [
       kind: "raven",
       cells: [xCS, xCD, xSD,  xST, xSC, xTC,  xTD, xTS, null],
       optCells: [xDS, xTD, xTC, xCS],
+    },
+  },
+
+  // Q6 hard: POSITION ROTATION (APM-level) ───────────────────────────────────
+  // Each cell: 4 circles at corner positions, exactly 1 filled.
+  // Rule: the filled position steps 90° clockwise with each move (left→right, top→bottom).
+  // Steps: TL(0) TR(1) BR(2) | TR(1) BR(2) BL(3) | BR(2) BL(3) → TL(4≡0)
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Position Rotation", time: 38,
+    text: "Find the hidden rule, then choose the image that belongs in the empty cell.",
+    opts: ["A", "B", "C", "D"],
+    ans: 0,
+    exp: "One circle is filled per cell; the rest are outlines. Reading left→right, top→bottom, the filled position rotates 90° clockwise each step (TL→TR→BR→BL→TL). After 8 steps the full cycle completes — the answer brings the filled circle back to the top-left corner.",
+    vis: {
+      kind: "raven",
+      cells: [qTL, qTR, qBR,  qTR, qBR, qBL,  qBR, qBL, null],
+      optCells: [qTL, qBL, qTR, qAll4],
+    },
+  },
+
+  // Q7 hard: FILL SHIFT (Cattell CFI-level, two simultaneous rules) ──────────
+  // Rule 1: each row has 3 shapes in fixed l/m/r positions — row 1: C-S-T, row 2: T-C-S, row 3: S-T-C
+  // Rule 2: exactly one shape is filled per cell; the filled shape shifts one position right per column
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Fill Shift", time: 40,
+    text: "Find the hidden rule, then choose the image that belongs in the empty cell.",
+    opts: ["A", "B", "C", "D"],
+    ans: 0,
+    exp: "Two simultaneous rules: (1) shape order cycles per row — C-S-T → T-C-S → S-T-C. (2) exactly one shape is filled and it shifts right by one position per column. Row 3, col 3: shapes are S-T-C and the rightmost (circle) must be filled.",
+    vis: {
+      kind: "raven",
+      cells: [fsR1C1, fsR1C2, fsR1C3,  fsR2C1, fsR2C2, fsR2C3,  fsR3C1, fsR3C2, null],
+      optCells: [fsR3C3, fsR3C1, fsR3C2, fsAllF],
     },
   },
 

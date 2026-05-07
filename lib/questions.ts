@@ -134,6 +134,17 @@ const xTS = [tr(18,30,11), sq(42,30,11)];  // triangle| square   (row3 col2)
 const xDS = [di(18,30,11), sq(42,30,11)];  // diamond | square   ← CORRECT ANSWER
 // Distractors: xTD (triangle persists), xTC (from row2), xCS (from row1 input)
 
+// Size-only diamond variant
+const D_sm  = [di(30,30,7)];
+
+// Stacked dual-shape cells (top r=12 at y=16, bottom r=9 at y=44)
+// Rule: col3 = col1 shape stacked on top of col2 shape
+const aCbDd = [c(30,16,12),  di(30,44,9)];   // circle top + diamond bottom
+const aSbTd = [sq(30,16,12), tr(30,44,9)];   // square top + triangle bottom
+const aTbCd = [tr(30,16,12), c(30,44,9)];    // triangle top + circle bottom ← ANSWER
+const aCbTd = [c(30,16,12),  tr(30,44,9)];   // distractor: circle top + triangle bottom
+const aTbDd = [tr(30,16,12), di(30,44,9)];   // distractor: triangle top + diamond bottom
+
 // ── SVG paths for rotation questions ──────────────────────────────────────
 
 const ARROW   = "M8,21 L8,39 L36,39 L36,51 L54,30 L36,9 L36,21 Z";
@@ -145,6 +156,9 @@ const F_SHAPE = "M10,8 L50,8 L50,22 L24,22 L24,36 L44,36 L44,48 L24,48 L24,54 L1
 const Z_SHAPE = "M8,10 L52,10 L52,26 L20,26 L20,42 L52,42 L52,58 L8,58 L8,42 L40,42 L40,26 L8,26 Z";
 const NOTCH   = "M10,8 L50,8 L36,28 L50,52 L10,52 Z";
 const G_SHAPE = "M52,8 L52,38 L32,38 L32,26 L44,26 L44,20 L14,20 L14,44 L44,44 L44,38 L52,38 L52,56 L8,56 L8,8 Z";
+// Complex asymmetric shapes (harder spatial questions)
+const HOOK  = "M10,6 L28,6 L28,24 L50,24 L50,42 L38,42 L38,30 L18,30 L18,54 L10,54 Z";
+const CRANK = "M8,8 L30,8 L30,20 L50,20 L50,8 L56,8 L56,46 L50,46 L50,34 L14,34 L14,52 L8,52 Z";
 
 // ── Questions ──────────────────────────────────────────────────────────────
 
@@ -180,38 +194,38 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q3 medium: THREE rules — shape per row, count per row, fill per column
-  // Row1: 1C-filled, 1C-outline, 1C-filled
-  // Row2: 2S-filled, 2S-outline, 2S-filled
-  // Row3: 3T-filled, 3T-outline, ??? → T3 (filled)
+  // Q3 medium: count × size progressive matrix (APM-style — two rules simultaneously)
+  // Count increases left→right (1→2→3); size shrinks as count grows (big→med→small)
+  // Row1: 1 big circle, 2 med circles, 3 small circles
+  // Row2: 1 big square,  2 med squares,  3 small squares
+  // Row3: 1 big triangle, 2 med triangles, ??? → 3 small triangles
   {
-    cat: 0, type: "raven", diff: "medium", badge: "Triple Rule", time: 25,
+    cat: 0, type: "raven", diff: "medium", badge: "Progressive Matrix", time: 25,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Three simultaneous rules: shape per row (C→S→T), count per row (1→2→3), fill per column (filled→outline→filled). Missing = 3 filled triangles.",
+    exp: "Two simultaneous rules: count increases left→right (1→2→3) and size shrinks as count grows (big→med→small). Row 3 needs 3 small triangles.",
     vis: {
       kind: "raven",
-      cells: [C1, C1o, C1,  S2, S2o, S2,  T3, T3o, null],
-      optCells: [T3, T3o, S3, C3],
+      cells: [C1b, C2m, C3s,  S1b, S2m, S3s,  T1b, T2m, null],
+      optCells: [T3s, T3, D3s, T2m],
     },
   },
 
-  // Q4 medium: THREE rules — shape cycle per row + size decreases left→right + fill by column
-  // Col1 filled, col2 outline, col3 filled
-  // Row1: C-big-f, S-med-o, T-sm-f
-  // Row2: T-big-f, C-med-o, S-sm-f
-  // Row3: S-big-f, T-med-o, ??? → C-sm-f
+  // Q4 medium: shape combination — col3 = col1 shape stacked above col2 shape (Cattell CFI)
+  // Row1: big circle (col1) + small diamond (col2) → circle on top, diamond below (col3)
+  // Row2: big square  (col1) + small triangle (col2) → square on top, triangle below (col3)
+  // Row3: big triangle (col1) + small circle (col2) → ??? → triangle on top, circle below
   {
-    cat: 0, type: "raven", diff: "medium", badge: "Triple Rule Matrix", time: 22,
+    cat: 0, type: "raven", diff: "medium", badge: "Shape Combination", time: 22,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Three rules: shapes cycle C→S→T per row; size decreases big→med→sm left-to-right; columns alternate filled→outline→filled. Row 3 needs small filled circle.",
+    exp: "Rule: col 3 = the shape from col 1 (top half) combined with the shape from col 2 (bottom half). Row 3: large triangle + small circle → triangle on top, circle below.",
     vis: {
       kind: "raven",
-      cells: [C_big, S_medo, T_sm,  T_big, C_medo, S_sm,  S_big, T_medo, null],
-      optCells: [C_sm, C_smo, S_sm, T_sm],
+      cells: [C_big, D_sm, aCbDd,  S_big, T_sm, aSbTd,  T_big, C_sm, null],
+      optCells: [aTbCd, aCbTd, aTbDd, T1],
     },
   },
 
@@ -301,33 +315,33 @@ export const ALL_QUESTIONS: Question[] = [
     vis: { kind: "rotation", path: L_SHAPE, showAngle: 0, optAngles: [0, 180, 90, 270] },
   },
 
-  // Q3 medium: STEP-shape shown at 45° → rotate further 90° CW (= 135°)
-  // Option B is a mirror of 135° — close visual distractor requiring axis awareness
+  // Q3 medium: HOOK shape — 105° clockwise rotation
+  // Options within 30° of each other; one mirror distractor at exact correct angle
   {
     cat: 2, type: "rotation", diff: "medium", badge: "Compound Rotation", time: 22,
-    text: "This step-shape is shown at 45°. Which option shows it rotated a further 90° clockwise?",
+    text: "Which option shows this shape rotated exactly 105° clockwise?",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
-    exp: "45° + 90° clockwise = 135°. Option B is the mirror image of the correct answer — check orientation carefully.",
+    ans: 1,
+    exp: "105° sits between 90° and 120°. Option A is only 75° (30° short). Option C looks identical to B but is mirrored — a reflection, not a rotation.",
     vis: {
-      kind: "rotation", path: STEP, showAngle: 45,
-      optAngles:   [135, 135, 90, 180],
-      optMirrors:  [false, true, false, false],
+      kind: "rotation", path: HOOK, showAngle: 0,
+      optAngles:  [75, 105, 105, 135],
+      optMirrors: [false, false, true, false],
     },
   },
 
-  // Q4 medium: F-shape (complex, asymmetric) shown at 0° → rotate 120° CW
-  // Options tight (30° apart) + one mirrored distractor
+  // Q4 medium: CRANK shape — shown at 30°, rotate a further 105° CW → 135°
+  // Options within 25° of each other; one mirror distractor at the exact correct angle
   {
     cat: 2, type: "rotation", diff: "medium", badge: "Precise Rotation", time: 20,
-    text: "Which option shows this F-shape rotated exactly 120° clockwise?",
+    text: "This shape is at 30°. Which shows it rotated a further 105° clockwise?",
     opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "120° clockwise. Options are only 30° apart — and option D is the mirror image at 120°, not a rotation.",
+    ans: 1,
+    exp: "30° + 105° = 135°. Options are within 25° of each other. Option C is the mirror image at 135° — it's a reflection, not a rotation.",
     vis: {
-      kind: "rotation", path: F_SHAPE, showAngle: 0,
-      optAngles:   [90, 150, 120, 120],
-      optMirrors:  [false, false, false, true],
+      kind: "rotation", path: CRANK, showAngle: 30,
+      optAngles:  [110, 135, 135, 160],
+      optMirrors: [false, false, true, false],
     },
   },
 

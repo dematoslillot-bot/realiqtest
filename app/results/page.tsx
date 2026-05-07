@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { calculateIQ, getDifficultyAdjustment, getIQLabel, getPercentile } from "@/lib/iq-calculator";
 import { CATEGORIES } from "@/lib/questions";
-import { detectCountryCode, getCountryByCode, LEADERBOARD, type CountryEntry } from "@/lib/leaderboard-data";
+import { detectCountryCode, getCountryByCode, type CountryEntry } from "@/lib/leaderboard-data";
 
 /* ── Animated IQ counter ───────────────────────────────────────────────── */
 
@@ -124,7 +124,6 @@ function BellCurve({ iq }: { iq: number }) {
 
 function LeaderboardPopup({ iq, onClose }: { iq: number; onClose: () => void }) {
   const [country, setCountry] = useState<CountryEntry | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     const code = detectCountryCode();
@@ -150,7 +149,7 @@ function LeaderboardPopup({ iq, onClose }: { iq: number; onClose: () => void }) 
       }}>
         <div style={{ fontSize: 36, marginBottom: 12 }}>🌍</div>
         <p style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: dim, marginBottom: 10 }}>
-          Global Ranking
+          Country Comparison
         </p>
 
         {country ? (
@@ -159,9 +158,6 @@ function LeaderboardPopup({ iq, onClose }: { iq: number; onClose: () => void }) 
               <span style={{ fontSize: 32 }}>{country.flag}</span>
               <div style={{ textAlign: "left" }}>
                 <p style={{ fontSize: 16, fontWeight: 600, color: "#D6E4FF" }}>{country.name}</p>
-                <p style={{ fontSize: 11, color: dim }}>
-                  Rank <span style={{ color: blue, fontWeight: 700 }}>#{country.rank}</span> of {LEADERBOARD.length} countries
-                </p>
               </div>
             </div>
 
@@ -191,10 +187,7 @@ function LeaderboardPopup({ iq, onClose }: { iq: number; onClose: () => void }) 
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <button onClick={() => router.push("/leaderboard")} className="btn btn-primary" style={{ width: "100%" }}>
-            🏆 View Global Leaderboard
-          </button>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: dim, fontSize: 12, cursor: "pointer", padding: "8px 0" }}>
+          <button onClick={onClose} className="btn btn-primary" style={{ width: "100%" }}>
             Continue to my results →
           </button>
         </div>

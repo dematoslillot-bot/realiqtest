@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LEADERBOARD } from "@/lib/leaderboard-data";
 
 /* ══════════════════════════════════════════════════════════════════════════
    NEURAL NETWORK CANVAS
@@ -600,73 +599,6 @@ function Dim3D({ index }: { index: number }) {
   );
 }
 
-/* ── Leaderboard Banner ────────────────────────────────────────────────── */
-
-function LeaderboardBanner() {
-  const top10 = LEADERBOARD.slice(0, 10);
-  const medals = ["🥇", "🥈", "🥉"];
-  return (
-    <div style={{
-      paddingTop: 64,              // clear fixed nav
-      background: "rgba(3,5,15,0.96)",
-      borderBottom: "1px solid rgba(0,85,255,0.12)",
-    }}>
-      <div style={{
-        maxWidth: 1100, margin: "0 auto",
-        padding: "10px 20px",
-        display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
-      }}>
-        {/* Label */}
-        <span style={{
-          fontSize: 9, letterSpacing: "0.22em", textTransform: "uppercase",
-          color: "#3A5A8A", flexShrink: 0, whiteSpace: "nowrap",
-        }}>
-          🌍 Global IQ
-        </span>
-
-        {/* Divider */}
-        <div style={{ width: 1, height: 14, background: "rgba(0,85,255,0.2)", flexShrink: 0 }} />
-
-        {/* Country chips */}
-        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", flex: 1 }}>
-          {top10.map((c, i) => (
-            <Link
-              key={c.code}
-              href="/leaderboard"
-              style={{ textDecoration: "none" }}
-            >
-              <div style={{
-                display: "flex", alignItems: "center", gap: 4,
-                background: i < 3 ? "rgba(0,85,255,0.09)" : "rgba(0,85,255,0.04)",
-                border: `1px solid ${i < 3 ? "rgba(0,85,255,0.22)" : "rgba(0,85,255,0.09)"}`,
-                borderRadius: 3, padding: "3px 7px",
-                cursor: "pointer", transition: "background 0.15s",
-              }}>
-                <span style={{ fontSize: 8, color: i < 3 ? "#FFD700" : "#3A5A8A", fontWeight: 700 }}>
-                  {i < 3 ? medals[i] : `#${i + 1}`}
-                </span>
-                <span style={{ fontSize: 14, lineHeight: 1 }}>{c.flag}</span>
-                <span style={{ fontSize: 10, color: "#8AB0E0", maxWidth: 68, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#6EB0FF" }}>{c.avgIQ}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* See all */}
-        <Link href="/leaderboard" style={{
-          fontSize: 10, color: "#0055FF", textDecoration: "none",
-          letterSpacing: "0.06em", flexShrink: 0, whiteSpace: "nowrap",
-          padding: "3px 8px", border: "1px solid rgba(0,85,255,0.3)",
-          borderRadius: 3,
-        }}>
-          All 55 →
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 /* ── Stat Counter ──────────────────────────────────────────────────────── */
 
 function StatCounter({ value, suffix, decimals = 0 }: { value: number; suffix: string; decimals?: number }) {
@@ -786,6 +718,183 @@ function offTilt(e: React.MouseEvent<HTMLDivElement>) {
   card.style.boxShadow = "";
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   RADAR CHART — cognitive profile spider (6 dimensions, animated draw)
+══════════════════════════════════════════════════════════════════════════ */
+
+const RADAR_DIMS = [
+  { name: "Logical",   value: 78, color: "#0055FF" },
+  { name: "Verbal",    value: 92, color: "#00AAFF" },
+  { name: "Spatial",   value: 65, color: "#9B59B6" },
+  { name: "Numerical", value: 88, color: "#00D87A" },
+  { name: "Memory",    value: 71, color: "#FF8C00" },
+  { name: "Speed",     value: 85, color: "#FFD700" },
+];
+
+function RadarChart() {
+  const [progress, setProgress] = useState(0);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  const CX = 160, CY = 160, R = 110;
+
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      io.disconnect();
+      const dur = 1400, t0 = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min((now - t0) / dur, 1);
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        setProgress(eased);
+        if (t < 1) requestAnimationFrame(tick);
+        else setProgress(1);
+      };
+      requestAnimationFrame(tick);
+    }, { threshold: 0.3 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const angleOf = (i: number) => (i * 60 - 90) * (Math.PI / 180);
+
+  const axisEnd = (i: number): [number, number] => [
+    CX + R * Math.cos(angleOf(i)),
+    CY + R * Math.sin(angleOf(i)),
+  ];
+
+  const dataPoint = (i: number, prog = 1): [number, number] => {
+    const r = R * (RADAR_DIMS[i].value / 100) * prog;
+    return [CX + r * Math.cos(angleOf(i)), CY + r * Math.sin(angleOf(i))];
+  };
+
+  const labelPos = (i: number): [number, number] => {
+    const r = R + 26;
+    return [CX + r * Math.cos(angleOf(i)), CY + r * Math.sin(angleOf(i))];
+  };
+
+  const hexPoints = (pct: number) =>
+    Array.from({ length: 6 }, (_, i) => {
+      const r = R * pct;
+      return `${CX + r * Math.cos(angleOf(i))},${CY + r * Math.sin(angleOf(i))}`;
+    }).join(" ");
+
+  const dataPolygon = Array.from({ length: 6 }, (_, i) => dataPoint(i, progress).join(",")).join(" ");
+
+  return (
+    <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <svg ref={svgRef} viewBox="0 0 320 320" width="320" height="320"
+        style={{ overflow: "visible", filter: "drop-shadow(0 0 24px rgba(0,85,255,0.2))" }}>
+
+        {/* Background concentric hexagons */}
+        {[0.25, 0.5, 0.75, 1].map(pct => (
+          <polygon key={pct} points={hexPoints(pct)}
+            fill={pct === 1 ? "rgba(0,85,255,0.03)" : "none"}
+            stroke={pct === 1 ? "rgba(0,85,255,0.22)" : "rgba(0,85,255,0.10)"}
+            strokeWidth={pct === 1 ? 1.2 : 0.7} />
+        ))}
+
+        {/* % labels on right axis */}
+        {[25, 50, 75].map(pct => (
+          <text key={pct}
+            x={CX + R * 0.01 * pct * Math.cos(angleOf(0)) + 5}
+            y={CY + R * 0.01 * pct * Math.sin(angleOf(0)) - 4}
+            fill="rgba(58,90,138,0.7)" fontSize="7.5" fontFamily="monospace"
+          >{pct}</text>
+        ))}
+
+        {/* Axis spokes */}
+        {Array.from({ length: 6 }, (_, i) => {
+          const [ex, ey] = axisEnd(i);
+          return (
+            <line key={i} x1={CX} y1={CY} x2={ex} y2={ey}
+              stroke="rgba(0,85,255,0.18)" strokeWidth="1" strokeDasharray="3,3" />
+          );
+        })}
+
+        {/* Data fill */}
+        <polygon points={dataPolygon}
+          fill="rgba(0,85,255,0.10)"
+          stroke="none" />
+
+        {/* Data stroke with glow */}
+        <polygon points={dataPolygon}
+          fill="none"
+          stroke="rgba(0,85,255,0.9)"
+          strokeWidth="2"
+          style={{ filter: "drop-shadow(0 0 6px rgba(0,85,255,0.7))" }} />
+
+        {/* Data points */}
+        {Array.from({ length: 6 }, (_, i) => {
+          const [px, py] = dataPoint(i, progress);
+          const dim = RADAR_DIMS[i];
+          const isHov = hovered === i;
+          return (
+            <g key={i}
+              style={{ cursor: "pointer" }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}>
+              {/* Outer glow ring on hover */}
+              {isHov && (
+                <circle cx={px} cy={py} r={14} fill="none"
+                  stroke={dim.color} strokeWidth="1" opacity="0.35" />
+              )}
+              <circle cx={px} cy={py} r={isHov ? 7 : 5}
+                fill={dim.color}
+                style={{
+                  transition: "r 0.15s",
+                  filter: `drop-shadow(0 0 ${isHov ? 8 : 4}px ${dim.color})`,
+                }} />
+              {/* Value tooltip */}
+              {isHov && (
+                <g>
+                  <rect x={px - 22} y={py - 30} width={44} height={22}
+                    rx={4} ry={4}
+                    fill="rgba(5,10,25,0.92)"
+                    stroke={dim.color} strokeWidth="1" />
+                  <text x={px} y={py - 18} textAnchor="middle" dominantBaseline="middle"
+                    fill={dim.color} fontSize="11" fontWeight="700" fontFamily="monospace">
+                    {dim.value}
+                  </text>
+                </g>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Axis labels */}
+        {Array.from({ length: 6 }, (_, i) => {
+          const [lx, ly] = labelPos(i);
+          const dim = RADAR_DIMS[i];
+          const isHov = hovered === i;
+          return (
+            <text key={i} x={lx} y={ly}
+              textAnchor="middle" dominantBaseline="middle"
+              fill={isHov ? dim.color : "#5577AA"}
+              fontSize={isHov ? "11.5" : "10.5"}
+              fontWeight={isHov ? "700" : "400"}
+              fontFamily="sans-serif"
+              style={{ transition: "fill 0.15s, font-size 0.15s", cursor: "pointer" }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}>
+              {dim.name}
+            </text>
+          );
+        })}
+
+        {/* Center dot */}
+        <circle cx={CX} cy={CY} r={3} fill="#0055FF" opacity="0.6" />
+      </svg>
+
+      <p style={{ fontSize: 11, color: "#3A5A8A", marginTop: 8, letterSpacing: "0.04em" }}>
+        Hover each vertex to explore your dimensions
+      </p>
+    </div>
+  );
+}
+
 /* ── Page ──────────────────────────────────────────────────────────────── */
 
 export default function Home() {
@@ -864,21 +973,29 @@ export default function Home() {
         </button>
 
         <ul className="nav-links" style={{ gap: "32px", listStyle: "none", margin: 0, padding: 0 }}>
-          {["The Test", "How it works", "Pricing"].map(l => (
-            <li key={l}
+          {[
+            { label: "The Test",     id: "pillars"      },
+            { label: "How It Works", id: "how-it-works" },
+            { label: "Leaderboard",  href: "/leaderboard" },
+            { label: "Pricing",      id: "pricing"      },
+          ].map(l => (
+            <li key={l.label}
+              onClick={() => {
+                if ("href" in l && l.href) router.push(l.href);
+                else if ("id" in l && l.id) document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" });
+              }}
               style={{ fontSize: "13px", color: dim, cursor: "pointer", transition: "color 0.15s" }}
               onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#D6E4FF")}
               onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = dim)}>
-              {l}
+              {"href" in l && l.href === "/leaderboard"
+                ? <span style={{ color: "#5599FF" }}>{l.label}</span>
+                : l.label}
             </li>
           ))}
         </ul>
 
         <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">Start Free</button>
       </nav>
-
-      {/* ── Leaderboard Banner ── */}
-      <LeaderboardBanner />
 
       {/* ── Hero ── */}
       <section style={{
@@ -922,8 +1039,8 @@ export default function Home() {
               {/* SVG gradient text — Space Grotesk, bigger, animated rainbow */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 760 82"
-                style={{ width:"100%", maxWidth:720, height:"auto", display:"block", margin:"6px auto 0", overflow:"visible" }}
+                viewBox="0 0 1020 114"
+                style={{ width:"100%", maxWidth:960, height:"auto", display:"block", margin:"10px auto 0", overflow:"visible" }}
                 aria-label="true intelligence"
                 role="img"
               >
@@ -932,25 +1049,47 @@ export default function Home() {
                     <stop offset="0%"   stopColor="#0055FF">
                       <animate attributeName="stop-color" values="#0055FF;#00AAFF;#9B59B6;#FF6B9D;#00CCFF;#0055FF" dur="5s" repeatCount="indefinite" />
                     </stop>
-                    <stop offset="33%"  stopColor="#9B59B6">
+                    <stop offset="25%"  stopColor="#00AAFF">
+                      <animate attributeName="stop-color" values="#00AAFF;#9B59B6;#FF6B9D;#00CCFF;#0055FF;#00AAFF" dur="5s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="55%"  stopColor="#9B59B6">
                       <animate attributeName="stop-color" values="#9B59B6;#FF6B9D;#00CCFF;#0055FF;#00AAFF;#9B59B6" dur="5s" repeatCount="indefinite" />
                     </stop>
-                    <stop offset="66%"  stopColor="#FF6B9D">
+                    <stop offset="80%"  stopColor="#FF6B9D">
                       <animate attributeName="stop-color" values="#FF6B9D;#00CCFF;#0055FF;#00AAFF;#9B59B6;#FF6B9D" dur="5s" repeatCount="indefinite" />
                     </stop>
                     <stop offset="100%" stopColor="#00CCFF">
                       <animate attributeName="stop-color" values="#00CCFF;#0055FF;#00AAFF;#9B59B6;#FF6B9D;#00CCFF" dur="5s" repeatCount="indefinite" />
                     </stop>
                   </linearGradient>
+                  <filter id="hero-glow">
+                    <feGaussianBlur stdDeviation="4" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
                 </defs>
+                {/* Glow layer */}
                 <text
-                  x="50%" y="66"
+                  x="50%" y="88"
                   textAnchor="middle"
                   fill="url(#hero-grad)"
                   fontFamily="'Space Grotesk', sans-serif"
-                  fontWeight="600"
-                  fontSize="68"
-                  letterSpacing="-2.5"
+                  fontWeight="700"
+                  fontSize="96"
+                  letterSpacing="-3.5"
+                  opacity="0.35"
+                  style={{ filter: "blur(12px)" }}
+                >
+                  true intelligence
+                </text>
+                {/* Main text */}
+                <text
+                  x="50%" y="88"
+                  textAnchor="middle"
+                  fill="url(#hero-grad)"
+                  fontFamily="'Space Grotesk', sans-serif"
+                  fontWeight="700"
+                  fontSize="96"
+                  letterSpacing="-3.5"
                 >
                   true intelligence
                 </text>
@@ -1009,7 +1148,7 @@ export default function Home() {
       </div>
 
       {/* ── Six Pillars ── */}
-      <section className="section">
+      <section className="section" id="pillars">
         <div className="container">
           <div className="reveal sec-hd">
             <p className="label">What we measure</p>
@@ -1064,7 +1203,7 @@ export default function Home() {
       </section>
 
       {/* ── How It Works ── */}
-      <section className="section" style={{ background:"#050810" }}>
+      <section className="section" id="how-it-works" style={{ background:"#050810" }}>
         <div className="container">
           <div className="how-grid">
             <div className="reveal">
@@ -1116,6 +1255,60 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Cognitive Radar Preview ── */}
+      <section className="section" style={{ background: "#050810", borderTop: "1px solid rgba(0,85,255,0.10)" }}>
+        <div className="container">
+          <div style={{ display: "flex", gap: 56, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
+
+            {/* Radar chart */}
+            <div className="reveal" style={{ transitionDelay: "80ms", flexShrink: 0 }}>
+              <div style={{
+                background: "rgba(5,10,25,0.7)", border: "1px solid rgba(0,85,255,0.18)",
+                borderRadius: 12, padding: "28px 24px",
+                boxShadow: "0 0 60px rgba(0,85,255,0.08), inset 0 1px 0 rgba(0,170,255,0.06)",
+              }}>
+                <RadarChart />
+              </div>
+            </div>
+
+            {/* Copy */}
+            <div className="reveal" style={{ maxWidth: 400, transitionDelay: "160ms" }}>
+              <p className="label">Full Report</p>
+              <h2 className="sec-title" style={{ marginBottom: 16 }}>Your cognitive<br />radar chart</h2>
+              <p style={{ fontSize: 14, color: "#3A5A8A", lineHeight: 1.75, marginBottom: 24 }}>
+                The Premium Report includes your personal radar chart — a hexagonal visualisation
+                of all six cognitive dimensions. See exactly where you excel and where you can grow.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+                {RADAR_DIMS.map((d) => (
+                  <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{
+                      width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+                      background: d.color,
+                      boxShadow: `0 0 8px ${d.color}`,
+                    }} />
+                    <span style={{ fontSize: 12, color: "#5577AA", width: 74 }}>{d.name}</span>
+                    <div style={{ flex: 1, height: 3, background: "rgba(0,85,255,0.10)", borderRadius: 2, overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%", width: `${d.value}%`, borderRadius: 2,
+                        background: d.color,
+                        boxShadow: `0 0 8px ${d.color}`,
+                        transition: "width 1.2s cubic-bezier(0.16,1,0.3,1)",
+                      }} />
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: d.color, width: 24, textAlign: "right" }}>{d.value}</span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">
+                Get Your Profile →
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* ── Premium Features ── */}
       <section className="section">
         <div className="container">
@@ -1145,7 +1338,7 @@ export default function Home() {
       </section>
 
       {/* ── Pricing ── */}
-      <section className="section" style={{ background:"#050810" }}>
+      <section className="section" id="pricing" style={{ background:"#050810" }}>
         <div className="container">
           <div className="reveal sec-hd">
             <p className="label">Pricing</p>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { calculateIQ, getDifficultyAdjustment, getIQLabel, getPercentile } from "@/lib/iq-calculator";
+import { calculateIQWeighted, getIQLabel, getPercentile } from "@/lib/iq-calculator";
 import { CATEGORIES } from "@/lib/questions";
 import { detectCountryCode, getCountryByCode, type CountryEntry } from "@/lib/leaderboard-data";
 
@@ -210,17 +210,14 @@ export default function ResultsPage() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   useEffect(() => {
-    const s  = parseInt(localStorage.getItem("iq_score")     || "0");
-    const t  = parseInt(localStorage.getItem("iq_total")     || "30");
-    const cs = JSON.parse(localStorage.getItem("iq_catScores") || "[0,0,0,0,0,0]");
-    const ct = JSON.parse(localStorage.getItem("iq_catTotals") || "[0,0,0,0,0,0]");
-    const easyScore = parseInt(localStorage.getItem("iq_easyScore") || "0");
-    const easyTotal = parseInt(localStorage.getItem("iq_easyTotal") || "1");
-    const hardScore = parseInt(localStorage.getItem("iq_hardScore") || "0");
-    const hardTotal = parseInt(localStorage.getItem("iq_hardTotal") || "1");
-    const base  = calculateIQ(s, t);
-    const adj   = getDifficultyAdjustment(hardScore, hardTotal, easyTotal - easyScore, easyTotal);
-    const final = Math.max(78, Math.min(145, base + adj));
+    const s          = parseInt(localStorage.getItem("iq_score")       || "0");
+    const t          = parseInt(localStorage.getItem("iq_total")       || "32");
+    const cs         = JSON.parse(localStorage.getItem("iq_catScores") || "[0,0,0,0,0,0]");
+    const ct         = JSON.parse(localStorage.getItem("iq_catTotals") || "[0,0,0,0,0,0]");
+    const weighted   = parseFloat(localStorage.getItem("iq_weighted")     || "0");
+    const maxPoss    = parseFloat(localStorage.getItem("iq_maxPossible")  || "1");
+    const minPoss    = parseFloat(localStorage.getItem("iq_minPossible")  || "-1");
+    const final      = Math.max(78, Math.min(145, calculateIQWeighted(weighted, maxPoss, minPoss)));
     setScore(s); setTotal(t); setCatScores(cs); setCatTotals(ct);
     setIq(final); setLabel(getIQLabel(final)); setPercentile(getPercentile(final));
     const timer = setTimeout(() => setShowLeaderboard(true), 2200);

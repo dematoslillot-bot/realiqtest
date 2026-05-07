@@ -1,6 +1,22 @@
-export function calculateIQ(score: number, total: number): number {
-  const pct = score / total;
-  // Bell-curve aligned thresholds (mean=100, σ=15)
+/**
+ * Points per difficulty level.
+ *
+ * Easy   correct → small reward   (expected to get it right)
+ * Easy   wrong   → heavy penalty  (no excuse to miss it)
+ * Medium correct → moderate reward
+ * Medium wrong   → moderate penalty
+ * Hard   correct → big reward     (real merit)
+ * Hard   wrong   → tiny penalty   (expected to miss some)
+ */
+export const DIFF_WEIGHTS = {
+  easy:   { correct: 1,  wrong: -3 },
+  medium: { correct: 2,  wrong: -2 },
+  hard:   { correct: 4,  wrong: -1 },
+} as const;
+
+// ── Internal IQ lookup (Bell-curve aligned, mean=100 σ=15) ─────────────────
+
+function iqFromPct(pct: number): number {
   if (pct >= 0.96) return 145;
   if (pct >= 0.90) return 135;
   if (pct >= 0.83) return 128;
@@ -15,22 +31,37 @@ export function calculateIQ(score: number, total: number): number {
   return 78;
 }
 
-/**
- * Weighted adjustment based on difficulty profile.
- * Hard-question bonuses and easy-question penalties, capped at ±5 IQ points.
- * Rewards well-rounded performance and genuine expertise, is not frustrating.
- */
-export function getDifficultyAdjustment(
-  hardCorrect: number, hardTotal: number,
-  easyWrong: number, easyTotal: number,
-): number {
-  if (hardTotal === 0 || easyTotal === 0) return 0;
-  const hardRate = hardCorrect / hardTotal;        // 0→1, how well on hard
-  const easyErrRate = easyWrong / easyTotal;       // 0→1, how badly on easy
-  // +up to 5 IQ for acing hard; −up to 5 for failing easy; capped at ±5
-  const raw = hardRate * 5 - easyErrRate * 5;
-  return Math.round(Math.max(-5, Math.min(5, raw)));
+// Legacy helper (kept for any backward-compat call sites)
+export function calculateIQ(score: number, total: number): number {
+  return iqFromPct(score / total);
 }
+
+/**
+ * Primary IQ calculator — uses the weighted difficulty scoring system.
+ *
+ * The normalized percentage maps the weighted score against the theoretical
+ * minimum (all wrong) and maximum (all correct), so:
+ *   • Perfect score   → 145 IQ
+ *   • 50/50 on all    → 100 IQ
+ *   • All wrong       → 78  IQ
+ *
+ * @param weighted     Accumulated point total (can be negative)
+ * @param maxPossible  Sum of correct-weights for every question answered
+ * @param minPossible  Sum of wrong-weights  for every question answered (negative)
+ */
+export function calculateIQWeighted(
+  weighted: number,
+  maxPossible: number,
+  minPossible: number,
+): number {
+  const span = maxPossible - minPossible;
+  if (span <= 0) return 100;
+  const pct = Math.max(0, Math.min(1, (weighted - minPossible) / span));
+  return iqFromPct(pct);
+}
+
+/** @deprecated Use calculateIQWeighted instead */
+export function getDifficultyAdjustment(): number { return 0; }
 
 export function getIQLabel(iq: number): string {
   if (iq >= 140) return "Genius";

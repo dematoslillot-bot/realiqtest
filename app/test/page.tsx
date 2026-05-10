@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef } from "@/lib/questions";
+import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell } from "@/lib/questions";
 import { DIFF_WEIGHTS } from "@/lib/iq-calculator";
 
 /* ── SVG shape renderer ─────────────────────────────────────────────────── */
@@ -252,6 +252,142 @@ function DiceNetDisplay({ faces }: { faces: number[] }) {
   );
 }
 
+/* ── Raven 2×2 display ──────────────────────────────────────────────────── */
+
+function Raven2Display({ cells }: { cells: (RavenCell|null)[] }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 4, maxWidth: 152, margin: "0 auto" }}>
+      {cells.map((cell, i) => (
+        <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden" }}>
+          <RavenCellSVG cell={cell} size={72} isQuestion={cell === null} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Raven rotation display (3×3 grid of rotated arrows) ────────────────── */
+
+function RavenRotDisplay({ path, angles }: { path: string; angles: (number|null)[] }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, maxWidth: 224, margin: "0 auto" }}>
+      {angles.map((angle, i) => (
+        <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden" }}>
+          {angle === null ? (
+            <svg width={70} height={70} viewBox="0 0 60 60">
+              <rect x={1} y={1} width={58} height={58} rx={2}
+                fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
+              <text x={30} y={38} textAnchor="middle" fontSize={22} fill="#0055FF" fontWeight="bold">?</text>
+            </svg>
+          ) : (
+            <RotationSVG path={path} angle={angle} size={70} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Pattern cell SVG (shape + line-fill) ───────────────────────────────── */
+
+function PatternCellSVG({ cell, size = 64, cellIdx = 0, isQ = false }: {
+  cell: PCell | null; size?: number; cellIdx?: number; isQ?: boolean;
+}) {
+  const COLOR = "#6EB0FF";
+  if (cell === null || isQ) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 60 60">
+        <rect x={1} y={1} width={58} height={58} rx={2}
+          fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
+        <text x={30} y={38} textAnchor="middle" fontSize={22} fill="#0055FF" fontWeight="bold">?</text>
+      </svg>
+    );
+  }
+  const TRI = "30,8 53,52 7,52";
+  const clipId = `rp${cellIdx}`;
+  const patId  = `pp${cellIdx}`;
+  return (
+    <svg width={size} height={size} viewBox="0 0 60 60">
+      <defs>
+        {cell.fill === "h" && (
+          <pattern id={patId} width="6" height="6" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="3" x2="6" y2="3" stroke={COLOR} strokeWidth="1.5" />
+          </pattern>
+        )}
+        {cell.fill === "v" && (
+          <pattern id={patId} width="6" height="6" patternUnits="userSpaceOnUse">
+            <line x1="3" y1="0" x2="3" y2="6" stroke={COLOR} strokeWidth="1.5" />
+          </pattern>
+        )}
+        {cell.fill === "d" && (
+          <pattern id={patId} width="7" height="7" patternUnits="userSpaceOnUse">
+            <line x1="-1" y1="1" x2="1" y2="-1" stroke={COLOR} strokeWidth="1.5" />
+            <line x1="0" y1="7" x2="7" y2="0" stroke={COLOR} strokeWidth="1.5" />
+            <line x1="6" y1="8" x2="8" y2="6" stroke={COLOR} strokeWidth="1.5" />
+          </pattern>
+        )}
+        <clipPath id={clipId}>
+          {cell.shape === "tri" && <polygon points={TRI} />}
+          {cell.shape === "sq"  && <rect x={8} y={8} width={44} height={44} />}
+          {cell.shape === "ci"  && <circle cx={30} cy={30} r={22} />}
+        </clipPath>
+      </defs>
+      <rect x={1} y={1} width={58} height={58} rx={2}
+        fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
+      <rect x={0} y={0} width={60} height={60} fill={`url(#${patId})`} clipPath={`url(#${clipId})`} />
+      {cell.shape === "tri" && <polygon points={TRI} fill="none" stroke={COLOR} strokeWidth={1.8} />}
+      {cell.shape === "sq"  && <rect x={8} y={8} width={44} height={44} fill="none" stroke={COLOR} strokeWidth={1.8} />}
+      {cell.shape === "ci"  && <circle cx={30} cy={30} r={22} fill="none" stroke={COLOR} strokeWidth={1.8} />}
+    </svg>
+  );
+}
+
+function RavenPatternDisplay({ cells }: { cells: (PCell|null)[] }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, maxWidth: 224, margin: "0 auto" }}>
+      {cells.map((cell, i) => (
+        <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden" }}>
+          <PatternCellSVG cell={cell} size={70} cellIdx={i} isQ={cell === null} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Top-view display (isometric 3D → 2D grid) ──────────────────────────── */
+
+function TopViewDisplay() {
+  // Four cubes in Γ-arrangement: (0,0),(1,0),(2,0),(0,1) on isometric grid
+  // Projection: bx = 25+(c-r)*10,  by = 22+(c+r)*5
+  const u = 10;
+  const ox = 25, oy = 22;
+  const cubes: [number, number][] = [[0,0],[0,1],[1,0],[2,0]]; // back→front
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#3A5A8A" }}>
+        3D arrangement
+      </p>
+      <svg width={120} height={90} viewBox="0 0 60 45">
+        <rect width={60} height={45} fill="rgba(5,18,45,0.9)" rx={2} />
+        {cubes.map(([c, r]) => {
+          const bx = ox + (c - r) * u;
+          const by = oy + (c + r) * (u / 2);
+          const top   = `${bx},${by-u} ${bx+u},${by-u/2} ${bx},${by} ${bx-u},${by-u/2}`;
+          const right = `${bx},${by-u} ${bx+u},${by-u/2} ${bx+u},${by+u/2} ${bx},${by}`;
+          const left  = `${bx-u},${by-u/2} ${bx},${by-u} ${bx},${by} ${bx-u},${by+u/2}`;
+          return (
+            <g key={`${c}${r}`}>
+              <polygon points={left}  fill="#6EB0FF" fillOpacity={0.28} stroke="#0055FF" strokeWidth={0.6} />
+              <polygon points={right} fill="#6EB0FF" fillOpacity={0.50} stroke="#0055FF" strokeWidth={0.6} />
+              <polygon points={top}   fill="#6EB0FF" fillOpacity={0.85} stroke="#0055FF" strokeWidth={0.6} />
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 /* ── Symbols display ────────────────────────────────────────────────────── */
 
 function SymbolsDisplay({ target, compare }: { target: string; compare?: string[] }) {
@@ -344,6 +480,30 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
           <DiceNetDisplay faces={vis.faces} />
         </div>
       );
+    case "raven2":
+      return (
+        <div style={{ background: "rgba(5,18,45,0.7)", border: "1px solid rgba(0,85,255,0.16)", borderRadius: 6, padding: "20px 16px", marginBottom: 20 }}>
+          <Raven2Display cells={vis.cells} />
+        </div>
+      );
+    case "ravenrot":
+      return (
+        <div style={{ background: "rgba(5,18,45,0.7)", border: "1px solid rgba(0,85,255,0.16)", borderRadius: 6, padding: "20px 16px", marginBottom: 20 }}>
+          <RavenRotDisplay path={vis.path} angles={vis.angles} />
+        </div>
+      );
+    case "ravenpattern":
+      return (
+        <div style={{ background: "rgba(5,18,45,0.7)", border: "1px solid rgba(0,85,255,0.16)", borderRadius: 6, padding: "20px 16px", marginBottom: 20 }}>
+          <RavenPatternDisplay cells={vis.cells} />
+        </div>
+      );
+    case "topview":
+      return (
+        <div style={{ background: "rgba(5,18,45,0.7)", border: "1px solid rgba(0,85,255,0.16)", borderRadius: 6, padding: "20px 16px", marginBottom: 20 }}>
+          <TopViewDisplay />
+        </div>
+      );
   }
 }
 
@@ -362,6 +522,24 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
         <rect x={1} y={1} width={58} height={58} rx={2}
           fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
         <path d={vis.optPaths[idx]} fill="#6EB0FF" />
+      </svg>
+    );
+  }
+  if (vis?.kind === "raven2") {
+    return <RavenCellSVG cell={vis.optCells[idx]} size={60} />;
+  }
+  if (vis?.kind === "ravenrot") {
+    return <RotationSVG path={vis.path} angle={vis.optAngles[idx]} size={68} />;
+  }
+  if (vis?.kind === "ravenpattern") {
+    return <PatternCellSVG cell={vis.optCells[idx]} size={68} cellIdx={90 + idx} />;
+  }
+  if (vis?.kind === "topview") {
+    return (
+      <svg width={68} height={68} viewBox="0 0 60 60">
+        <rect x={1} y={1} width={58} height={58} rx={2}
+          fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
+        <path d={vis.optGrids[idx]} fill="#6EB0FF" />
       </svg>
     );
   }
@@ -477,7 +655,8 @@ export default function TestPage() {
   const timerPct    = (timeLeft / q.time) * 100;
   const progress    = ((qIdx + 1) / ALL_QUESTIONS.length) * 100;
 
-  const hasVisOpts  = q.vis?.kind === "raven" || q.vis?.kind === "rotation" || q.vis?.kind === "embedded";
+  const hasVisOpts  = q.vis?.kind === "raven" || q.vis?.kind === "rotation" || q.vis?.kind === "embedded"
+    || q.vis?.kind === "raven2" || q.vis?.kind === "ravenrot" || q.vis?.kind === "ravenpattern" || q.vis?.kind === "topview";
 
   // ── Category transition ──────────────────────────────────────────────────
   if (showTransition) {

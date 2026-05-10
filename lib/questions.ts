@@ -18,8 +18,14 @@ export type VisualDef =
   | { kind: "rotation"; path: string; showAngle: number; optAngles: number[]; optMirrors?: boolean[] }
   | { kind: "memory";   colors: string[];             showMs?: number }
   | { kind: "symbols";  target: string;               compare?: string[] }
-  | { kind: "embedded"; display: string;              optPaths: string[] }
-  | { kind: "dicenet";  faces: number[] };
+  | { kind: "embedded";     display: string;              optPaths: string[] }
+  | { kind: "dicenet";     faces: number[] }
+  | { kind: "raven2";      cells: (RavenCell|null)[];    optCells: RavenCell[] }
+  | { kind: "ravenrot";    path: string; angles: (number|null)[]; optAngles: number[] }
+  | { kind: "ravenpattern";cells: (PCell|null)[];        optCells: PCell[] }
+  | { kind: "topview";     optGrids: string[] };
+
+export type PCell = { shape: "tri"|"sq"|"ci"; fill: "h"|"v"|"d" };
 
 export interface Question {
   cat: number;
@@ -245,6 +251,8 @@ const CRANK = "M8,8 L30,8 L30,20 L50,20 L50,8 L56,8 L56,46 L50,46 L50,34 L14,34 
 const BRACKET  = "M8,8 L8,52 L52,52 L52,36 L24,36 L24,24 L52,24 L52,8 Z";
 const CELTIC_Z = "M10,8 L50,8 L50,22 L24,22 L50,40 L50,52 L10,52 L10,38 L36,38 L10,20 Z";
 const CROWN_A  = "M8,52 L8,32 L18,32 L18,10 L28,10 L28,32 L36,32 L36,18 L46,18 L46,32 L54,32 L54,52 Z";
+// Right-pointing filled triangle — used for arrow rotation matrix
+const ARROW_TRI = "M10,30 L50,10 L50,50 Z";
 
 // ── Questions ──────────────────────────────────────────────────────────────
 
@@ -252,34 +260,65 @@ export const ALL_QUESTIONS: Question[] = [
 
   // ── CAT 0 · LOGICAL REASONING — Raven matrices ───────────────────────────
 
-  // Q1 easy: concentric 2-attribute latin square
-  // Outer shape cycles C→S→T per row; inner shape cycles C→S→T per column
+  // Q1 easy: 2×2 PATTERN MATRIX — fill and shape follow diagonal rules
+  // (0,0) filled circle  | (0,1) outline square
+  // (1,0) outline circle | (1,1) ???  = filled square
+  // Rule: filled shapes on main diagonal (TL→BR); shapes alternate circle/square per row
   {
-    cat: 0, type: "raven", diff: "easy", badge: "Nested Shapes", time: 30,
-    text: "Which image completes the matrix?",
+    cat: 0, type: "raven", diff: "easy", badge: "Pattern Matrix", time: 30,
+    text: "Which image completes the 2×2 pattern?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Two rules run simultaneously: the outer (outline) shape cycles circle→square→triangle per row; the inner (filled) shape cycles circle→square→triangle per column. Row 3, col 3 needs outer triangle with inner triangle.",
+    exp: "Each row contains one filled and one outline shape. Each column contains one circle and one square. The missing cell (filled square) follows from both rules simultaneously.",
     vis: {
-      kind: "raven",
-      cells: [ccCC, ccCS, ccCT,  ccSC, ccSS, ccST,  ccTC, ccTS, null],
-      optCells: [ccTT, ccTS, ccST, ccTC],
+      kind: "raven2",
+      cells: [C1, S1o, C1o, null],
+      optCells: [S1, S1o, C1, T1],
     },
   },
 
-  // Q2 easy: size × shape double rule
-  // Column rule: shape = circle / square / triangle (left→right)
-  // Row rule: size = large / medium / small (top→bottom)
+  // Q2 medium: SHAPES + LINE PATTERNS — outer shape cycles per row, fill pattern cycles per column
+  // Row 1: triangle  | Col 1: horizontal lines, Col 2: vertical lines, Col 3: diagonal lines
+  // Row 2: square
+  // Row 3: circle    → (3,3) = circle with diagonal lines
   {
-    cat: 0, type: "raven", diff: "easy", badge: "Size & Shape", time: 30,
+    cat: 0, type: "raven", diff: "medium", badge: "Shape & Pattern", time: 25,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Column rule: shape is circle (col 1), square (col 2), triangle (col 3). Row rule: size goes large → medium → small. Row 3, col 3 needs a small triangle.",
+    exp: "Two independent rules: the shape type cycles triangle→square→circle per row; the fill pattern cycles horizontal→vertical→diagonal lines per column. Row 3, col 3 needs a circle with diagonal lines.",
     vis: {
-      kind: "raven",
-      cells: [C_big, S_big, T_big,  C_med, S_med, T_med,  C_sm, S_sm, null],
-      optCells: [T_sm, T_big, D_sm, S_sm],
+      kind: "ravenpattern",
+      cells: [
+        {shape:"tri",fill:"h"},{shape:"tri",fill:"v"},{shape:"tri",fill:"d"},
+        {shape:"sq", fill:"h"},{shape:"sq", fill:"v"},{shape:"sq", fill:"d"},
+        {shape:"ci", fill:"h"},{shape:"ci", fill:"v"},null,
+      ],
+      optCells: [
+        {shape:"ci",fill:"d"},
+        {shape:"ci",fill:"v"},
+        {shape:"sq",fill:"d"},
+        {shape:"ci",fill:"h"},
+      ],
+    },
+  },
+
+  // Q3 hard: ARROW DIRECTION MATRIX — arrows follow a diagonal rotation rule
+  // Each step +45° CW going left→right; each row starts 45° lower than the row above
+  // Row 1: 270°(↑) 315°(↗) 0°(→)
+  // Row 2: 225°(↖) 270°(↑) 315°(↗)
+  // Row 3: 180°(←) 225°(↖) ???  → 270°(↑)
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Direction Matrix", time: 35,
+    text: "Each arrow rotates by the same angle at every step. Which option belongs in the empty cell?",
+    opts: ["A", "B", "C", "D"],
+    ans: 0,
+    exp: "Each step clockwise adds 45°. Rows are offset: row 2 starts 45° behind row 1, row 3 starts 45° behind row 2. The diagonals all point in the same direction. Row 3, col 3 → 270° (pointing up).",
+    vis: {
+      kind: "ravenrot",
+      path: ARROW_TRI,
+      angles: [270, 315, 0,  225, 270, 315,  180, 225, null],
+      optAngles: [270, 225, 315, 0],
     },
   },
 
@@ -470,18 +509,27 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q4 medium: F_SHAPE shown at 40°, rotate a further 100° CW → 140°
-  // Options within 20° of each other; one mirror distractor at the exact correct angle
+  // Q4 medium: 3D → TOP VIEW — mentally rotate the 3D cube arrangement and identify its top-down footprint
+  // Four cubes in an L-arrangement: (0,0),(1,0),(2,0),(0,1) in isometric grid
+  // Top view = Γ-shape: 3 squares in top row, 1 below the leftmost
   {
-    cat: 2, type: "rotation", diff: "medium", badge: "Precise Rotation", time: 20,
-    text: "This shape is at 40°. Which shows it rotated a further 100° clockwise?",
+    cat: 2, type: "rotation", diff: "medium", badge: "3D Top View", time: 30,
+    text: "Four cubes are arranged as shown. Which 2D grid represents the view from directly ABOVE?",
     opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "40° + 100° = 140°. Options are within 20° of each other. Option C is the mirror image at 140° — a reflection, not a rotation.",
+    ans: 0,
+    exp: "The cubes form an L (or Γ): three in a row with one extending below the left end. Viewed from above, the footprint is 3 squares across the top with 1 square beneath the leftmost.",
     vis: {
-      kind: "rotation", path: F_SHAPE, showAngle: 40,
-      optAngles:  [120, 140, 140, 160],
-      optMirrors: [false, false, true, false],
+      kind: "topview",
+      optGrids: [
+        // A correct: Γ-shape  (0,0)(1,0)(2,0)(0,1)
+        "M6,9 h14 v14 h-14 Z M20,9 h14 v14 h-14 Z M34,9 h14 v14 h-14 Z M6,23 h14 v14 h-14 Z",
+        // B distractor: T-shape (0,0)(1,0)(2,0)(1,1)
+        "M6,9 h14 v14 h-14 Z M20,9 h14 v14 h-14 Z M34,9 h14 v14 h-14 Z M20,23 h14 v14 h-14 Z",
+        // C distractor: 2×2 square (0,0)(1,0)(0,1)(1,1)
+        "M6,9 h14 v14 h-14 Z M20,9 h14 v14 h-14 Z M6,23 h14 v14 h-14 Z M20,23 h14 v14 h-14 Z",
+        // D distractor: staircase (0,0)(1,0)(1,1)(2,1)
+        "M6,9 h14 v14 h-14 Z M20,9 h14 v14 h-14 Z M20,23 h14 v14 h-14 Z M34,23 h14 v14 h-14 Z",
+      ],
     },
   },
 
@@ -555,16 +603,6 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   // ── CAT 4 · WORKING MEMORY — colour sequences ─────────────────────────────
-
-  // Q1 easy: 5 colours, 2800 ms, ask last
-  {
-    cat: 4, type: "memory", diff: "easy", badge: "Colour Memory", time: 30,
-    text: "What was the LAST colour in the sequence?",
-    opts: ["Green", "Yellow", "Purple", "Blue"],
-    ans: 2,
-    exp: "Sequence: Red → Blue → Green → Yellow → Purple. The last colour was Purple.",
-    vis: { kind: "memory", colors: ["#FF3B3B", "#0055FF", "#00D87A", "#FFD700", "#9B59B6"], showMs: 2800 },
-  },
 
   // Q2 easy: 6 colours, 2800 ms, ask 4th
   {

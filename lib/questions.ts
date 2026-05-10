@@ -168,6 +168,38 @@ const fsR3C2 = [sq(13,30,7,false), tr(30,30,7),           c(47,30,7,false) ];
 const fsR3C3 = [sq(13,30,7,false), tr(30,30,7,false), c(47,30,7)           ]; // ← ANSWER
 const fsAllF = [sq(13,30,7),           tr(30,30,7),           c(47,30,7)    ]; // distractor
 
+// ── Concentric shape cells (outer outline r=18, inner filled r=8, centred at 30,30) ──
+// Rule: outer shape = row attribute, inner shape = column attribute
+const ccCC = [c(30,30,18,false), c(30,30,8)];
+const ccCS = [c(30,30,18,false), sq(30,30,8)];
+const ccCT = [c(30,30,18,false), tr(30,30,8)];
+const ccCD = [c(30,30,18,false), di(30,30,8)];
+const ccSC = [sq(30,30,18,false), c(30,30,8)];
+const ccSS = [sq(30,30,18,false), sq(30,30,8)];
+const ccST = [sq(30,30,18,false), tr(30,30,8)];
+const ccSD = [sq(30,30,18,false), di(30,30,8)];
+const ccTC = [tr(30,30,18,false), c(30,30,8)];
+const ccTS = [tr(30,30,18,false), sq(30,30,8)];
+const ccTT = [tr(30,30,18,false), tr(30,30,8)];
+const ccTD = [tr(30,30,18,false), di(30,30,8)];
+const ccDT = [di(30,30,18,false), tr(30,30,8)];
+
+// ── Attribute-Drift cells (l=x13 / m=x30 / r=x47, r=8) ───────────────────
+// Rule 1: shape type per row (C-S-T → S-T-C → T-C-S)
+// Rule 2: number of filled shapes accumulates left-to-right (1 → 2 → 3)
+const adR1C1 = [c(13,30,8),          sq(30,30,8,false), tr(47,30,8,false)];
+const adR1C2 = [c(13,30,8),          sq(30,30,8),       tr(47,30,8,false)];
+const adR1C3 = [c(13,30,8),          sq(30,30,8),       tr(47,30,8)      ];
+const adR2C1 = [sq(13,30,8),         tr(30,30,8,false), c(47,30,8,false) ];
+const adR2C2 = [sq(13,30,8),         tr(30,30,8),       c(47,30,8,false) ];
+const adR2C3 = [sq(13,30,8),         tr(30,30,8),       c(47,30,8)       ];
+const adR3C1 = [tr(13,30,8),         c(30,30,8,false),  sq(47,30,8,false)];
+const adR3C2 = [tr(13,30,8),         c(30,30,8),        sq(47,30,8,false)];
+const adR3C3 = [tr(13,30,8),         c(30,30,8),        sq(47,30,8)      ]; // ← ANSWER
+const adR3w1  = [tr(13,30,8,false),  c(30,30,8),        sq(47,30,8)      ]; // tri not filled
+const adR3w2  = [tr(13,30,8),        c(30,30,8,false),  sq(47,30,8,false)]; // only 1 filled
+const adR3w3  = [sq(13,30,8),        tr(30,30,8),       c(47,30,8)       ]; // wrong shape set
+
 // ── SVG paths for rotation questions ──────────────────────────────────────
 
 const ARROW   = "M8,21 L8,39 L36,39 L36,51 L54,30 L36,9 L36,21 Z";
@@ -182,6 +214,10 @@ const G_SHAPE = "M52,8 L52,38 L32,38 L32,26 L44,26 L44,20 L14,20 L14,44 L44,44 L
 // Complex asymmetric shapes (harder spatial questions)
 const HOOK  = "M10,6 L28,6 L28,24 L50,24 L50,42 L38,42 L38,30 L18,30 L18,54 L10,54 Z";
 const CRANK = "M8,8 L30,8 L30,20 L50,20 L50,8 L56,8 L56,46 L50,46 L50,34 L14,34 L14,52 L8,52 Z";
+// New elaborate asymmetric shapes for spatial redesign
+const BRACKET  = "M8,8 L8,52 L52,52 L52,36 L24,36 L24,24 L52,24 L52,8 Z";
+const CELTIC_Z = "M10,8 L50,8 L50,22 L24,22 L50,40 L50,52 L10,52 L10,38 L36,38 L10,20 Z";
+const CROWN_A  = "M8,52 L8,32 L18,32 L18,10 L28,10 L28,32 L36,32 L36,18 L46,18 L46,32 L54,32 L54,52 Z";
 
 // ── Questions ──────────────────────────────────────────────────────────────
 
@@ -189,66 +225,66 @@ export const ALL_QUESTIONS: Question[] = [
 
   // ── CAT 0 · LOGICAL REASONING — Raven matrices ───────────────────────────
 
-  // Q1 easy: count 1→2→3, shape per row
+  // Q1 easy: concentric 2-attribute latin square
+  // Outer shape cycles C→S→T per row; inner shape cycles C→S→T per column
   {
-    cat: 0, type: "raven", diff: "easy", badge: "Matrix Pattern", time: 30,
+    cat: 0, type: "raven", diff: "easy", badge: "Nested Shapes", time: 30,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Each row has 1, 2, then 3 of the same shape. Row 3 uses triangles → 3 filled triangles.",
+    exp: "Two rules run simultaneously: the outer (outline) shape cycles circle→square→triangle per row; the inner (filled) shape cycles circle→square→triangle per column. Row 3, col 3 needs outer triangle with inner triangle.",
     vis: {
       kind: "raven",
-      cells: [C1, C2, C3,  S1, S2, S3,  T1, T2, null],
-      optCells: [T3, T1, S3, C3],
+      cells: [ccCC, ccCS, ccCT,  ccSC, ccSS, ccST,  ccTC, ccTS, null],
+      optCells: [ccTT, ccTS, ccST, ccTC],
     },
   },
 
-  // Q2 easy: Latin square C/S/T — distractor D is outline square (very similar to solid)
+  // Q2 easy: size × shape double rule
+  // Column rule: shape = circle / square / triangle (left→right)
+  // Row rule: size = large / medium / small (top→bottom)
   {
-    cat: 0, type: "raven", diff: "easy", badge: "Shape Sequence", time: 30,
-    text: "Which image completes the matrix?",
-    opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "Each shape appears exactly once per row and column (Latin square). Row 3, Col 3 must be a filled square — not outline.",
-    vis: {
-      kind: "raven",
-      cells: [C1, S1, T1,  S1, T1, C1,  T1, C1, null],
-      optCells: [C1, T1, S1, S1o],
-    },
-  },
-
-  // Q3 medium: count × size progressive matrix (APM-style — two rules simultaneously)
-  // Count increases left→right (1→2→3); size shrinks as count grows (big→med→small)
-  // Row1: 1 big circle, 2 med circles, 3 small circles
-  // Row2: 1 big square,  2 med squares,  3 small squares
-  // Row3: 1 big triangle, 2 med triangles, ??? → 3 small triangles
-  {
-    cat: 0, type: "raven", diff: "medium", badge: "Progressive Matrix", time: 25,
+    cat: 0, type: "raven", diff: "easy", badge: "Size & Shape", time: 30,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Two simultaneous rules: count increases left→right (1→2→3) and size shrinks as count grows (big→med→small). Row 3 needs 3 small triangles.",
+    exp: "Column rule: shape is circle (col 1), square (col 2), triangle (col 3). Row rule: size goes large → medium → small. Row 3, col 3 needs a small triangle.",
     vis: {
       kind: "raven",
-      cells: [C1b, C2m, C3s,  S1b, S2m, S3s,  T1b, T2m, null],
-      optCells: [T3s, T3, D3s, T2m],
+      cells: [C_big, S_big, T_big,  C_med, S_med, T_med,  C_sm, S_sm, null],
+      optCells: [T_sm, T_big, D_sm, S_sm],
     },
   },
 
-  // Q4 medium: shape combination — col3 = col1 shape stacked above col2 shape (Cattell CFI)
-  // Row1: big circle (col1) + small diamond (col2) → circle on top, diamond below (col3)
-  // Row2: big square  (col1) + small triangle (col2) → square on top, triangle below (col3)
-  // Row3: big triangle (col1) + small circle (col2) → ??? → triangle on top, circle below
+  // Q3 medium: attribute drift — shape type rotates per row; filled count accumulates per column
+  // Row 1: C-S-T shapes; col 1 = 1 filled, col 2 = 2 filled, col 3 = 3 filled
+  // Row 2: S-T-C shapes; same fill accumulation rule
+  // Row 3: T-C-S shapes; col 3 → all 3 filled ← ANSWER
   {
-    cat: 0, type: "raven", diff: "medium", badge: "Shape Combination", time: 22,
+    cat: 0, type: "raven", diff: "medium", badge: "Attribute Drift", time: 25,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Rule: col 3 = the shape from col 1 (top half) combined with the shape from col 2 (bottom half). Row 3: large triangle + small circle → triangle on top, circle below.",
+    exp: "Two simultaneous rules: (1) the shape set rotates per row (C-S-T → S-T-C → T-C-S); (2) the number of filled shapes increases left-to-right (1 → 2 → 3). Row 3, col 3: T-C-S with all three filled.",
     vis: {
       kind: "raven",
-      cells: [C_big, D_sm, aCbDd,  S_big, T_sm, aSbTd,  T_big, C_sm, null],
-      optCells: [aTbCd, aCbTd, aTbDd, T1],
+      cells: [adR1C1, adR1C2, adR1C3,  adR2C1, adR2C2, adR2C3,  adR3C1, adR3C2, null],
+      optCells: [adR3C3, adR3w1, adR3w2, adR3w3],
+    },
+  },
+
+  // Q4 medium: concentric shapes with diamond — outer C/S/T per row, inner C/S/D per column
+  // Outer shape follows row rule; inner shape follows column rule (last col = diamond, not triangle)
+  {
+    cat: 0, type: "raven", diff: "medium", badge: "Nested Pattern", time: 22,
+    text: "Which image completes the matrix?",
+    opts: ["A", "B", "C", "D"],
+    ans: 0,
+    exp: "Two rules: outer (outline) shape cycles circle→square→triangle per row; inner (filled) shape cycles circle→square→diamond per column. The missing cell needs outer triangle with inner diamond.",
+    vis: {
+      kind: "raven",
+      cells: [ccCC, ccCS, ccCD,  ccSC, ccSS, ccSD,  ccTC, ccTS, null],
+      optCells: [ccTD, ccTC, ccTS, ccDT],
     },
   },
 
@@ -351,68 +387,68 @@ export const ALL_QUESTIONS: Question[] = [
 
   // ── CAT 2 · SPATIAL REASONING — rotation ─────────────────────────────────
 
-  // Q1 easy: Arrow 0° → 90° CW
+  // Q1 easy: BRACKET (C-shape) 0° → 90° CW
   {
     cat: 2, type: "rotation", diff: "easy", badge: "Mental Rotation", time: 30,
-    text: "The arrow points right (0°). Which option shows it rotated 90° clockwise?",
+    text: "The bracket shape opens to the right (0°). Which option shows it rotated 90° clockwise?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Rotating a right-pointing arrow 90° clockwise gives a downward-pointing arrow.",
-    vis: { kind: "rotation", path: ARROW, showAngle: 0, optAngles: [90, 0, 180, 270] },
+    exp: "Rotating 90° clockwise turns a right-opening bracket so the opening faces upward.",
+    vis: { kind: "rotation", path: BRACKET, showAngle: 0, optAngles: [90, 0, 180, 270] },
   },
 
-  // Q2 easy: L-shape 0° → 180°
+  // Q2 easy: CELTIC_Z shape 0° → 180°
   {
     cat: 2, type: "rotation", diff: "easy", badge: "Mental Rotation", time: 30,
-    text: "Which option shows this L-shape rotated 180°?",
+    text: "Which option shows this Z-shape rotated exactly 180°?",
     opts: ["A", "B", "C", "D"],
     ans: 1,
-    exp: "Rotating 180° flips the L-shape to face the opposite diagonal.",
-    vis: { kind: "rotation", path: L_SHAPE, showAngle: 0, optAngles: [0, 180, 90, 270] },
+    exp: "Rotating a Z-shape 180° produces the same shape viewed upside-down — the diagonal reverses direction.",
+    vis: { kind: "rotation", path: CELTIC_Z, showAngle: 0, optAngles: [90, 180, 0, 270] },
   },
 
-  // Q3 medium: HOOK shape — 105° clockwise rotation
-  // Options within 30° of each other; one mirror distractor at exact correct angle
+  // Q3 medium: CROWN_A (asymmetric crown with two teeth at different heights)
+  // Show at 0°, ask for 115° CW; options within 20°; one mirror trap at correct angle
   {
     cat: 2, type: "rotation", diff: "medium", badge: "Compound Rotation", time: 22,
-    text: "Which option shows this shape rotated exactly 105° clockwise?",
+    text: "Which option shows this crown shape rotated exactly 115° clockwise?",
     opts: ["A", "B", "C", "D"],
     ans: 1,
-    exp: "105° sits between 90° and 120°. Option A is only 75° (30° short). Option C looks identical to B but is mirrored — a reflection, not a rotation.",
+    exp: "115° sits between 90° and 135°. Option A is only 95° (20° short). Option C looks identical to B but is horizontally mirrored — a reflection is not the same as a rotation.",
     vis: {
-      kind: "rotation", path: HOOK, showAngle: 0,
-      optAngles:  [75, 105, 105, 135],
+      kind: "rotation", path: CROWN_A, showAngle: 0,
+      optAngles:  [95, 115, 115, 135],
       optMirrors: [false, false, true, false],
     },
   },
 
-  // Q4 medium: CRANK shape — shown at 30°, rotate a further 105° CW → 135°
-  // Options within 25° of each other; one mirror distractor at the exact correct angle
+  // Q4 medium: F_SHAPE shown at 40°, rotate a further 100° CW → 140°
+  // Options within 20° of each other; one mirror distractor at the exact correct angle
   {
     cat: 2, type: "rotation", diff: "medium", badge: "Precise Rotation", time: 20,
-    text: "This shape is at 30°. Which shows it rotated a further 105° clockwise?",
+    text: "This shape is at 40°. Which shows it rotated a further 100° clockwise?",
     opts: ["A", "B", "C", "D"],
     ans: 1,
-    exp: "30° + 105° = 135°. Options are within 25° of each other. Option C is the mirror image at 135° — it's a reflection, not a rotation.",
+    exp: "40° + 100° = 140°. Options are within 20° of each other. Option C is the mirror image at 140° — a reflection, not a rotation.",
     vis: {
-      kind: "rotation", path: CRANK, showAngle: 30,
-      optAngles:  [110, 135, 135, 160],
+      kind: "rotation", path: F_SHAPE, showAngle: 40,
+      optAngles:  [120, 140, 140, 160],
       optMirrors: [false, false, true, false],
     },
   },
 
-  // Q5 hard: G-shape shown at 255° — find original (0°)
-  // Options within 15° of each other + one mirror trap at the correct angle
-  // To undo 255° CW you need 105° more CW (360−255), so original = 0°
+  // Q5 hard: HOOK shown at 230° — find original orientation (0°)
+  // Options within 10° of each other; mirror trap at the correct angle (ans=3)
+  // To undo 230° CW rotate a further 130° CW → back to 0°
   {
     cat: 2, type: "rotation", diff: "hard", badge: "Inverse Rotation", time: 25,
-    text: "This asymmetric shape has been rotated 255° clockwise. Which option shows its ORIGINAL orientation?",
+    text: "This shape has been rotated 230° clockwise from its original position. Which option shows the ORIGINAL orientation?",
     opts: ["A", "B", "C", "D"],
     ans: 3,
-    exp: "360° − 255° = 105° to undo. Original = 0°. A is 0° but mirrored (reflection, not rotation). B is 345° (15° short). C is 15° (15° past). Only D is the exact original at 0°.",
+    exp: "360° − 230° = 130° more clockwise returns to the original. Original = 0°. Option A is 0° but horizontally mirrored (a reflection, not a rotation). B is 350° (10° short). C is 10° (10° past). Only D is the exact original.",
     vis: {
-      kind: "rotation", path: G_SHAPE, showAngle: 255,
-      optAngles:  [0,   345, 15, 0],
+      kind: "rotation", path: HOOK, showAngle: 230,
+      optAngles:  [0,   350, 10, 0],
       optMirrors: [true, false, false, false],
     },
   },
@@ -524,53 +560,53 @@ export const ALL_QUESTIONS: Question[] = [
 
   // ── CAT 5 · PROCESSING SPEED ─────────────────────────────────────────────
 
-  // Q1 easy, 12 s: exact string match in number grid
+  // Q1 easy, 10 s: exact match in long alphanumeric string
   {
-    cat: 5, type: "symbols", diff: "easy", badge: "Symbol Match", time: 12,
+    cat: 5, type: "symbols", diff: "easy", badge: "Symbol Match", time: 10,
     text: "Which option exactly matches the target?",
     opts: ["1st", "2nd", "3rd", "4th"],
-    ans: 2,
-    exp: "Only the 3rd item (738291) matches the target exactly.",
-    vis: { kind: "symbols", target: "738291", compare: ["738921", "738219", "738291", "738912"] },
+    ans: 0,
+    exp: "Only the 1st item (4R7Q2M8K) matches the target exactly. The 2nd swaps 2→Z, the 3rd swaps Q→G, the 4th swaps M→N.",
+    vis: { kind: "symbols", target: "4R7Q2M8K", compare: ["4R7Q2M8K", "4R7QZM8K", "4R7G2M8K", "4R7Q2N8K"] },
   },
 
-  // Q2 easy, 12 s: fast arithmetic
+  // Q2 easy, 10 s: fast two-step arithmetic
   {
-    cat: 5, type: "symbols", diff: "easy", badge: "Rapid Arithmetic", time: 12,
+    cat: 5, type: "symbols", diff: "easy", badge: "Rapid Arithmetic", time: 10,
     text: "Solve as fast as you can:",
-    opts: ["50", "55", "60", "65"],
-    ans: 2,
-    exp: "15 × 4 = 60.",
-    vis: { kind: "symbols", target: "15 × 4 = ?" },
+    opts: ["49", "51", "53", "55"],
+    ans: 1,
+    exp: "17 × 3 = 51.",
+    vis: { kind: "symbols", target: "17 × 3 = ?" },
   },
 
-  // Q3 medium, 10 s: spot the different alphanumeric string
+  // Q3 medium, 10 s: spot the ONE different string (strings are visually near-identical)
   {
     cat: 5, type: "symbols", diff: "medium", badge: "Spot the Difference", time: 10,
     text: "Which item is DIFFERENT from the others?",
     opts: ["1st", "2nd", "3rd", "4th"],
-    ans: 1,
-    exp: "The 2nd item (K7B0D3) has a 0 instead of 9. All others show K7B9D3.",
-    vis: { kind: "symbols", target: "K7B9D3", compare: ["K7B9D3", "K7B0D3", "K7B9D3", "K7B9D3"] },
+    ans: 2,
+    exp: "The 3rd item has C instead of G (N5X8C2Z vs N5X8G2Z). All others are identical.",
+    vis: { kind: "symbols", target: "N5X8G2Z", compare: ["N5X8G2Z", "N5X8G2Z", "N5X8C2Z", "N5X8G2Z"] },
   },
 
-  // Q4 medium, 10 s: two-step calculation
+  // Q4 medium, 10 s: three-step calculation
   {
     cat: 5, type: "symbols", diff: "medium", badge: "Rapid Calculation", time: 10,
     text: "Solve quickly:",
-    opts: ["15", "16", "17", "18"],
-    ans: 1,
-    exp: "36 ÷ 4 = 9, then 9 + 7 = 16.",
-    vis: { kind: "symbols", target: "36 ÷ 4 + 7 = ?" },
+    opts: ["27", "29", "31", "33"],
+    ans: 2,
+    exp: "48 ÷ 6 = 8, then 8 × 5 = 40, then 40 − 9 = 31.",
+    vis: { kind: "symbols", target: "48 ÷ 6 × 5 − 9 = ?" },
   },
 
-  // Q5 hard, 8 s: ordering — 2nd smallest
+  // Q5 hard, 10 s: ordering chain — identify the median
   {
-    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Deduction", time: 8,
-    text: "Who is the 2nd SMALLEST?",
-    opts: ["P", "Q", "R", "T"],
-    ans: 2,
-    exp: "Order ascending: P < R < Q < T < S. The 2nd smallest is R.",
-    vis: { kind: "symbols", target: "P < R < Q < T < S" },
+    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Deduction", time: 10,
+    text: "Which value is the MEDIAN (middle) of these five?",
+    opts: ["S", "T", "P", "R"],
+    ans: 1,
+    exp: "Order ascending: Q < R < T < P < S. The median (3rd of 5) is T.",
+    vis: { kind: "symbols", target: "S > P > T > R > Q" },
   },
 ];

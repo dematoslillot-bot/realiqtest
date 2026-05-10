@@ -17,7 +17,9 @@ export type VisualDef =
   | { kind: "bars";     values: (number | null)[];   max: number }
   | { kind: "rotation"; path: string; showAngle: number; optAngles: number[]; optMirrors?: boolean[] }
   | { kind: "memory";   colors: string[];             showMs?: number }
-  | { kind: "symbols";  target: string;               compare?: string[] };
+  | { kind: "symbols";  target: string;               compare?: string[] }
+  | { kind: "embedded"; display: string;              optPaths: string[] }
+  | { kind: "dicenet";  faces: number[] };
 
 export interface Question {
   cat: number;
@@ -168,6 +170,31 @@ const fsR3C2 = [sq(13,30,7,false), tr(30,30,7),           c(47,30,7,false) ];
 const fsR3C3 = [sq(13,30,7,false), tr(30,30,7,false), c(47,30,7)           ]; // ← ANSWER
 const fsAllF = [sq(13,30,7),           tr(30,30,7),           c(47,30,7)    ]; // distractor
 
+// ── Overlay combination cells (both shapes at r=14, centred at 30,30) ───────
+// Rule: col3 = col1 shape (filled) OVERLAID with col2 shape (outline) — visually they merge/intersect
+const ovC  = [c(30,30,14)];
+const ovS  = [sq(30,30,14)];
+const ovT  = [tr(30,30,14)];
+const ovCS = [c(30,30,14),  sq(30,30,14,false)];  // filled circle + outline square
+const ovST = [sq(30,30,14), tr(30,30,14,false)];  // filled square + outline triangle
+const ovTC = [tr(30,30,14), c(30,30,14,false)];   // filled triangle + outline circle ← ANSWER
+const ovCT = [c(30,30,14),  tr(30,30,14,false)];  // distractor: wrong order (circle base)
+const ovDS = [di(30,30,14), sq(30,30,14,false)];  // distractor: diamond base (wrong shape)
+
+// ── Multi-operation cells (3 distinct row rules: UNION / SUBTRACTION / XOR) ──
+// Row 1 UNION  : col3 = col1 ∪ col2 (all shapes appear)
+const moR1C1 = [c(18,30,11),  sq(42,30,11)];              // {C,S}
+const moR1C2 = [sq(18,30,11), tr(42,30,11)];              // {S,T}
+const moR1C3 = [c(13,30,8),   sq(30,30,8), tr(47,30,8)]; // {C,S,T}
+// Row 2 SUBTRACT: col3 = col1 − col2 (remove shapes that appear in col2)
+const moR2C1 = [c(13,30,8),   sq(30,30,8), tr(47,30,8)]; // {C,S,T}
+const moR2C2 = [sq(30,30,11)];                             // {S}
+const moR2C3 = [c(18,30,11),  tr(42,30,11)];              // {C,T}  (S removed)
+// Row 3 XOR: col3 = shapes unique to col1 OR col2 (shared shapes cancel)
+const moR3C1 = [tr(18,30,11), c(42,30,11)];               // {T,C}
+const moR3C2 = [tr(18,30,11), sq(42,30,11)];              // {T,S}
+// ANSWER: T is in both → cancels → {C,S}  = moR1C1
+
 // ── Concentric shape cells (outer outline r=18, inner filled r=8, centred at 30,30) ──
 // Rule: outer shape = row attribute, inner shape = column attribute
 const ccCC = [c(30,30,18,false), c(30,30,8)];
@@ -273,18 +300,21 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q4 medium: concentric shapes with diamond — outer C/S/T per row, inner C/S/D per column
-  // Outer shape follows row rule; inner shape follows column rule (last col = diamond, not triangle)
+  // Q4 medium: OVERLAY COMBINATION — col3 = col1 shape (filled) merged with col2 shape (outline)
+  // Col1: single filled shapes; Col2: single filled shapes; Col3: both shapes overlaid at same centre
+  // Row1: circle(f) + square(f) → circle(f) inside outline-square
+  // Row2: square(f) + triangle(f) → square(f) inside outline-triangle
+  // Row3: triangle(f) + circle(f) → ??? → triangle(f) inside outline-circle
   {
-    cat: 0, type: "raven", diff: "medium", badge: "Nested Pattern", time: 22,
+    cat: 0, type: "raven", diff: "medium", badge: "Shape Overlay", time: 22,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
-    exp: "Two rules: outer (outline) shape cycles circle→square→triangle per row; inner (filled) shape cycles circle→square→diamond per column. The missing cell needs outer triangle with inner diamond.",
+    exp: "Rule: column 3 = the shape from column 1 (filled) overlaid with the shape from column 2 (drawn as outline). Row 3: filled triangle overlaid with outline circle — triangle inside a circle ring.",
     vis: {
       kind: "raven",
-      cells: [ccCC, ccCS, ccCD,  ccSC, ccSS, ccSD,  ccTC, ccTS, null],
-      optCells: [ccTD, ccTC, ccTS, ccDT],
+      cells: [ovC, ovS, ovCS,  ovS, ovT, ovST,  ovT, ovC, null],
+      optCells: [ovTC, ovCT, ovST, ovDS],
     },
   },
 
@@ -341,6 +371,24 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
+  // Q8 hard: ROW OPERATIONS — each row uses a different logical operation (HARDEST)
+  // Row 1 UNION:      col3 = col1 ∪ col2   (all shapes from both cells appear)
+  // Row 2 SUBTRACT:   col3 = col1 − col2   (shapes present in col2 are removed from col1)
+  // Row 3 XOR:        col3 = col1 ⊕ col2   (shapes in BOTH cells cancel; only unique survive)
+  // Row3: {T,C} ⊕ {T,S} → T cancels → answer = {C,S}
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Row Operations", time: 45,
+    text: "Each row applies a different logical operation to its shapes. Discover the three rules, then choose the image for the empty cell.",
+    opts: ["A", "B", "C", "D"],
+    ans: 0,
+    exp: "Three row rules: Row 1 UNION (col 3 = all shapes from col 1 and col 2 combined). Row 2 SUBTRACT (col 3 = col 1 minus any shape that also appears in col 2). Row 3 XOR (shapes present in BOTH col 1 and col 2 cancel — only shapes unique to one column survive). Row 3: {T,C} ⊕ {T,S} → triangle cancels → answer is {C,S}.",
+    vis: {
+      kind: "raven",
+      cells: [moR1C1, moR1C2, moR1C3,  moR2C1, moR2C2, moR2C3,  moR3C1, moR3C2, null],
+      optCells: [moR1C1, moR3C1, moR3C2, moR1C3],
+    },
+  },
+
   // ── CAT 1 · VERBAL INTELLIGENCE ──────────────────────────────────────────
 
   {
@@ -350,14 +398,6 @@ export const ALL_QUESTIONS: Question[] = [
     opts: ["Warm", "Fire", "Cold", "Sun"],
     ans: 2,
     exp: "Light is the opposite of Dark. The opposite of Hot is Cold.",
-  },
-
-  {
-    cat: 1, type: "text", diff: "easy", badge: "Synonym", time: 30,
-    text: "Which word is closest in meaning to SERENE?",
-    opts: ["Agitated", "Calm", "Noisy", "Restless"],
-    ans: 1,
-    exp: "Serene means peacefully calm. The closest synonym is Calm.",
   },
 
   {
@@ -387,24 +427,32 @@ export const ALL_QUESTIONS: Question[] = [
 
   // ── CAT 2 · SPATIAL REASONING — rotation ─────────────────────────────────
 
-  // Q1 easy: BRACKET (C-shape) 0° → 90° CW
+  // Q1 easy: DICE NET — fold the net and find the opposite face
+  // Standard T-cross net: top=1, left=4, front=2, right=5, bottom=3, far-bottom=6
+  // When folded: face 2 (front) is opposite to face 6 (back)
   {
-    cat: 2, type: "rotation", diff: "easy", badge: "Mental Rotation", time: 30,
-    text: "The bracket shape opens to the right (0°). Which option shows it rotated 90° clockwise?",
-    opts: ["A", "B", "C", "D"],
-    ans: 0,
-    exp: "Rotating 90° clockwise turns a right-opening bracket so the opening faces upward.",
-    vis: { kind: "rotation", path: BRACKET, showAngle: 0, optAngles: [90, 0, 180, 270] },
+    cat: 2, type: "rotation", diff: "easy", badge: "Dice Net", time: 30,
+    text: "Fold this net into a cube. Which face ends up directly OPPOSITE the face showing 2 dots?",
+    opts: ["1", "3", "5", "6"],
+    ans: 3,
+    exp: "The face with 2 dots is the centre of the cross — it becomes the front. The face at the end of the chain (6 dots) folds around to become the back face, directly opposite.",
+    vis: { kind: "dicenet", faces: [1, 2, 3, 4, 5, 6] },
   },
 
-  // Q2 easy: CELTIC_Z shape 0° → 180°
+  // Q2 easy: EMBEDDED FIGURES — identify which component shape is hidden inside the complex figure
+  // Display = BRACKET + ARROW paths combined (evenodd fill creates interesting merged silhouette)
+  // The ARROW shape is clearly traceable inside the merged figure
   {
-    cat: 2, type: "rotation", diff: "easy", badge: "Mental Rotation", time: 30,
-    text: "Which option shows this Z-shape rotated exactly 180°?",
+    cat: 2, type: "rotation", diff: "easy", badge: "Hidden Shape", time: 30,
+    text: "The figure on the left is formed by overlapping two shapes. Which of the four shapes below is one of the two components?",
     opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "Rotating a Z-shape 180° produces the same shape viewed upside-down — the diagonal reverses direction.",
-    vis: { kind: "rotation", path: CELTIC_Z, showAngle: 0, optAngles: [90, 180, 0, 270] },
+    ans: 0,
+    exp: "The complex figure is formed by the ARROW shape overlapping the BRACKET shape. The arrow's shaft and triangular head are visible within the merged outline.",
+    vis: {
+      kind: "embedded",
+      display: BRACKET + " " + ARROW,
+      optPaths: [ARROW, CELTIC_Z, CROWN_A, STEP],
+    },
   },
 
   // Q3 medium: CROWN_A (asymmetric crown with two teeth at different heights)

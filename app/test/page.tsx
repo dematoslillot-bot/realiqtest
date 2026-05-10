@@ -182,6 +182,76 @@ function MemoryDisplay({
   );
 }
 
+/* ── Embedded figures display ───────────────────────────────────────────── */
+
+function EmbeddedDisplay({ display }: { display: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#3A5A8A" }}>
+        Combined figure
+      </p>
+      <svg width={120} height={120} viewBox="0 0 60 60">
+        <rect x={1} y={1} width={58} height={58} rx={2}
+          fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
+        <path d={display} fill="#6EB0FF" fillRule="evenodd" />
+      </svg>
+    </div>
+  );
+}
+
+/* ── Dice net display ────────────────────────────────────────────────────── */
+
+function DiceNetDisplay({ faces }: { faces: number[] }) {
+  const S = 46;
+
+  function dots(n: number, cx: number, cy: number) {
+    const off = 13;
+    const R = 3.5;
+    const pos: Record<number, [number, number][]> = {
+      1: [[0, 0]],
+      2: [[-off, off], [off, -off]],
+      3: [[-off, off], [0, 0], [off, -off]],
+      4: [[-off, -off], [off, -off], [-off, off], [off, off]],
+      5: [[-off, -off], [off, -off], [0, 0], [-off, off], [off, off]],
+      6: [[-off, -off], [off, -off], [-off, 0], [off, 0], [-off, off], [off, off]],
+    };
+    return (pos[n] || []).map(([dx, dy], i) => (
+      <circle key={i} cx={cx + dx} cy={cy + dy} r={R} fill="#6EB0FF" />
+    ));
+  }
+
+  // Net layout [x, y, faceIndex]: cross shape with 4 rows
+  //        [1]
+  //    [4] [2] [5]
+  //        [3]
+  //        [6]
+  const layout: [number, number, number][] = [
+    [S,     0,   0],  // top    → faces[0] = 1
+    [0,     S,   3],  // left   → faces[3] = 4
+    [S,     S,   1],  // centre → faces[1] = 2  (front)
+    [S * 2, S,   4],  // right  → faces[4] = 5
+    [S,     S*2, 2],  // bottom → faces[2] = 3
+    [S,     S*3, 5],  // far-bottom → faces[5] = 6  (opposite to front)
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#3A5A8A" }}>
+        Dice net — fold to assemble
+      </p>
+      <svg width={S * 3} height={S * 4} viewBox={`0 0 ${S * 3} ${S * 4}`} style={{ display: "block" }}>
+        {layout.map(([x, y, fi]) => (
+          <g key={fi}>
+            <rect x={x + 1} y={y + 1} width={S - 2} height={S - 2} rx={3}
+              fill="rgba(5,18,45,0.92)" stroke="rgba(0,85,255,0.45)" strokeWidth={1.5} />
+            {dots(faces[fi], x + S / 2, y + S / 2)}
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
 /* ── Symbols display ────────────────────────────────────────────────────── */
 
 function SymbolsDisplay({ target, compare }: { target: string; compare?: string[] }) {
@@ -262,6 +332,18 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
           <SymbolsDisplay target={vis.target} compare={vis.compare} />
         </div>
       );
+    case "embedded":
+      return (
+        <div style={{ background: "rgba(5,18,45,0.7)", border: "1px solid rgba(0,85,255,0.16)", borderRadius: 6, padding: "20px 16px", marginBottom: 20 }}>
+          <EmbeddedDisplay display={vis.display} />
+        </div>
+      );
+    case "dicenet":
+      return (
+        <div style={{ background: "rgba(5,18,45,0.7)", border: "1px solid rgba(0,85,255,0.16)", borderRadius: 6, padding: "20px 16px", marginBottom: 20 }}>
+          <DiceNetDisplay faces={vis.faces} />
+        </div>
+      );
   }
 }
 
@@ -273,6 +355,15 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
   }
   if (vis?.kind === "rotation") {
     return <RotationSVG path={vis.path} angle={vis.optAngles[idx]} size={68} mirror={vis.optMirrors?.[idx] ?? false} />;
+  }
+  if (vis?.kind === "embedded") {
+    return (
+      <svg width={68} height={68} viewBox="0 0 60 60">
+        <rect x={1} y={1} width={58} height={58} rx={2}
+          fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
+        <path d={vis.optPaths[idx]} fill="#6EB0FF" />
+      </svg>
+    );
   }
   return <span style={{ fontSize: 14, lineHeight: 1.4 }}>{opt}</span>;
 }
@@ -386,7 +477,7 @@ export default function TestPage() {
   const timerPct    = (timeLeft / q.time) * 100;
   const progress    = ((qIdx + 1) / ALL_QUESTIONS.length) * 100;
 
-  const hasVisOpts  = q.vis?.kind === "raven" || q.vis?.kind === "rotation";
+  const hasVisOpts  = q.vis?.kind === "raven" || q.vis?.kind === "rotation" || q.vis?.kind === "embedded";
 
   // ── Category transition ──────────────────────────────────────────────────
   if (showTransition) {

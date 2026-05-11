@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { calculateIQ, getIQLabel, getPercentile, getCategoryResults } from "@/lib/iq-calculator";
 
-export default function ReportPage() {
-  const router  = useRouter();
-  const [screen, setScreen] = useState<"pay" | "processing" | "report">("pay");
+// ── Inner component that uses useSearchParams ─────────────────────────────────
+function ReportInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [screen, setScreen] = useState<"pay" | "processing" | "verifying" | "report">("pay");
   const [email,   setEmail]   = useState("");
   const [card,    setCard]    = useState("");
   const [expiry,  setExpiry]  = useState("");
@@ -18,16 +20,57 @@ export default function ReportPage() {
   const [label,   setLabel]   = useState("");
   const [percentile, setPercentile] = useState(0);
   const [catResults, setCatResults] = useState<ReturnType<typeof getCategoryResults>>([]);
+  const [verifyError, setVerifyError] = useState("");
 
+  // Load IQ data from localStorage
   useEffect(() => {
     const s  = parseInt(localStorage.getItem("iq_score") || "0");
     const t  = parseInt(localStorage.getItem("iq_total") || "30");
     const cs = JSON.parse(localStorage.getItem("iq_catScores") || "[0,0,0,0,0,0]");
     const ct = JSON.parse(localStorage.getItem("iq_catTotals") || "[0,0,0,0,0,0]");
     const iqVal = calculateIQ(s, t);
-    setIq(iqVal); setLabel(getIQLabel(iqVal)); setPercentile(getPercentile(iqVal));
+    setIq(iqVal);
+    setLabel(getIQLabel(iqVal));
+    setPercentile(getPercentile(iqVal));
     setCatResults(getCategoryResults(iqVal, cs, ct));
   }, []);
+
+  // Detect Stripe return with ?success=true&session_id=xxx
+  useEffect(() => {
+    const success    = searchParams.get("success");
+    const session_id = searchParams.get("session_id");
+
+    if (success === "true" && session_id) {
+      setScreen("verifying");
+      fetch("/api/verify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.paid) {
+            // Mark as paid in localStorage so refreshes stay unlocked
+            localStorage.setItem("report_paid", session_id);
+            setScreen("report");
+          } else {
+            setVerifyError(data.error || "Payment could not be verified.");
+            setScreen("pay");
+          }
+        })
+        .catch(() => {
+          setVerifyError("Network error verifying payment. Please contact support.");
+          setScreen("pay");
+        });
+      return;
+    }
+
+    // Check if already paid in a previous session
+    const alreadyPaid = localStorage.getItem("report_paid");
+    if (alreadyPaid) {
+      setScreen("report");
+    }
+  }, [searchParams]);
 
   function formatCard(v: string)   { return v.replace(/\D/g,"").substring(0,16).replace(/(.{4})/g,"$1 ").trim(); }
   function formatExpiry(v: string) { const n=v.replace(/\D/g,""); return n.length>=2?n.substring(0,2)+" / "+n.substring(2,4):n; }
@@ -93,6 +136,27 @@ export default function ReportPage() {
     fontFamily: "inherit",
   };
 
+  // ── Verifying screen ────────────────────────────────────────────────────────
+  if (screen === "verifying") {
+    return (
+      <div style={{ minHeight:"100dvh", background:"#050A14", color:"#D6E4FF", display:"flex", flexDirection:"column" }}>
+        <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 24px", borderBottom:`1px solid ${blue2}`, background:"rgba(5,10,20,0.95)" }}>
+          <span style={{ fontSize:16, fontWeight:600 }}>Real<span style={{color:blue}}>IQ</span>Test</span>
+          <span style={{ fontSize:11, color:dim }}>Verifying payment...</span>
+        </nav>
+        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center", padding:"0 24px" }}>
+          <div>
+            <div style={{ width:48, height:48, border:`2px solid ${blue2}`, borderTopColor:blue, borderRadius:"50%", animation:"spin 0.8s linear infinite", margin:"0 auto 24px" }}
+              className="animate-spin" />
+            <h3 style={{ fontSize:22, fontWeight:300, marginBottom:8 }}>Confirming your payment</h3>
+            <p style={{ fontSize:13, color:dim }}>Verifying with Stripe — this takes just a moment...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Processing screen ────────────────────────────────────────────────────────
   if (screen === "processing") {
     return (
       <div style={{ minHeight: "100dvh", background: "#050A14", color: "#D6E4FF", display: "flex", flexDirection: "column" }}>
@@ -112,6 +176,7 @@ export default function ReportPage() {
     );
   }
 
+  // ── Report screen ────────────────────────────────────────────────────────────
   if (screen === "report") {
     const careers = CAREERS[label] || CAREERS["Average"];
     const famous  = FAMOUS[label]  || FAMOUS["Average"];
@@ -327,7 +392,7 @@ export default function ReportPage() {
     );
   }
 
-  // ── Pay screen ────────────────────────────────────────────────────────────
+  // ── Pay screen ───────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight:"100dvh", background:"#050A14", color:"#D6E4FF" }}>
       <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 24px", borderBottom:`1px solid ${blue2}`, background:"rgba(5,10,20,0.95)" }}>
@@ -348,6 +413,15 @@ export default function ReportPage() {
           <p style={{ fontSize:13, color:dim, lineHeight:1.7, marginBottom:28 }}>
             Your free result shows your overall IQ. The premium report gives you everything — detailed breakdown, career matches, improvement tips, famous comparisons and your official certificate.
           </p>
+
+          {/* Verify error banner */}
+          {verifyError && (
+            <div style={{ padding:"12px 16px", borderRadius:4, background:"rgba(255,59,59,0.08)", border:"1px solid rgba(255,59,59,0.3)", color:"#FF3B3B", fontSize:12, marginBottom:20, lineHeight:1.5 }}>
+              <strong>Payment verification failed:</strong> {verifyError}
+              <br /><span style={{ color:dim }}>If you were charged, please contact support@realiqtest.co</span>
+            </div>
+          )}
+
           <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
             {[
               "Full breakdown across all 6 cognitive categories",
@@ -442,5 +516,18 @@ export default function ReportPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Page wrapper with Suspense (required for useSearchParams in Next.js) ───────
+export default function ReportPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight:"100dvh", background:"#050A14", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:40, height:40, border:"2px solid rgba(0,85,255,0.18)", borderTopColor:"#0055FF", borderRadius:"50%" }} className="animate-spin" />
+      </div>
+    }>
+      <ReportInner />
+    </Suspense>
   );
 }

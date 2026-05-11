@@ -4,514 +4,912 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { calculateIQ, getIQLabel, getPercentile, getCategoryResults } from "@/lib/iq-calculator";
 
-// ── Inner component that uses useSearchParams ─────────────────────────────────
+/* ─── Design tokens ─────────────────────────────────────────────────────────── */
+const B    = "#0055FF";
+const CYAN = "#06B6D4";
+const PURP = "#8B5CF6";
+const GOLD = "#F59E0B";
+const GRN  = "#10B981";
+const ROSE = "#FB7185";
+const BG   = "#020617";
+const GLASS = "rgba(6,14,40,0.78)";
+const BORD  = "rgba(0,85,255,0.22)";
+const DIM_C = "#3A5A8A";
+const TEXT  = "#E2EEFF";
+
+const DIM_COLORS  = [B, PURP, CYAN, GOLD, GRN, ROSE];
+const RADAR_CATS  = ["Logic","Verbal","Spatial","Numerical","Memory","Speed"];
+
+function iqGradient(v: number) {
+  if (v >= 130) return "linear-gradient(135deg,#FFD700 0%,#FFA500 55%,#FF6B00 100%)";
+  if (v >= 120) return "linear-gradient(135deg,#A78BFA 0%,#6366F1 45%,#0055FF 100%)";
+  if (v >= 110) return "linear-gradient(135deg,#0055FF 0%,#06B6D4 100%)";
+  if (v >= 100) return "linear-gradient(135deg,#06B6D4 0%,#0055FF 100%)";
+  return              "linear-gradient(135deg,#3B82F6 0%,#64748B 100%)";
+}
+function iqGlow(v: number) {
+  if (v >= 130) return "0 0 80px rgba(255,180,0,0.35), 0 0 160px rgba(255,120,0,0.15)";
+  if (v >= 120) return "0 0 80px rgba(139,92,246,0.35), 0 0 160px rgba(99,102,241,0.15)";
+  return              "0 0 80px rgba(0,85,255,0.35), 0 0 160px rgba(6,182,212,0.15)";
+}
+
+/* ─── Neural network background ─────────────────────────────────────────────── */
+function NeuralBg() {
+  const nodes = [
+    {x:10,y:15},{x:25,y:8},{x:45,y:20},{x:65,y:5},{x:82,y:18},{x:93,y:10},
+    {x:5,y:40},{x:30,y:35},{x:55,y:42},{x:76,y:30},{x:92,y:46},
+    {x:15,y:62},{x:40,y:55},{x:62,y:68},{x:85,y:58},
+    {x:20,y:82},{x:50,y:76},{x:72,y:87},{x:95,y:72},{x:8,y:92},
+    {x:35,y:25},{x:58,y:30},{x:78,y:50},{x:22,y:50},
+  ];
+  const conns = [
+    [0,1],[1,2],[2,3],[3,4],[4,5],[0,6],[1,7],[2,7],[2,8],[3,8],[4,9],[5,10],
+    [6,11],[7,11],[7,12],[8,12],[8,13],[9,13],[9,14],[10,14],[11,15],[12,15],
+    [12,16],[13,16],[13,17],[14,17],[14,18],[15,19],[0,20],[1,20],[2,21],[3,21],
+    [4,22],[9,22],[6,23],[7,23],
+  ];
+  return (
+    <svg aria-hidden="true" style={{ position:"fixed",inset:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0,opacity:0.4 }}
+      viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <style>{`
+          @keyframes np{0%,100%{opacity:0.25}50%{opacity:0.9}}
+          @keyframes nl{0%,100%{opacity:0.05}50%{opacity:0.2}}
+          .nn{animation:np 3.5s ease-in-out infinite}
+          .nc{animation:nl 4.5s ease-in-out infinite}
+        `}</style>
+        <radialGradient id="nbg" cx="40%" cy="35%" r="60%">
+          <stop offset="0%" stopColor="#0055FF" stopOpacity="0.25"/>
+          <stop offset="60%" stopColor="#8B5CF6" stopOpacity="0.06"/>
+          <stop offset="100%" stopColor="#020617" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="100" height="100" fill="url(#nbg)"/>
+      {conns.map(([a,b],i)=>(
+        <line key={i} className="nc"
+          x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y}
+          stroke={i%3===0?"#06B6D4":i%3===1?"#0055FF":"#8B5CF6"} strokeWidth="0.12"
+          style={{animationDelay:`${(i*0.19)%4.5}s`}}/>
+      ))}
+      {nodes.map((n,i)=>(
+        <circle key={i} className="nn" cx={n.x} cy={n.y} r="0.45"
+          fill={i%3===0?"#4F8EFF":i%3===1?"#A78BFA":"#22D3EE"}
+          style={{animationDelay:`${(i*0.25)%3.5}s`}}/>
+      ))}
+    </svg>
+  );
+}
+
+/* ─── Section header ─────────────────────────────────────────────────────────── */
+function SectionH({ title, accent }: { title:string; accent?:string }) {
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:22}}>
+      <h2 style={{
+        fontSize:"clamp(15px,2.5vw,19px)",fontWeight:800,letterSpacing:"-0.02em",
+        background:accent||`linear-gradient(90deg,${B},${CYAN})`,
+        WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",
+        backgroundClip:"text",margin:0,whiteSpace:"nowrap",
+      }}>{title}</h2>
+      <div style={{flex:1,height:1,background:`linear-gradient(90deg,${BORD},transparent)`}}/>
+    </div>
+  );
+}
+
+/* ─── Glass card ─────────────────────────────────────────────────────────────── */
+function Card({ children, style, glow, delay }: {
+  children:React.ReactNode; style?:React.CSSProperties; glow?:string; delay?:number;
+}) {
+  return (
+    <div className="animate-fade-up" style={{
+      background:GLASS,
+      border:`1px solid ${glow ? glow+"44" : BORD}`,
+      backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",
+      borderRadius:14,
+      boxShadow:glow
+        ?`0 0 28px ${glow}18,0 4px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.06)`
+        :`0 4px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.04)`,
+      animationDelay:delay?`${delay}ms`:"0ms",
+      ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+/* ─── Animated progress bar ─────────────────────────────────────────────────── */
+function AnimBar({ pct, color, delay=200 }: { pct:number; color:string; delay?:number }) {
+  const [w, setW] = useState(0);
+  useEffect(()=>{ const t=setTimeout(()=>setW(pct),delay); return()=>clearTimeout(t); },[pct,delay]);
+  return (
+    <div style={{height:5,background:"rgba(255,255,255,0.06)",borderRadius:99,overflow:"hidden"}}>
+      <div style={{
+        height:"100%",borderRadius:99,
+        background:`linear-gradient(90deg,${color},${color}aa)`,
+        boxShadow:`0 0 10px ${color}66`,
+        width:`${w}%`,
+        transition:"width 1.3s cubic-bezier(0.34,1.56,0.64,1)",
+      }}/>
+    </div>
+  );
+}
+
+/* ─── Fake leaderboard data ──────────────────────────────────────────────────── */
+const FAKE_LB = [
+  {country:"Germany",   iq:134,h:"2h ago"},
+  {country:"Spain",     iq:127,h:"5h ago"},
+  {country:"France",    iq:118,h:"7h ago"},
+  {country:"UK",        iq:141,h:"12h ago"},
+  {country:"Italy",     iq:109,h:"1d ago"},
+  {country:"Netherlands",iq:132,h:"1d ago"},
+  {country:"Portugal",  iq:122,h:"2d ago"},
+  {country:"Poland",    iq:115,h:"2d ago"},
+  {country:"Sweden",    iq:138,h:"3d ago"},
+  {country:"Brazil",    iq:124,h:"3d ago"},
+];
+
+/* ─── Career SVG icons (simple, consistent) ──────────────────────────────────── */
+function CIcon({ i }: { i:number }) {
+  const paths = [
+    "M9 3h6M12 3v4M8 21l-2-4H3l2-4H3l4-6h10l4 6h-2l2 4h-3l-2 4H8z",
+    "M12 2C8.5 2 6 4.5 6 8c0 2.5 1.5 4.5 3.5 5.5L9 22h6l-.5-8.5C16.5 12.5 18 10.5 18 8c0-3.5-2.5-6-6-6z",
+    "M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z",
+    "M3 3v18h18M7 16l5-5 3 3 5-6",
+    "M12 4l8 4-8 4-8-4 8-4zM4 8v8M20 8v8M8 10v8c0 0 2 2 4 2s4-2 4-2v-8",
+    "M12 2a7 7 0 100 14A7 7 0 0012 2zM12 16v6M8 22h8",
+    "M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 3l-4 4-4-4",
+    "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z",
+  ];
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d={paths[i % paths.length]}/>
+    </svg>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+════════════════════════════════════════════════════════════════════════════════ */
 function ReportInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [screen, setScreen] = useState<"pay" | "processing" | "verifying" | "report">("pay");
+  const router      = useRouter();
+  const searchParams= useSearchParams();
+
+  /* payment / screen state — UNTOUCHED */
+  const [screen,  setScreen]  = useState<"pay"|"processing"|"verifying"|"report">("pay");
   const [email,   setEmail]   = useState("");
   const [card,    setCard]    = useState("");
   const [expiry,  setExpiry]  = useState("");
   const [cvc,     setCvc]     = useState("");
   const [name,    setName]    = useState("");
   const [consent, setConsent] = useState(false);
-  const [errors,  setErrors]  = useState<Record<string, boolean>>({});
-  const [iq,      setIq]      = useState(0);
-  const [label,   setLabel]   = useState("");
+  const [errors,  setErrors]  = useState<Record<string,boolean>>({});
+  const [verifyError,setVerifyError] = useState("");
+
+  /* IQ state */
+  const [iq,         setIq]         = useState(0);
+  const [label,      setLabel]      = useState("");
   const [percentile, setPercentile] = useState(0);
   const [catResults, setCatResults] = useState<ReturnType<typeof getCategoryResults>>([]);
-  const [verifyError, setVerifyError] = useState("");
 
-  // Load IQ data from localStorage
-  useEffect(() => {
-    const s  = parseInt(localStorage.getItem("iq_score") || "0");
-    const t  = parseInt(localStorage.getItem("iq_total") || "30");
-    const cs = JSON.parse(localStorage.getItem("iq_catScores") || "[0,0,0,0,0,0]");
-    const ct = JSON.parse(localStorage.getItem("iq_catTotals") || "[0,0,0,0,0,0]");
-    const iqVal = calculateIQ(s, t);
-    setIq(iqVal);
-    setLabel(getIQLabel(iqVal));
-    setPercentile(getPercentile(iqVal));
-    setCatResults(getCategoryResults(iqVal, cs, ct));
-  }, []);
+  /* animated counter */
+  const [displayIq, setDisplayIq] = useState(0);
 
-  // Detect Stripe return with ?success=true&session_id=xxx
-  useEffect(() => {
+  /* Load IQ from localStorage */
+  useEffect(()=>{
+    const s  = parseInt(localStorage.getItem("iq_score")||"0");
+    const t  = parseInt(localStorage.getItem("iq_total")||"30");
+    const cs = JSON.parse(localStorage.getItem("iq_catScores")||"[0,0,0,0,0,0]");
+    const ct = JSON.parse(localStorage.getItem("iq_catTotals")||"[0,0,0,0,0,0]");
+    const v  = calculateIQ(s,t);
+    setIq(v); setLabel(getIQLabel(v)); setPercentile(getPercentile(v));
+    setCatResults(getCategoryResults(v,cs,ct));
+  },[]);
+
+  /* Detect Stripe return */
+  useEffect(()=>{
     const success    = searchParams.get("success");
     const session_id = searchParams.get("session_id");
-
-    if (success === "true" && session_id) {
+    if (success==="true" && session_id) {
       setScreen("verifying");
-      fetch("/api/verify-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id }),
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.paid) {
-            // Mark as paid in localStorage so refreshes stay unlocked
-            localStorage.setItem("report_paid", session_id);
+      fetch("/api/verify-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id})})
+        .then(r=>r.json())
+        .then(d=>{
+          if(d.paid){
+            localStorage.setItem("report_paid",session_id);
             setScreen("report");
-          } else {
-            setVerifyError(data.error || "Payment could not be verified.");
-            setScreen("pay");
-          }
+          } else { setVerifyError(d.error||"Payment could not be verified."); setScreen("pay"); }
         })
-        .catch(() => {
-          setVerifyError("Network error verifying payment. Please contact support.");
-          setScreen("pay");
-        });
+        .catch(()=>{ setVerifyError("Network error verifying payment."); setScreen("pay"); });
       return;
     }
+    if(localStorage.getItem("report_paid")) setScreen("report");
+  },[searchParams]);
 
-    // Check if already paid in a previous session
-    const alreadyPaid = localStorage.getItem("report_paid");
-    if (alreadyPaid) {
-      setScreen("report");
+  /* Count-up animation when report shown */
+  useEffect(()=>{
+    if(screen!=="report"||iq===0) return;
+    const start = Math.max(60, iq-35);
+    setDisplayIq(start);
+    let cur = start;
+    const step = Math.max(1, Math.ceil((iq-start)/50));
+    const t = setInterval(()=>{
+      cur += step;
+      if(cur>=iq){ setDisplayIq(iq); clearInterval(t); return; }
+      setDisplayIq(cur);
+    }, 28);
+    return ()=>clearInterval(t);
+  },[screen,iq]);
+
+  /* Save leaderboard entry when report unlocks */
+  useEffect(()=>{
+    if(screen!=="report"||iq===0) return;
+    const existing = JSON.parse(localStorage.getItem("lb_entry")||"null");
+    if(!existing){
+      localStorage.setItem("lb_entry", JSON.stringify({ iq, date: new Date().toISOString() }));
     }
-  }, [searchParams]);
+  },[screen,iq]);
 
-  function formatCard(v: string)   { return v.replace(/\D/g,"").substring(0,16).replace(/(.{4})/g,"$1 ").trim(); }
-  function formatExpiry(v: string) { const n=v.replace(/\D/g,""); return n.length>=2?n.substring(0,2)+" / "+n.substring(2,4):n; }
+  function formatCard(v:string)  { return v.replace(/\D/g,"").substring(0,16).replace(/(.{4})/g,"$1 ").trim(); }
+  function formatExpiry(v:string){ const n=v.replace(/\D/g,""); return n.length>=2?n.substring(0,2)+" / "+n.substring(2,4):n; }
 
-  async function handlePay() {
-    const e: Record<string, boolean> = {};
-    if (!email)         e.email   = true;
-    if (card.length<19) e.card    = true;
-    if (!consent)       e.consent = true;
+  async function handlePay(){
+    const e:Record<string,boolean>={};
+    if(!email) e.email=true;
+    if(card.length<19) e.card=true;
+    if(!consent) e.consent=true;
     setErrors(e);
-    if (Object.keys(e).length) return;
+    if(Object.keys(e).length) return;
     setScreen("processing");
-    try {
-      const res  = await fetch("/api/checkout", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ email }) });
+    try{
+      const res  = await fetch("/api/checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
       const data = await res.json();
-      if (data.url) { window.location.href = data.url; } else { setScreen("pay"); }
-    } catch { setScreen("pay"); }
+      if(data.url){ window.location.href=data.url; } else { setScreen("pay"); }
+    } catch{ setScreen("pay"); }
   }
 
-  const pctFill = Math.round(((iq - 70) / 80) * 100);
-  const blue   = "#0055FF";
-  const blue2  = "rgba(0,85,255,0.18)";
-  const dim    = "#3A5A8A";
-
-  const CAREERS: Record<string,string[]> = {
-    "Genius":       ["Research Scientist","Neurosurgeon","Aerospace Engineer","Theoretical Physicist","Philosophy Professor"],
-    "Very Superior":["Software Architect","Medical Doctor","Financial Analyst","Lawyer","University Professor"],
-    "Superior":     ["Engineer","Data Scientist","Psychologist","Architect","Journalist"],
-    "High Average": ["Teacher","Nurse","Marketing Manager","Project Manager","Accountant"],
-    "Average":      ["Technician","Sales Manager","Designer","Police Officer","Chef"],
-    "Low Average":  ["Logistics Coordinator","Administrative Assistant","Customer Service","Retail Manager","Driver"],
-    "Below Average":["Warehouse Operative","Delivery Driver","Cleaner","Cashier","Factory Worker"],
+  /* Shared card/input styles for pay screen */
+  const payCard: React.CSSProperties = {
+    background:"rgba(5,18,45,0.80)",border:`1px solid ${BORD}`,
+    backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderRadius:6,
   };
-  const FAMOUS: Record<string,{name:string;iq:number;field:string}[]> = {
-    "Genius":       [{name:"Stephen Hawking",iq:160,field:"Physics"},{name:"Elon Musk",iq:155,field:"Tech/Business"}],
-    "Very Superior":[{name:"Bill Gates",iq:160,field:"Tech"},{name:"Barack Obama",iq:137,field:"Politics"}],
-    "Superior":     [{name:"Arnold Schwarzenegger",iq:135,field:"Actor/Politician"},{name:"Quentin Tarantino",iq:160,field:"Cinema"}],
-    "High Average": [{name:"Average College Graduate",iq:115,field:"Various"},{name:"Most Professionals",iq:112,field:"Various"}],
-    "Average":      [{name:"Average Adult",iq:100,field:"General Population"},{name:"High School Graduate",iq:98,field:"Education"}],
-    "Low Average":  [{name:"Below Average Graduate",iq:88,field:"General"},{name:"General Population Low",iq:85,field:"General"}],
-    "Below Average":[{name:"General Population",iq:78,field:"General"},{name:"Basic Skills Level",iq:75,field:"General"}],
-  };
-  const TIPS: Record<string,string> = {
-    "Logical Reasoning":  "Practice daily logic puzzles and Sudoku. Apps like Lumosity or BrainHQ target this. Try one logic problem per day.",
-    "Verbal Intelligence":"Read widely — fiction, non-fiction, news. Learn 5 new words per week. Crosswords and word association games help.",
-    "Spatial Reasoning":  "Play 3D puzzle games like Tetris or Monument Valley. Practice mental rotation exercises and sketching.",
-    "Numerical Ability":  "Practice mental arithmetic daily. Challenge yourself with percentage calculations in everyday situations.",
-    "Working Memory":     "Try the dual n-back exercise (free at brainworkshop.net). Memorise phone numbers or shopping lists without writing.",
-    "Processing Speed":   "Play reaction-based games. Practice timed arithmetic. Speed reading exercises also help.",
-  };
-  const RADAR_CATS = ["Logic","Verbal","Spatial","Numerical","Memory","Speed"];
-
-  const cardStyle: React.CSSProperties = {
-    background: "rgba(5,18,45,0.80)", border: `1px solid ${blue2}`,
-    backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
-    borderRadius: 6,
-  };
-  const inputStyle: React.CSSProperties = {
-    background: "rgba(5,18,45,0.9)", border: `1px solid ${blue2}`,
-    borderRadius: 4, padding: "10px 14px",
-    fontSize: 13, color: "#D6E4FF",
-    outline: "none", width: "100%",
-    fontFamily: "inherit",
+  const inputSt: React.CSSProperties = {
+    background:"rgba(5,18,45,0.9)",border:`1px solid ${BORD}`,
+    borderRadius:4,padding:"10px 14px",fontSize:13,color:"#D6E4FF",
+    outline:"none",width:"100%",fontFamily:"inherit",
   };
 
-  // ── Verifying screen ────────────────────────────────────────────────────────
-  if (screen === "verifying") {
-    return (
-      <div style={{ minHeight:"100dvh", background:"#050A14", color:"#D6E4FF", display:"flex", flexDirection:"column" }}>
-        <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 24px", borderBottom:`1px solid ${blue2}`, background:"rgba(5,10,20,0.95)" }}>
-          <span style={{ fontSize:16, fontWeight:600 }}>Real<span style={{color:blue}}>IQ</span>Test</span>
-          <span style={{ fontSize:11, color:dim }}>Verifying payment...</span>
-        </nav>
-        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center", padding:"0 24px" }}>
-          <div>
-            <div style={{ width:48, height:48, border:`2px solid ${blue2}`, borderTopColor:blue, borderRadius:"50%", animation:"spin 0.8s linear infinite", margin:"0 auto 24px" }}
-              className="animate-spin" />
-            <h3 style={{ fontSize:22, fontWeight:300, marginBottom:8 }}>Confirming your payment</h3>
-            <p style={{ fontSize:13, color:dim }}>Verifying with Stripe — this takes just a moment...</p>
-          </div>
+  /* ── Verifying ─────────────────────────────────────────────────────────────── */
+  if(screen==="verifying") return (
+    <div style={{minHeight:"100dvh",background:BG,color:TEXT,display:"flex",flexDirection:"column"}}>
+      <NeuralBg/>
+      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:`1px solid ${BORD}`,background:"rgba(2,6,23,0.9)",zIndex:10,position:"relative"}}>
+        <span style={{fontSize:16,fontWeight:700}}>Real<span style={{color:B}}>IQ</span>Test</span>
+        <span style={{fontSize:11,color:DIM_C}}>Verifying payment...</span>
+      </nav>
+      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 24px",position:"relative",zIndex:1}}>
+        <div>
+          <div className="animate-spin" style={{width:52,height:52,border:`2px solid ${BORD}`,borderTopColor:B,borderRadius:"50%",margin:"0 auto 24px"}}/>
+          <h3 style={{fontSize:22,fontWeight:600,marginBottom:8}}>Confirming your payment</h3>
+          <p style={{fontSize:13,color:DIM_C}}>Verifying with Stripe — this takes just a moment...</p>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // ── Processing screen ────────────────────────────────────────────────────────
-  if (screen === "processing") {
-    return (
-      <div style={{ minHeight: "100dvh", background: "#050A14", color: "#D6E4FF", display: "flex", flexDirection: "column" }}>
-        <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 24px", borderBottom:`1px solid ${blue2}`, background:"rgba(5,10,20,0.95)" }}>
-          <span style={{ fontSize:16, fontWeight:600 }}>Real<span style={{color:blue}}>IQ</span>Test</span>
-          <span style={{ fontSize:11, color:dim }}>Redirecting to secure payment...</span>
-        </nav>
-        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center", padding:"0 24px" }}>
-          <div className="animate-fade-up">
-            <div style={{ width:48, height:48, border:`2px solid ${blue2}`, borderTopColor:blue, borderRadius:"50%", animation:"spin 0.8s linear infinite", margin:"0 auto 24px" }}
-              className="animate-spin" />
-            <h3 style={{ fontSize:22, fontWeight:300, marginBottom:8 }}>Connecting to Stripe</h3>
-            <p style={{ fontSize:13, color:dim }}>You will be redirected to the secure payment page...</p>
-          </div>
+  /* ── Processing ────────────────────────────────────────────────────────────── */
+  if(screen==="processing") return (
+    <div style={{minHeight:"100dvh",background:BG,color:TEXT,display:"flex",flexDirection:"column"}}>
+      <NeuralBg/>
+      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:`1px solid ${BORD}`,background:"rgba(2,6,23,0.9)",zIndex:10,position:"relative"}}>
+        <span style={{fontSize:16,fontWeight:700}}>Real<span style={{color:B}}>IQ</span>Test</span>
+        <span style={{fontSize:11,color:DIM_C}}>Redirecting to secure payment...</span>
+      </nav>
+      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 24px",position:"relative",zIndex:1}}>
+        <div className="animate-fade-up">
+          <div className="animate-spin" style={{width:52,height:52,border:`2px solid ${BORD}`,borderTopColor:B,borderRadius:"50%",margin:"0 auto 24px"}}/>
+          <h3 style={{fontSize:22,fontWeight:600,marginBottom:8}}>Connecting to Stripe</h3>
+          <p style={{fontSize:13,color:DIM_C}}>You will be redirected to the secure payment page...</p>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // ── Report screen ────────────────────────────────────────────────────────────
-  if (screen === "report") {
-    const careers = CAREERS[label] || CAREERS["Average"];
-    const famous  = FAMOUS[label]  || FAMOUS["Average"];
-    const radarValues = catResults.map(c => Math.round(((c.iq - 70) / 80) * 100));
-    const cx=160, cy=160, r=108;
-    const angles = RADAR_CATS.map((_,i) => (i*60-90)*(Math.PI/180));
-    const pts = radarValues.map((v,i) => ({
-      x: cx+(r*v/100)*Math.cos(angles[i]),
-      y: cy+(r*v/100)*Math.sin(angles[i]),
+  /* ══════════════════════════════════════════════════════════════════════════════
+     PREMIUM REPORT SCREEN
+  ══════════════════════════════════════════════════════════════════════════════ */
+  if(screen==="report"){
+    const careers = ({
+      "Genius":       ["Research Scientist","Neurosurgeon","Aerospace Engineer","Theoretical Physicist","Philosophy Professor"],
+      "Very Superior":["Software Architect","Medical Doctor","Financial Analyst","Lawyer","University Professor"],
+      "Superior":     ["Engineer","Data Scientist","Psychologist","Architect","Journalist"],
+      "High Average": ["Teacher","Nurse","Marketing Manager","Project Manager","Accountant"],
+      "Average":      ["Technician","Sales Manager","Designer","Police Officer","Chef"],
+      "Low Average":  ["Logistics Coordinator","Administrative Assistant","Customer Service","Retail Manager","Driver"],
+      "Below Average":["Warehouse Operative","Delivery Driver","Cleaner","Cashier","Factory Worker"],
+    } as Record<string,string[]>)[label] || ["Engineer","Designer","Analyst","Manager","Specialist"];
+
+    const famous = ({
+      "Genius":       [{name:"Stephen Hawking",iq:160,field:"Physics"},{name:"Elon Musk",iq:155,field:"Tech/Business"}],
+      "Very Superior":[{name:"Bill Gates",iq:160,field:"Tech"},{name:"Barack Obama",iq:137,field:"Politics"}],
+      "Superior":     [{name:"Arnold Schwarzenegger",iq:135,field:"Actor/Politician"},{name:"Quentin Tarantino",iq:160,field:"Cinema"}],
+      "High Average": [{name:"Average College Graduate",iq:115,field:"Various"},{name:"Most Professionals",iq:112,field:"Various"}],
+      "Average":      [{name:"Average Adult",iq:100,field:"General Population"},{name:"High School Graduate",iq:98,field:"Education"}],
+      "Low Average":  [{name:"Below Average Graduate",iq:88,field:"General"},{name:"General Population Low",iq:85,field:"General"}],
+      "Below Average":[{name:"General Population",iq:78,field:"General"},{name:"Basic Skills Level",iq:75,field:"General"}],
+    } as Record<string,{name:string;iq:number;field:string}[]>)[label] || [];
+
+    const TIPS: Record<string,string> = {
+      "Logical Reasoning":  "Practice daily logic puzzles and Sudoku. Apps like Lumosity or BrainHQ target this directly.",
+      "Verbal Intelligence":"Read widely — fiction, non-fiction, news. Learn 5 new words per week. Crosswords help.",
+      "Spatial Reasoning":  "Play 3D puzzle games like Tetris or Monument Valley. Practice mental rotation exercises.",
+      "Numerical Ability":  "Practice mental arithmetic daily. Challenge yourself with percentage calculations.",
+      "Working Memory":     "Try the dual n-back exercise (brainworkshop.net). Memorise lists without writing them.",
+      "Processing Speed":   "Play reaction-based games. Practice timed arithmetic. Speed reading exercises help.",
+    };
+
+    const pctFill = Math.round(((iq-70)/80)*100);
+    const radarValues = catResults.map(c=>Math.round(((c.iq-70)/80)*100));
+    const cx=160, cy=160, R=110;
+    const angles = RADAR_CATS.map((_,i)=>(i*60-90)*(Math.PI/180));
+    const pts = radarValues.map((v,i)=>({
+      x: cx+(R*v/100)*Math.cos(angles[i]),
+      y: cy+(R*v/100)*Math.sin(angles[i]),
     }));
     const polyPoints = pts.map(p=>`${p.x},${p.y}`).join(" ");
-    const gridPts = (pct: number) => angles.map(a=>`${cx+r*pct*Math.cos(a)},${cy+r*pct*Math.sin(a)}`).join(" ");
+    const gridPts = (p:number)=>angles.map(a=>`${cx+R*p*Math.cos(a)},${cy+R*p*Math.sin(a)}`).join(" ");
+
+    /* Leaderboard: merge fake + user entry, sort by IQ desc */
+    const userEntry = { country:"You", iq, h:"just now", isUser:true };
+    const lbAll = [...FAKE_LB.map(e=>({...e,isUser:false})), userEntry]
+      .sort((a,b)=>b.iq-a.iq);
+    const userRank = lbAll.findIndex(e=>e.isUser)+1;
+    const totalLb  = lbAll.length;
+    const topPct   = Math.round((userRank/totalLb)*100);
 
     return (
-      <div style={{ minHeight:"100dvh", background:"#050A14", color:"#D6E4FF" }}>
-        <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 24px", borderBottom:`1px solid ${blue2}`, background:"rgba(5,10,20,0.95)" }}>
-          <span style={{ fontSize:16, fontWeight:600 }}>Real<span style={{color:blue}}>IQ</span>Test</span>
-          <span style={{ fontSize:10, color:"#00D87A", letterSpacing:"0.12em" }}>✓ Premium Report Unlocked</span>
+      <div style={{minHeight:"100dvh",background:BG,color:TEXT,overflowX:"hidden"}}>
+        <NeuralBg/>
+        <style>{`
+          @keyframes scoreGlow{0%,100%{filter:drop-shadow(0 0 20px rgba(0,85,255,0.4))}50%{filter:drop-shadow(0 0 40px rgba(6,182,212,0.6))}}
+          @keyframes borderPulse{0%,100%{border-color:rgba(0,85,255,0.22)}50%{border-color:rgba(0,85,255,0.55)}}
+          @keyframes radarDraw{from{opacity:0;transform:scale(0.05);transform-origin:160px 160px}to{opacity:1;transform:scale(1);transform-origin:160px 160px}}
+          @keyframes dotPop{from{r:0;opacity:0}to{opacity:1}}
+          .radar-poly{animation:radarDraw 1s cubic-bezier(0.34,1.56,0.64,1) 0.2s both}
+          .radar-dot{animation:dotPop 0.4s ease-out both}
+          .score-num{animation:scoreGlow 3s ease-in-out infinite}
+          .lb-card{transition:transform 200ms,box-shadow 200ms}
+          .lb-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,85,255,0.2)!important}
+          .career-item{transition:background 200ms,border-color 200ms,transform 150ms}
+          .career-item:hover{background:rgba(0,85,255,0.12)!important;border-color:rgba(0,85,255,0.4)!important;transform:translateX(4px)}
+        `}</style>
+
+        {/* ── Nav ─────────────────────────────────────────────────────────── */}
+        <nav style={{position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between",
+          padding:"14px 28px",borderBottom:`1px solid ${BORD}`,
+          background:"rgba(2,6,23,0.92)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}}>
+          <span style={{fontSize:17,fontWeight:800,letterSpacing:"-0.03em"}}>Real<span style={{color:B}}>IQ</span>Test</span>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:8,height:8,borderRadius:"50%",background:GRN,boxShadow:`0 0 8px ${GRN}`}}/>
+            <span style={{fontSize:10,color:GRN,letterSpacing:"0.14em",fontWeight:600,textTransform:"uppercase"}}>Premium Report Unlocked</span>
+          </div>
         </nav>
-        <div style={{ maxWidth:640, margin:"0 auto", padding:"48px 20px" }}>
 
-          {/* Score header */}
-          <div className="animate-fade-up" style={{ textAlign:"center", marginBottom:48, paddingBottom:40, borderBottom:`1px solid ${blue2}` }}>
-            <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:"#00D87A", marginBottom:16 }}>✓ Full Premium Report — Unlocked</p>
-            <div style={{ fontSize:96, fontWeight:300, color:blue, lineHeight:1, textShadow:`0 0 50px rgba(0,85,255,0.4)` }}>{iq}</div>
-            <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:dim, marginTop:8 }}>Intelligence Quotient</p>
-            <div style={{ display:"inline-block", marginTop:14, border:`1px solid ${blue}`, color:blue, padding:"6px 20px", fontSize:11, letterSpacing:"0.14em", textTransform:"uppercase" }}>{label}</div>
-            <div style={{ maxWidth:340, margin:"20px auto 0" }}>
-              <div style={{ height:4, background:blue2, borderRadius:2, overflow:"hidden" }}>
-                <div className="progress-neon" style={{ height:"100%", width:`${pctFill}%`, transition:"width 1.4s ease", borderRadius:2 }} />
-              </div>
-              <div style={{ display:"flex", justifyContent:"space-between", fontSize:9, color:dim, marginTop:6 }}>
-                <span>70</span><span>Average (100)</span><span>145+</span>
+        <div style={{maxWidth:700,margin:"0 auto",padding:"60px 20px 80px",position:"relative",zIndex:1}}>
+
+          {/* ── HERO: IQ Score ──────────────────────────────────────────────── */}
+          <div className="animate-fade-up" style={{textAlign:"center",marginBottom:56,paddingBottom:48,
+            borderBottom:`1px solid ${BORD}`}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",
+              background:"rgba(16,185,129,0.1)",border:"1px solid rgba(16,185,129,0.3)",
+              borderRadius:99,marginBottom:20}}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span style={{fontSize:10,color:GRN,letterSpacing:"0.18em",fontWeight:700,textTransform:"uppercase"}}>Full Premium Report</span>
+            </div>
+
+            {/* Giant score with gradient */}
+            <div className="score-num" style={{
+              fontSize:"clamp(100px,20vw,148px)",fontWeight:900,lineHeight:1,
+              background:iqGradient(iq),
+              WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+              textShadow:"none",
+              filter:"drop-shadow(0 0 40px rgba(0,85,255,0.4))",
+              letterSpacing:"-0.04em",
+            }}>{displayIq}</div>
+
+            <p style={{fontSize:11,letterSpacing:"0.2em",textTransform:"uppercase",color:DIM_C,marginTop:4}}>Intelligence Quotient</p>
+
+            {/* Label badge */}
+            <div style={{
+              display:"inline-block",marginTop:18,padding:"8px 28px",
+              background:`linear-gradient(135deg,${B}22,${CYAN}22)`,
+              border:`1px solid ${B}55`,borderRadius:6,
+              fontSize:12,letterSpacing:"0.16em",textTransform:"uppercase",fontWeight:700,
+              background2:iqGradient(iq),
+              color:TEXT,
+            } as React.CSSProperties}>{label}</div>
+
+            {/* Progress bar */}
+            <div style={{maxWidth:380,margin:"24px auto 0"}}>
+              <AnimBar pct={pctFill} color={B} delay={600}/>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:DIM_C,marginTop:6}}>
+                <span>70</span><span style={{color:TEXT}}>Average (100)</span><span>145+</span>
               </div>
             </div>
           </div>
 
-          {/* Percentile */}
-          <div className="animate-fade-up" style={{ marginBottom:36, animationDelay:"80ms" }}>
-            <h2 style={{ fontSize:16, fontWeight:500, marginBottom:16, display:"flex", alignItems:"center", gap:12 }}>
-              Global percentile rank<span style={{ flex:1, height:1, background:blue2, display:"block" }} />
-            </h2>
-            <div style={{ ...cardStyle, padding:24, textAlign:"center" }}>
-              <div style={{ fontSize:60, fontWeight:300, color:blue, textShadow:`0 0 30px rgba(0,85,255,0.4)` }}>{percentile}<span style={{ fontSize:24, color:dim }}>th</span></div>
-              <p style={{ fontSize:12, color:dim, marginTop:8 }}>percentile — based on standardised IQ distribution norms</p>
-              <div style={{ height:4, background:blue2, borderRadius:2, overflow:"hidden", marginTop:20 }}>
-                <div className="progress-neon" style={{ height:"100%", width:`${pctFill}%`, transition:"width 1.2s ease", borderRadius:2 }} />
+          {/* ── Percentile ──────────────────────────────────────────────────── */}
+          <div className="animate-fade-up" style={{marginBottom:40,animationDelay:"60ms"}}>
+            <SectionH title="Global Percentile Rank"/>
+            <Card glow={CYAN} style={{padding:32,textAlign:"center"}}>
+              <div style={{
+                fontSize:"clamp(56px,10vw,80px)",fontWeight:900,lineHeight:1,
+                background:`linear-gradient(135deg,${CYAN},${B})`,
+                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                letterSpacing:"-0.04em",
+              }}>{percentile}<span style={{fontSize:"clamp(24px,4vw,36px)",opacity:0.7}}>th</span></div>
+              <p style={{fontSize:12,color:DIM_C,marginTop:10,lineHeight:1.7}}>
+                You scored higher than <strong style={{color:TEXT}}>{percentile}%</strong> of the global population<br/>based on standardised IQ distribution norms.
+              </p>
+              <div style={{maxWidth:320,margin:"24px auto 0"}}>
+                <AnimBar pct={pctFill} color={CYAN} delay={400}/>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:DIM_C,marginTop:6}}>
+                  <span>1st</span><span>50th</span><span>99th</span>
+                </div>
               </div>
-              <div style={{ display:"flex", justifyContent:"space-between", fontSize:9, color:dim, marginTop:6 }}>
-                <span>1st</span><span>50th</span><span>99th</span>
-              </div>
-            </div>
+            </Card>
           </div>
 
-          {/* Radar chart */}
-          <div className="animate-fade-up" style={{ marginBottom:36, animationDelay:"140ms" }}>
-            <h2 style={{ fontSize:16, fontWeight:500, marginBottom:16, display:"flex", alignItems:"center", gap:12 }}>
-              Cognitive radar<span style={{ flex:1, height:1, background:blue2, display:"block" }} />
-            </h2>
-            <div style={{ ...cardStyle, padding:24, display:"flex", justifyContent:"center" }}>
+          {/* ── Radar chart ─────────────────────────────────────────────────── */}
+          <div className="animate-fade-up" style={{marginBottom:40,animationDelay:"120ms"}}>
+            <SectionH title="Cognitive Radar" accent={`linear-gradient(90deg,${PURP},${CYAN})`}/>
+            <Card glow={PURP} style={{padding:"28px 24px",display:"flex",flexDirection:"column",alignItems:"center"}}>
               <svg width="320" height="320" viewBox="0 0 320 320">
                 <defs>
-                  <style>{`
-                    @keyframes radar-grow { from{opacity:0;transform:scale(0.1);transform-origin:160px 160px} to{opacity:1;transform:scale(1);transform-origin:160px 160px} }
-                    .radar-shape{animation:radar-grow 0.9s cubic-bezier(0.34,1.56,0.64,1) 0.3s both}
-                    .radar-dot  {animation:radar-grow 0.5s ease-out both}
-                  `}</style>
+                  <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor={B} stopOpacity="0.25"/>
+                    <stop offset="100%" stopColor={PURP} stopOpacity="0.1"/>
+                  </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
                 </defs>
+                {/* Grid rings */}
                 {[0.25,0.5,0.75,1].map((p,i)=>(
-                  <polygon key={i} points={gridPts(p)} fill="none" stroke="rgba(0,85,255,0.12)" strokeWidth="0.5" />
+                  <polygon key={i} points={gridPts(p)} fill="none"
+                    stroke={`rgba(0,85,255,${i===3?0.18:0.08})`} strokeWidth={i===3?"0.8":"0.5"}
+                    strokeDasharray={i===3?"none":"2 2"}/>
                 ))}
+                {/* Axis lines */}
                 {angles.map((a,i)=>(
-                  <line key={i} x1={cx} y1={cy} x2={cx+r*Math.cos(a)} y2={cy+r*Math.sin(a)} stroke="rgba(0,85,255,0.1)" strokeWidth="0.5" />
+                  <line key={i} x1={cx} y1={cy} x2={cx+R*Math.cos(a)} y2={cy+R*Math.sin(a)}
+                    stroke={`${DIM_COLORS[i]}30`} strokeWidth="0.8"/>
                 ))}
-                <polygon className="radar-shape" points={polyPoints}
-                  fill="rgba(0,85,255,0.12)" stroke="#0055FF" strokeWidth="2" strokeLinejoin="round" />
+                {/* Filled polygon */}
+                <polygon className="radar-poly" points={polyPoints}
+                  fill="url(#rg)" stroke="none"/>
+                <polygon className="radar-poly" points={polyPoints}
+                  fill="none" stroke={`url(#rg)`}
+                  strokeWidth="2.5" strokeLinejoin="round" filter="url(#glow)"
+                  style={{stroke:B}}/>
+                {/* Dots colored per dimension */}
                 {pts.map((p,i)=>(
-                  <circle key={i} className="radar-dot" cx={p.x} cy={p.y} r="4" fill="#0055FF"
-                    style={{ animationDelay:`${0.3+i*0.08}s`, filter:"drop-shadow(0 0 4px rgba(0,85,255,0.8))" }} />
+                  <circle key={i} className="radar-dot" cx={p.x} cy={p.y} r="5"
+                    fill={DIM_COLORS[i]}
+                    style={{animationDelay:`${0.5+i*0.1}s`,filter:`drop-shadow(0 0 6px ${DIM_COLORS[i]})`}}/>
                 ))}
+                {/* Labels */}
                 {RADAR_CATS.map((lab,i)=>{
-                  const lx=cx+(r+24)*Math.cos(angles[i]);
-                  const ly=cy+(r+24)*Math.sin(angles[i]);
-                  return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fill="#5A78A8" fontSize="10" fontFamily="Inter,sans-serif">{lab}</text>;
-                })}
-                {radarValues.map((v,i)=>{
-                  const lx=cx+(r*v/100*0.65)*Math.cos(angles[i]);
-                  const ly=cy+(r*v/100*0.65)*Math.sin(angles[i]);
-                  return v>20 ? <text key={`v${i}`} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fill="rgba(0,85,255,0.7)" fontSize="8" fontFamily="Inter,sans-serif">{catResults[i]?.iq}</text> : null;
+                  const lx=cx+(R+22)*Math.cos(angles[i]);
+                  const ly=cy+(R+22)*Math.sin(angles[i]);
+                  return(
+                    <g key={i}>
+                      <text x={lx} y={ly-6} textAnchor="middle" dominantBaseline="middle"
+                        fill={DIM_COLORS[i]} fontSize="9.5" fontFamily="Inter,sans-serif" fontWeight="700"
+                        letterSpacing="0.05em">{lab}</text>
+                      {catResults[i] && (
+                        <text x={lx} y={ly+7} textAnchor="middle" dominantBaseline="middle"
+                          fill={`${DIM_COLORS[i]}99`} fontSize="8" fontFamily="Inter,sans-serif">{catResults[i].iq}</text>
+                      )}
+                    </g>
+                  );
                 })}
               </svg>
-            </div>
+              {/* Legend */}
+              <div style={{display:"flex",flexWrap:"wrap",gap:"8px 16px",justifyContent:"center",marginTop:8}}>
+                {RADAR_CATS.map((lab,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
+                    <div style={{width:8,height:8,borderRadius:"50%",background:DIM_COLORS[i],boxShadow:`0 0 6px ${DIM_COLORS[i]}`}}/>
+                    <span style={{fontSize:10,color:DIM_C}}>{lab}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
 
-          {/* Category breakdown */}
-          <div style={{ marginBottom:36 }}>
-            <h2 style={{ fontSize:16, fontWeight:500, marginBottom:16, display:"flex", alignItems:"center", gap:12 }}>
-              Breakdown by category<span style={{ flex:1, height:1, background:blue2, display:"block" }} />
-            </h2>
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          {/* ── Dimension breakdown ─────────────────────────────────────────── */}
+          <div style={{marginBottom:40}}>
+            <SectionH title="Breakdown by Dimension"/>
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {catResults.map((cat,i)=>(
-                <div key={i} className="animate-fade-up" style={{ ...cardStyle, padding:16, animationDelay:`${200+i*55}ms` }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-                    <span style={{ fontSize:13, fontWeight:500 }}>{cat.name}</span>
-                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <Card key={i} glow={DIM_COLORS[i]} delay={i*60} style={{padding:20}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{width:10,height:10,borderRadius:"50%",background:DIM_COLORS[i],
+                        boxShadow:`0 0 10px ${DIM_COLORS[i]}`}}/>
+                      <span style={{fontSize:14,fontWeight:700,letterSpacing:"-0.01em"}}>{cat.name}</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
                       <span style={{
-                        fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", padding:"3px 8px", borderRadius:2,
+                        fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",
+                        padding:"3px 10px",borderRadius:99,fontWeight:700,
                         ...(cat.badge==="strong"
-                          ? {background:"rgba(0,216,122,0.1)", color:"#00D87A", border:"1px solid rgba(0,216,122,0.3)"}
-                          : cat.badge==="avg"
-                            ? {background:"rgba(0,85,255,0.1)", color:blue, border:`1px solid ${blue2}`}
-                            : {background:"rgba(255,59,59,0.1)", color:"#FF3B3B", border:"1px solid rgba(255,59,59,0.3)"}),
+                          ?{background:"rgba(16,185,129,0.12)",color:GRN,border:`1px solid ${GRN}44`}
+                          :cat.badge==="avg"
+                            ?{background:`rgba(0,85,255,0.1)`,color:B,border:`1px solid ${BORD}`}
+                            :{background:"rgba(251,113,133,0.1)",color:ROSE,border:"1px solid rgba(251,113,133,0.3)"}),
                       }}>
                         {cat.badge==="strong"?"Strength":cat.badge==="avg"?"Average":"Develop"}
                       </span>
-                      <span style={{ fontSize:20, fontWeight:300, color:blue }}>{cat.iq}</span>
+                      <span style={{
+                        fontSize:26,fontWeight:900,
+                        background:`linear-gradient(135deg,${DIM_COLORS[i]},${DIM_COLORS[(i+2)%6]})`,
+                        WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                      }}>{cat.iq}</span>
                     </div>
                   </div>
-                  <div style={{ height:3, background:blue2, borderRadius:2, marginBottom:8 }}>
-                    <div className="progress-neon" style={{ height:"100%", borderRadius:2, width:`${Math.round(((cat.iq-70)/80)*100)}%` }} />
-                  </div>
-                  <p style={{ fontSize:12, color:dim, lineHeight:1.6 }}>{cat.desc}</p>
-                </div>
+                  <AnimBar pct={Math.round(((cat.iq-70)/80)*100)} color={DIM_COLORS[i]} delay={300+i*80}/>
+                  <p style={{fontSize:12,color:DIM_C,lineHeight:1.7,marginTop:10}}>{cat.desc}</p>
+                </Card>
               ))}
             </div>
           </div>
 
-          {/* How to improve */}
-          <div style={{ marginBottom:36 }}>
-            <h2 style={{ fontSize:16, fontWeight:500, marginBottom:16, display:"flex", alignItems:"center", gap:12 }}>
-              How to improve<span style={{ flex:1, height:1, background:blue2, display:"block" }} />
-            </h2>
-            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-              {catResults.map((cat,i)=>(
-                <div key={i} className="animate-fade-up" style={{ ...cardStyle, padding:14, animationDelay:`${i*50}ms` }}>
-                  <p style={{ fontSize:12, fontWeight:500, color:blue, marginBottom:6 }}>{cat.name}</p>
-                  <p style={{ fontSize:12, color:dim, lineHeight:1.6 }}>{TIPS[cat.name]}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* ── PREMIUM LEADERBOARD ─────────────────────────────────────────── */}
+          <div style={{marginBottom:40}}>
+            <SectionH title="Premium Intelligence Board" accent={`linear-gradient(90deg,${GOLD},#FF9500)`}/>
 
-          {/* Career matches */}
-          <div style={{ marginBottom:36 }}>
-            <h2 style={{ fontSize:16, fontWeight:500, marginBottom:16, display:"flex", alignItems:"center", gap:12 }}>
-              Best career matches<span style={{ flex:1, height:1, background:blue2, display:"block" }} />
-            </h2>
-            <div style={{ ...cardStyle, padding:20 }}>
-              <p style={{ fontSize:12, color:dim, marginBottom:14, lineHeight:1.6 }}>Based on your IQ profile, these careers typically align well with your intellectual capabilities:</p>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
-                {careers.map((career,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, fontSize:13 }}>
-                    <span style={{ color:blue }}>→</span><span>{career}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Famous comparisons */}
-          <div style={{ marginBottom:36 }}>
-            <h2 style={{ fontSize:16, fontWeight:500, marginBottom:16, display:"flex", alignItems:"center", gap:12 }}>
-              IQ comparisons<span style={{ flex:1, height:1, background:blue2, display:"block" }} />
-            </h2>
-            <div style={{ ...cardStyle, padding:20 }}>
-              <p style={{ fontSize:12, color:dim, marginBottom:14 }}>People with a similar IQ range:</p>
-              <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
-                {famous.map((f,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0", borderBottom:`1px solid ${blue2}` }}>
-                    <div>
-                      <p style={{ fontSize:13, fontWeight:500 }}>{f.name}</p>
-                      <p style={{ fontSize:11, color:dim }}>{f.field}</p>
-                    </div>
-                    <div style={{ fontSize:20, fontWeight:300, color:blue }}>~{f.iq}</div>
-                  </div>
-                ))}
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 14px", marginTop:8, background:"rgba(0,85,255,0.08)", borderRadius:4 }}>
-                  <div>
-                    <p style={{ fontSize:13, fontWeight:500, color:blue }}>You</p>
-                    <p style={{ fontSize:11, color:dim }}>RealIQTest result</p>
-                  </div>
-                  <div style={{ fontSize:20, fontWeight:300, color:blue }}>{iq}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Certificate */}
-          <div style={{ marginBottom:36 }}>
-            <h2 style={{ fontSize:16, fontWeight:500, marginBottom:16, display:"flex", alignItems:"center", gap:12 }}>
-              Certificate<span style={{ flex:1, height:1, background:blue2, display:"block" }} />
-            </h2>
-            <div style={{ ...cardStyle, padding:48, textAlign:"center", position:"relative", overflow:"hidden" }}>
-              <div style={{ position:"absolute", top:12, left:12, width:40, height:40, borderLeft:`1px solid rgba(0,85,255,0.4)`, borderTop:`1px solid rgba(0,85,255,0.4)` }} />
-              <div style={{ position:"absolute", top:12, right:12, width:40, height:40, borderRight:`1px solid rgba(0,85,255,0.4)`, borderTop:`1px solid rgba(0,85,255,0.4)` }} />
-              <div style={{ position:"absolute", bottom:12, left:12, width:40, height:40, borderLeft:`1px solid rgba(0,85,255,0.4)`, borderBottom:`1px solid rgba(0,85,255,0.4)` }} />
-              <div style={{ position:"absolute", bottom:12, right:12, width:40, height:40, borderRight:`1px solid rgba(0,85,255,0.4)`, borderBottom:`1px solid rgba(0,85,255,0.4)` }} />
-              <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:dim, marginBottom:12 }}>RealIQTest · Official Certificate</p>
-              <p style={{ fontSize:16, marginBottom:8 }}>This certifies an IQ score of</p>
-              <div style={{ fontSize:68, fontWeight:300, color:blue, lineHeight:1, textShadow:`0 0 30px rgba(0,85,255,0.4)` }}>{iq}</div>
-              <p style={{ fontSize:16, marginTop:8 }}>{label}</p>
-              <p style={{ fontSize:10, color:dim, marginTop:20 }}>
-                Top {100-percentile}% of global population · {new Date().toLocaleDateString("en-GB",{month:"long",year:"numeric"})} · RealIQTest.co
+            {/* Exclusivity banner */}
+            <div className="animate-fade-up" style={{
+              background:`linear-gradient(135deg,rgba(245,158,11,0.08),rgba(251,191,36,0.04))`,
+              border:`1px solid rgba(245,158,11,0.3)`,borderRadius:12,padding:"20px 24px",
+              marginBottom:16,textAlign:"center",
+              boxShadow:`0 0 30px rgba(245,158,11,0.08)`,
+            }}>
+              <div style={{
+                fontSize:"clamp(28px,6vw,42px)",fontWeight:900,letterSpacing:"-0.03em",
+                background:`linear-gradient(135deg,${GOLD},#FDE68A,#FF9500)`,
+                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                marginBottom:4,
+              }}>#{userRank}</div>
+              <p style={{fontSize:13,color:TEXT,fontWeight:600,marginBottom:4}}>Your position on the Intelligence Board</p>
+              <p style={{fontSize:11,color:DIM_C,lineHeight:1.6}}>
+                You are among the <strong style={{color:GOLD}}>{topPct}%</strong> who completed the full cognitive assessment.
+                Your IQ of <strong style={{color:TEXT}}>{iq}</strong> places you above <strong style={{color:GOLD}}>{100-topPct}%</strong> of all assessees.
               </p>
             </div>
-            <div style={{ display:"flex", justifyContent:"center", gap:10, marginTop:16 }}>
-              <button className="btn btn-outline" style={{ fontSize:10 }}>↓ Download PDF</button>
-              <button onClick={()=>router.push("/test")} className="btn btn-primary">Take Test Again</button>
+
+            {/* Board entries */}
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {lbAll.slice(0,11).map((e,i)=>(
+                <div key={i} className={`lb-card ${e.isUser?"animate-fade-up":""}`} style={{
+                  display:"flex",alignItems:"center",gap:14,padding:"12px 18px",
+                  background: e.isUser
+                    ?`linear-gradient(135deg,rgba(245,158,11,0.14),rgba(255,149,0,0.06))`
+                    :`rgba(6,14,40,0.6)`,
+                  border:`1px solid ${e.isUser?"rgba(245,158,11,0.5)":BORD}`,
+                  borderRadius:10,
+                  boxShadow: e.isUser?`0 0 20px rgba(245,158,11,0.1)`:"none",
+                  animationDelay:e.isUser?`${i*40}ms`:"0ms",
+                }}>
+                  {/* Rank */}
+                  <div style={{
+                    width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",
+                    background:i===0?`linear-gradient(135deg,${GOLD},#FFA500)`:i===1?"linear-gradient(135deg,#C0C0C0,#888)":i===2?"linear-gradient(135deg,#CD7F32,#8B4513)":"rgba(255,255,255,0.05)",
+                    fontSize:11,fontWeight:800,color:i<3?BG:DIM_C,flexShrink:0,
+                    boxShadow:i===0?`0 0 10px ${GOLD}66`:i===1?"0 0 8px rgba(192,192,192,0.3)":i===2?"0 0 8px rgba(205,127,50,0.3)":"none",
+                  }}>
+                    {i+1}
+                  </div>
+                  {/* Info */}
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{fontSize:13,fontWeight:e.isUser?700:500,color:e.isUser?GOLD:TEXT,marginBottom:1}}>
+                      {e.isUser?"You":e.country==="UK"?"User from United Kingdom":`User from ${e.country}`}
+                    </p>
+                    <p style={{fontSize:10,color:DIM_C}}>{(e as any).h}</p>
+                  </div>
+                  {/* IQ score */}
+                  <div style={{
+                    fontSize:20,fontWeight:900,
+                    background:e.isUser?`linear-gradient(135deg,${GOLD},#FDE68A)`:iqGradient(e.iq),
+                    WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                  }}>IQ {e.iq}</div>
+                </div>
+              ))}
+            </div>
+
+            <p style={{fontSize:10,color:DIM_C,textAlign:"center",marginTop:12,lineHeight:1.6}}>
+              Scores shown are anonymised. Board updates with each new premium assessment.
+            </p>
+          </div>
+
+          {/* ── Career matches ──────────────────────────────────────────────── */}
+          <div style={{marginBottom:40}}>
+            <SectionH title="Best Career Matches"/>
+            <Card style={{padding:24}}>
+              <p style={{fontSize:12,color:DIM_C,marginBottom:18,lineHeight:1.7}}>
+                Based on your cognitive profile, these careers align strongest with your intellectual strengths:
+              </p>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:10}}>
+                {careers.map((career,i)=>(
+                  <div key={i} className="career-item" style={{
+                    display:"flex",alignItems:"center",gap:10,padding:"10px 14px",
+                    background:"rgba(0,85,255,0.06)",border:`1px solid ${BORD}`,
+                    borderRadius:8,cursor:"default",
+                  }}>
+                    <div style={{color:DIM_COLORS[i%6],flexShrink:0}}><CIcon i={i}/></div>
+                    <span style={{fontSize:12,fontWeight:500}}>{career}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          {/* ── Improvement tips ────────────────────────────────────────────── */}
+          <div style={{marginBottom:40}}>
+            <SectionH title="How to Improve" accent={`linear-gradient(90deg,${GRN},${CYAN})`}/>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {catResults.map((cat,i)=>(
+                <Card key={i} delay={i*50} style={{padding:18}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:DIM_COLORS[i],
+                      boxShadow:`0 0 8px ${DIM_COLORS[i]}`,flexShrink:0}}/>
+                    <span style={{fontSize:13,fontWeight:700,
+                      background:`linear-gradient(90deg,${DIM_COLORS[i]},${DIM_COLORS[(i+1)%6]})`,
+                      WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                    }}>{cat.name}</span>
+                  </div>
+                  <p style={{fontSize:12,color:DIM_C,lineHeight:1.7}}>{TIPS[cat.name]}</p>
+                </Card>
+              ))}
             </div>
           </div>
+
+          {/* ── Famous comparisons ──────────────────────────────────────────── */}
+          <div style={{marginBottom:40}}>
+            <SectionH title="IQ Comparisons"/>
+            <Card style={{padding:24}}>
+              <p style={{fontSize:12,color:DIM_C,marginBottom:18}}>Notable figures with a similar IQ range:</p>
+              <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                {famous.map((f,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+                    padding:"14px 0",borderBottom:`1px solid ${BORD}`}}>
+                    <div>
+                      <p style={{fontSize:13,fontWeight:600}}>{f.name}</p>
+                      <p style={{fontSize:11,color:DIM_C}}>{f.field}</p>
+                    </div>
+                    <div style={{
+                      fontSize:22,fontWeight:900,
+                      background:iqGradient(f.iq),
+                      WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                    }}>~{f.iq}</div>
+                  </div>
+                ))}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+                  padding:"14px 16px",marginTop:10,
+                  background:`linear-gradient(135deg,${B}12,${CYAN}06)`,
+                  border:`1px solid ${B}33`,borderRadius:8}}>
+                  <div>
+                    <p style={{fontSize:13,fontWeight:700,
+                      background:`linear-gradient(90deg,${B},${CYAN})`,
+                      WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                    }}>You</p>
+                    <p style={{fontSize:11,color:DIM_C}}>RealIQTest result</p>
+                  </div>
+                  <div style={{
+                    fontSize:28,fontWeight:900,
+                    background:iqGradient(iq),
+                    WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                  }}>{iq}</div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* ── Certificate ─────────────────────────────────────────────────── */}
+          <div style={{marginBottom:40}}>
+            <SectionH title="Official Certificate" accent={`linear-gradient(90deg,${GOLD},#FDE68A)`}/>
+            <div className="animate-fade-up" style={{
+              background:`linear-gradient(135deg,rgba(6,14,40,0.9),rgba(10,20,55,0.9))`,
+              border:`1px solid rgba(245,158,11,0.35)`,borderRadius:16,
+              padding:"52px 40px",textAlign:"center",position:"relative",overflow:"hidden",
+              boxShadow:`0 0 60px rgba(245,158,11,0.08),0 0 120px rgba(0,85,255,0.06)`,
+            }}>
+              {/* Corner ornaments */}
+              {[["top","left"],["top","right"],["bottom","left"],["bottom","right"]].map(([v,h],i)=>(
+                <div key={i} style={{
+                  position:"absolute",[v]:16,[h]:16,width:44,height:44,
+                  [`border${v.charAt(0).toUpperCase()+v.slice(1)}`]:"none",
+                  borderLeft: h==="left"?"1.5px solid rgba(245,158,11,0.5)":"none",
+                  borderRight:h==="right"?"1.5px solid rgba(245,158,11,0.5)":"none",
+                  borderTop:  v==="top"?"1.5px solid rgba(245,158,11,0.5)":"none",
+                  borderBottom:v==="bottom"?"1.5px solid rgba(245,158,11,0.5)":"none",
+                }}/>
+              ))}
+              {/* Watermark glow */}
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",
+                width:200,height:200,borderRadius:"50%",
+                background:`radial-gradient(circle,${GOLD}06,transparent 70%)`,
+                pointerEvents:"none"}}/>
+
+              <p style={{fontSize:9,letterSpacing:"0.22em",textTransform:"uppercase",color:DIM_C,marginBottom:16}}>
+                RealIQTest · Official Certificate of Intelligence Assessment
+              </p>
+              <p style={{fontSize:15,color:TEXT,marginBottom:14,fontWeight:300}}>This certifies an IQ score of</p>
+              <div style={{
+                fontSize:"clamp(72px,14vw,100px)",fontWeight:900,lineHeight:1,
+                background:iqGradient(iq),
+                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                letterSpacing:"-0.04em",filter:`drop-shadow(0 0 30px ${GOLD}44)`,
+              }}>{iq}</div>
+              <div style={{
+                display:"inline-block",marginTop:16,padding:"8px 32px",
+                background:`linear-gradient(135deg,${GOLD}22,${GOLD}08)`,
+                border:`1px solid ${GOLD}44`,borderRadius:4,
+                fontSize:13,letterSpacing:"0.18em",textTransform:"uppercase",
+                fontWeight:700,color:GOLD,
+              }}>{label}</div>
+              <p style={{fontSize:10,color:DIM_C,marginTop:24,lineHeight:1.7}}>
+                Top {100-percentile}% of global population<br/>
+                {new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})} · RealIQTest.co
+              </p>
+            </div>
+            <div style={{display:"flex",justifyContent:"center",gap:12,marginTop:20}}>
+              <button className="btn btn-outline" style={{fontSize:11,cursor:"pointer"}} onClick={()=>window.print()}>
+                ↓ Download / Print PDF
+              </button>
+              <button onClick={()=>router.push("/test")} className="btn btn-primary" style={{cursor:"pointer"}}>
+                Take Test Again
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     );
   }
 
-  // ── Pay screen ───────────────────────────────────────────────────────────────
+  /* ══════════════════════════════════════════════════════════════════════════════
+     PAY SCREEN — UNCHANGED LOGIC, slightly polished
+  ══════════════════════════════════════════════════════════════════════════════ */
   return (
-    <div style={{ minHeight:"100dvh", background:"#050A14", color:"#D6E4FF" }}>
-      <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 24px", borderBottom:`1px solid ${blue2}`, background:"rgba(5,10,20,0.95)" }}>
-        <span style={{ fontSize:16, fontWeight:600 }}>Real<span style={{color:blue}}>IQ</span>Test</span>
-        <span style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:dim }}>Secure Checkout</span>
+    <div style={{minHeight:"100dvh",background:BG,color:TEXT}}>
+      <NeuralBg/>
+      <nav style={{position:"relative",zIndex:10,display:"flex",alignItems:"center",justifyContent:"space-between",
+        padding:"16px 24px",borderBottom:`1px solid ${BORD}`,
+        background:"rgba(2,6,23,0.95)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}}>
+        <span style={{fontSize:16,fontWeight:800}}>Real<span style={{color:B}}>IQ</span>Test</span>
+        <span style={{fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",color:DIM_C}}>Secure Checkout</span>
       </nav>
 
-      <div style={{ maxWidth:960, margin:"0 auto", padding:"48px 20px", display:"grid", gridTemplateColumns:"1fr", gap:40 }}
+      <div style={{maxWidth:980,margin:"0 auto",padding:"48px 20px",display:"grid",
+        gridTemplateColumns:"1fr",gap:40,position:"relative",zIndex:1}}
         className="report-grid">
         <style>{`@media(min-width:768px){.report-grid{grid-template-columns:1fr 1fr!important}}`}</style>
 
         {/* Left: benefits */}
         <div className="animate-fade-up">
-          <p style={{ fontSize:10, letterSpacing:"0.22em", textTransform:"uppercase", color:blue, marginBottom:12 }}>Premium Cognitive Report</p>
-          <h1 style={{ fontSize:"clamp(24px,4vw,34px)", fontWeight:300, letterSpacing:"-0.02em", lineHeight:1.25, marginBottom:16 }}>
-            Unlock your complete <em style={{ color:blue, fontStyle:"normal" }}>intelligence profile</em>
+          <p style={{fontSize:10,letterSpacing:"0.22em",textTransform:"uppercase",color:B,marginBottom:12,fontWeight:700}}>Premium Cognitive Report</p>
+          <h1 style={{fontSize:"clamp(24px,4vw,36px)",fontWeight:800,letterSpacing:"-0.03em",lineHeight:1.2,marginBottom:16}}>
+            Unlock your complete{" "}
+            <span style={{background:`linear-gradient(90deg,${B},${CYAN})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
+              intelligence profile
+            </span>
           </h1>
-          <p style={{ fontSize:13, color:dim, lineHeight:1.7, marginBottom:28 }}>
+          <p style={{fontSize:13,color:DIM_C,lineHeight:1.8,marginBottom:28}}>
             Your free result shows your overall IQ. The premium report gives you everything — detailed breakdown, career matches, improvement tips, famous comparisons and your official certificate.
           </p>
 
-          {/* Verify error banner */}
           {verifyError && (
-            <div style={{ padding:"12px 16px", borderRadius:4, background:"rgba(255,59,59,0.08)", border:"1px solid rgba(255,59,59,0.3)", color:"#FF3B3B", fontSize:12, marginBottom:20, lineHeight:1.5 }}>
+            <div style={{padding:"12px 16px",borderRadius:8,background:"rgba(251,113,133,0.08)",
+              border:"1px solid rgba(251,113,133,0.3)",color:ROSE,fontSize:12,marginBottom:20,lineHeight:1.5}}>
               <strong>Payment verification failed:</strong> {verifyError}
-              <br /><span style={{ color:dim }}>If you were charged, please contact support@realiqtest.co</span>
+              <br/><span style={{color:DIM_C}}>If you were charged, please contact support@realiqtest.co</span>
             </div>
           )}
 
-          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
+          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:28}}>
             {[
               "Full breakdown across all 6 cognitive categories",
               "Cognitive radar chart — visualise your mind",
               "Percentile rank vs global population norms",
+              "Premium Intelligence Leaderboard",
               "Best career matches for your IQ profile",
               "Personalised tips to improve each category",
               "Famous IQ comparisons",
               "Official downloadable PDF certificate",
             ].map((item,i)=>(
-              <div key={i} className="animate-fade-up" style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 12px", ...cardStyle, animationDelay:`${i*45}ms` }}>
-                <div style={{ width:20, height:20, minWidth:20, borderRadius:"50%", background:"rgba(0,216,122,0.12)", border:"1px solid rgba(0,216,122,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:"#00D87A" }}>✓</div>
-                <span style={{ fontSize:13 }}>{item}</span>
+              <div key={i} className="animate-fade-up" style={{
+                display:"flex",alignItems:"center",gap:10,padding:"10px 14px",
+                background:GLASS,border:`1px solid ${BORD}`,borderRadius:8,
+                animationDelay:`${i*40}ms`,
+              }}>
+                <div style={{width:20,height:20,minWidth:20,borderRadius:"50%",
+                  background:"rgba(16,185,129,0.12)",border:"1px solid rgba(16,185,129,0.3)",
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:GRN,flexShrink:0}}>✓</div>
+                <span style={{fontSize:13}}>{item}</span>
               </div>
             ))}
           </div>
-          <div style={{ display:"flex", gap:16, flexWrap:"wrap", fontSize:11, color:dim }}>
+          <div style={{display:"flex",gap:16,flexWrap:"wrap",fontSize:11,color:DIM_C}}>
             <span>SSL Encrypted</span><span>·</span><span>Instant access</span><span>·</span><span>No subscription</span>
           </div>
         </div>
 
         {/* Right: payment form */}
-        <div className="animate-scale-in" style={{ ...cardStyle, overflow:"hidden", animationDelay:"120ms" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"20px 24px", borderBottom:`1px solid ${blue2}` }}>
+        <div className="animate-scale-in" style={{...payCard,overflow:"hidden",animationDelay:"120ms",borderRadius:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+            padding:"20px 24px",borderBottom:`1px solid ${BORD}`}}>
             <div>
-              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim, marginBottom:6 }}>Premium Report — One time</p>
-              <div style={{ display:"flex", alignItems:"baseline", gap:10 }}>
-                <span style={{ fontSize:13, textDecoration:"line-through", color:"#1E3460" }}>€9.99</span>
-                <span style={{ fontSize:32, fontWeight:300, color:blue }}>€1.99</span>
-                <span style={{ fontSize:9, background:"rgba(0,216,122,0.12)", color:"#00D87A", border:"1px solid rgba(0,216,122,0.3)", padding:"3px 8px", borderRadius:2 }}>Save 50%</span>
+              <p style={{fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C,marginBottom:6}}>Premium Report — One time</p>
+              <div style={{display:"flex",alignItems:"baseline",gap:10}}>
+                <span style={{fontSize:13,textDecoration:"line-through",color:"#1E3460"}}>€9.99</span>
+                <span style={{fontSize:32,fontWeight:800,
+                  background:`linear-gradient(135deg,${B},${CYAN})`,
+                  WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                }}>€1.99</span>
+                <span style={{fontSize:9,background:"rgba(16,185,129,0.12)",color:GRN,
+                  border:"1px solid rgba(16,185,129,0.3)",padding:"3px 8px",borderRadius:99}}>-80%</span>
               </div>
             </div>
-            <div style={{ display:"flex", gap:6 }}>
+            <div style={{display:"flex",gap:6}}>
               {["VISA","MC","AMEX"].map(c=>(
-                <span key={c} style={{ fontSize:9, padding:"4px 8px", background:"rgba(0,85,255,0.08)", border:`1px solid ${blue2}`, borderRadius:2, color:dim }}>{c}</span>
+                <span key={c} style={{fontSize:9,padding:"4px 8px",background:"rgba(0,85,255,0.08)",
+                  border:`1px solid ${BORD}`,borderRadius:4,color:DIM_C}}>{c}</span>
               ))}
             </div>
           </div>
-          <div style={{ padding:24, display:"flex", flexDirection:"column", gap:16 }}>
-            {/* Email */}
-            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-              <label style={{ fontSize:9, letterSpacing:"0.16em", textTransform:"uppercase", color:dim }}>Email address</label>
+          <div style={{padding:24,display:"flex",flexDirection:"column",gap:16}}>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Email address</label>
               <input value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="you@example.com"
-                style={{ ...inputStyle, borderColor: errors.email ? "#FF3B3B" : blue2 }} />
+                style={{...inputSt,borderColor:errors.email?"#FB7185":BORD}}/>
             </div>
-            {/* Card */}
-            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-              <label style={{ fontSize:9, letterSpacing:"0.16em", textTransform:"uppercase", color:dim }}>Card number</label>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Card number</label>
               <input value={card} onChange={e=>setCard(formatCard(e.target.value))} placeholder="1234 5678 9012 3456" maxLength={19}
-                style={{ ...inputStyle, borderColor: errors.card ? "#FF3B3B" : blue2 }} />
+                style={{...inputSt,borderColor:errors.card?"#FB7185":BORD}}/>
             </div>
-            {/* Expiry + CVC */}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                <label style={{ fontSize:9, letterSpacing:"0.16em", textTransform:"uppercase", color:dim }}>Expiry</label>
-                <input value={expiry} onChange={e=>setExpiry(formatExpiry(e.target.value))} placeholder="MM / YY" maxLength={7}
-                  style={inputStyle} />
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Expiry</label>
+                <input value={expiry} onChange={e=>setExpiry(formatExpiry(e.target.value))} placeholder="MM / YY" maxLength={7} style={inputSt}/>
               </div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                <label style={{ fontSize:9, letterSpacing:"0.16em", textTransform:"uppercase", color:dim }}>CVC</label>
-                <input value={cvc} onChange={e=>setCvc(e.target.value)} placeholder="123" maxLength={3}
-                  style={inputStyle} />
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>CVC</label>
+                <input value={cvc} onChange={e=>setCvc(e.target.value)} placeholder="123" maxLength={3} style={inputSt}/>
               </div>
             </div>
-            {/* Name */}
-            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-              <label style={{ fontSize:9, letterSpacing:"0.16em", textTransform:"uppercase", color:dim }}>Name on card</label>
-              <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full name"
-                style={inputStyle} />
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Name on card</label>
+              <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full name" style={inputSt}/>
             </div>
-            {/* Consent */}
-            <label style={{
-              display:"flex", alignItems:"flex-start", gap:10, padding:12, borderRadius:4, cursor:"pointer",
-              border:`1px solid ${errors.consent ? "#FF3B3B" : blue2}`,
-              background: errors.consent ? "rgba(255,59,59,0.05)" : "rgba(0,85,255,0.05)",
-            }}>
-              <input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}
-                style={{ marginTop:2, accentColor:blue }} />
-              <span style={{ fontSize:11, color:dim, lineHeight:1.5 }}>
-                <strong style={{ color:"#D6E4FF" }}>I understand this is a digital product with immediate access.</strong>{" "}
+            <label style={{display:"flex",alignItems:"flex-start",gap:10,padding:12,borderRadius:8,cursor:"pointer",
+              border:`1px solid ${errors.consent?"#FB7185":BORD}`,
+              background:errors.consent?"rgba(251,113,133,0.05)":"rgba(0,85,255,0.05)"}}>
+              <input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)} style={{marginTop:2,accentColor:B}}/>
+              <span style={{fontSize:11,color:DIM_C,lineHeight:1.5}}>
+                <strong style={{color:TEXT}}>I understand this is a digital product with immediate access.</strong>{" "}
                 Refunds are only available in case of a technical error preventing access.
               </span>
             </label>
-            {/* Pay button */}
-            <button onClick={handlePay} className="btn btn-primary"
-              style={{ width:"100%", opacity: consent ? 1 : 0.4, cursor: consent ? "pointer" : "not-allowed" }}>
+            <button onClick={handlePay} className="btn btn-primary" style={{width:"100%",cursor:consent?"pointer":"not-allowed",opacity:consent?1:0.4}}>
               Pay €1.99 — Unlock Premium Report
             </button>
-            <p style={{ textAlign:"center", fontSize:10, color:"#1E3460" }}>Powered by Stripe · Your card data is never stored</p>
-            <p style={{ textAlign:"center", fontSize:10, color:"#1E3460" }}>No subscription · One-time payment</p>
+            <p style={{textAlign:"center",fontSize:10,color:"#1E3460"}}>Powered by Stripe · Your card data is never stored</p>
+            <p style={{textAlign:"center",fontSize:10,color:"#1E3460"}}>No subscription · One-time payment</p>
           </div>
         </div>
       </div>
@@ -519,15 +917,15 @@ function ReportInner() {
   );
 }
 
-// ── Page wrapper with Suspense (required for useSearchParams in Next.js) ───────
+/* ─── Suspense wrapper ───────────────────────────────────────────────────────── */
 export default function ReportPage() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight:"100dvh", background:"#050A14", display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <div style={{ width:40, height:40, border:"2px solid rgba(0,85,255,0.18)", borderTopColor:"#0055FF", borderRadius:"50%" }} className="animate-spin" />
+      <div style={{minHeight:"100dvh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div className="animate-spin" style={{width:44,height:44,border:"2px solid rgba(0,85,255,0.18)",borderTopColor:"#0055FF",borderRadius:"50%"}}/>
       </div>
     }>
-      <ReportInner />
+      <ReportInner/>
     </Suspense>
   );
 }

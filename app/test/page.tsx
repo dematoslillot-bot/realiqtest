@@ -812,7 +812,7 @@ function QuizScreen() {
       setMemReady(false);
       setTimeLeft(ALL_QUESTIONS[nextIdx].time);
       setFlipping(false);
-    }, 220);
+    }, 150);
   }, []);
 
   const handleNext = useCallback(() => {
@@ -928,7 +928,7 @@ function QuizScreen() {
     @keyframes nodeGlow { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
     @keyframes lineGlow { 0%,100%{opacity:0.06} 50%{opacity:0.18} }
     @keyframes streakSlide { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
-    @keyframes correctPulse { 0%{box-shadow:0 0 0 0 rgba(0,216,122,0.6)} 100%{box-shadow:0 0 0 20px rgba(0,216,122,0)} }
+    @keyframes qFadeIn { from{opacity:0} to{opacity:1} }
   `;
 
   // ── Category transition ──────────────────────────────────────────────────
@@ -1008,6 +1008,12 @@ function QuizScreen() {
   }
 
   // ── Main test ────────────────────────────────────────────────────────────
+  // Fade transition: flipping=true means content is fading out (opacity 0)
+  const fadeStyle: React.CSSProperties = {
+    opacity: flipping ? 0 : 1,
+    transition: "opacity 150ms ease",
+  };
+
   return (
     <div style={{
       height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column",
@@ -1029,81 +1035,73 @@ function QuizScreen() {
         />
       )}
 
-      {/* Streak banner — absolute so it doesn't affect layout */}
+      {/* Streak banner — position:absolute, never affects layout */}
       {streakFlash && streak >= 3 && (
         <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, zIndex: 40,
+          position: "absolute", top: "8vh", left: 0, right: 0, zIndex: 40,
           display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          padding: "8px 16px",
+          padding: "6px 16px",
           background: "linear-gradient(90deg,rgba(255,140,0,0.18),rgba(255,60,0,0.10))",
-          borderBottom: "1px solid rgba(255,140,0,0.3)",
+          borderBottom: "1px solid rgba(255,140,0,0.25)",
           backdropFilter: "blur(10px)",
           animation: "streakSlide 0.3s ease",
           pointerEvents: "none",
         }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill={ORANGE}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill={ORANGE}>
             <path d="M12 2c0 0-5 4-5 9a5 5 0 0010 0c0-2-1-3-2-4 0 2-1 3-2 3-1 0-2-1-2-2 0-2 1-6 1-6z" />
           </svg>
-          <span style={{ fontSize: 12, fontWeight: 700, color: ORANGE }}>{streak} correct in a row!</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: ORANGE }}>{streak} correct in a row!</span>
         </div>
       )}
 
-      {/* ── ZONE 1: HEADER — exactly 10vh ─────────────────────────────── */}
+      {/* ══ ZONE 1 — HEADER (8vh) ════════════════════════════════════════ */}
       <div style={{
-        height: "10vh", maxHeight: 70, minHeight: 48,
-        flexShrink: 0, position: "relative", zIndex: 10,
+        height: "8vh", flexShrink: 0, zIndex: 10, position: "relative",
         display: "flex", flexDirection: "column",
-        background: "rgba(2,6,23,0.80)", backdropFilter: "blur(20px)",
+        background: "rgba(2,6,23,0.85)", backdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(0,85,255,0.12)",
       }}>
-        {/* Progress bar — 3px at top of header */}
+        {/* Progress bar — 3px at very top */}
         <div style={{ height: 3, background: "rgba(0,85,255,0.08)", flexShrink: 0 }}>
           <div style={{
             height: "100%", width: `${progress}%`,
             background: `linear-gradient(90deg,${BLUE},${CYAN})`,
-            transition: "width 0.5s cubic-bezier(0.34,1.56,0.64,1)",
+            transition: "width 0.4s ease",
             borderRadius: "0 2px 2px 0",
           }} />
         </div>
-
-        {/* Header row */}
+        {/* Logo | Q counter | Timer */}
         <div style={{
           flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "0 clamp(12px,3vw,20px)",
         }}>
-          {/* Logo */}
           <span style={{ fontSize: "clamp(12px,2.5vw,15px)", fontWeight: 700, letterSpacing: "-0.02em", flexShrink: 0 }}>
             Real<span style={{ color: BLUE }}>IQ</span>Test
           </span>
 
-          {/* Center: Q counter + mini progress + streak badge */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: "clamp(11px,2vw,13px)", color: DIM, letterSpacing: "0.04em" }}>
-                <span style={{ color: TEXT, fontWeight: 700 }}>{qIdx + 1}</span>
-                <span style={{ color: "rgba(0,85,255,0.4)", margin: "0 3px" }}>/</span>
-                <span>{ALL_QUESTIONS.length}</span>
-              </span>
-              {streak >= 3 && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 3,
-                  background: "rgba(255,140,0,0.12)", border: "1px solid rgba(255,140,0,0.3)",
-                  borderRadius: 99, padding: "1px 6px",
-                }}>
-                  <svg width="9" height="9" viewBox="0 0 24 24" fill={ORANGE}>
-                    <path d="M12 2c0 0-5 4-5 9a5 5 0 0010 0c0-2-1-3-2-4 0 2-1 3-2 3-1 0-2-1-2-2 0-2 1-6 1-6z" />
-                  </svg>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: ORANGE }}>{streak}</span>
-                </div>
-              )}
-            </div>
-            <div style={{ height: 2, width: "clamp(50px,12vw,80px)", background: "rgba(0,85,255,0.1)", borderRadius: 1, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg,${BLUE},${CYAN})` }} />
-            </div>
+          {/* Q counter + streak */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: "clamp(12px,2.2vw,14px)", color: DIM }}>
+              <span style={{ color: TEXT, fontWeight: 700 }}>{qIdx + 1}</span>
+              <span style={{ color: "rgba(0,85,255,0.4)", margin: "0 3px" }}>/</span>
+              {ALL_QUESTIONS.length}
+            </span>
+            {streak >= 3 && (
+              <div style={{
+                display: "flex", alignItems: "center", gap: 3,
+                background: "rgba(255,140,0,0.12)", border: "1px solid rgba(255,140,0,0.3)",
+                borderRadius: 99, padding: "1px 7px",
+              }}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill={ORANGE}>
+                  <path d="M12 2c0 0-5 4-5 9a5 5 0 0010 0c0-2-1-3-2-4 0 2-1 3-2 3-1 0-2-1-2-2 0-2 1-6 1-6z" />
+                </svg>
+                <span style={{ fontSize: 9, fontWeight: 700, color: ORANGE }}>{streak}</span>
+              </div>
+            )}
           </div>
 
           {/* Timer circle */}
-          <div style={{ position: "relative", width: "clamp(36px,7vw,44px)", height: "clamp(36px,7vw,44px)", flexShrink: 0 }}>
+          <div style={{ position: "relative", width: "clamp(34px,6vw,42px)", height: "clamp(34px,6vw,42px)", flexShrink: 0 }}>
             <svg style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }} width="100%" height="100%" viewBox="0 0 44 44">
               <circle cx={22} cy={22} r={18} fill="none" stroke="rgba(0,85,255,0.12)" strokeWidth={2.5} />
               <circle cx={22} cy={22} r={18} fill="none" stroke={timerColor} strokeWidth={2.5} strokeLinecap="round"
@@ -1119,203 +1117,195 @@ function QuizScreen() {
         </div>
       </div>
 
-      {/* ── ZONE 2: QUESTION + VISUAL — exactly 45vh ──────────────────── */}
-      <div
-        ref={cardRef}
-        className={flipping ? "animate-flip-out" : "animate-flip-in"}
-        style={{
-          height: "45vh", flexShrink: 0, overflow: "hidden",
-          display: "flex", flexDirection: "column",
-          padding: "clamp(6px,1.5vh,12px) clamp(12px,3vw,20px) clamp(4px,1vh,8px)",
-          maxWidth: 760, width: "100%", margin: "0 auto",
-          position: "relative", zIndex: 5, boxSizing: "border-box",
-        }}
-      >
-        {/* Meta row: category + difficulty + type */}
+      {/* Content wrapper — fades with question transitions */}
+      <div ref={cardRef} style={{ ...fadeStyle, display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+
+        {/* ══ ZONE 2 — CATEGORY LABEL (5vh) ══════════════════════════════ */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 6,
-          marginBottom: "clamp(3px,0.6vh,7px)", flexShrink: 0, flexWrap: "wrap",
+          height: "5vh", flexShrink: 0, zIndex: 5, position: "relative",
+          display: "flex", alignItems: "center",
+          padding: "0 clamp(12px,3vw,20px)",
+          borderBottom: "1px solid rgba(0,85,255,0.07)",
+          maxWidth: 760, width: "100%", margin: "0 auto", boxSizing: "border-box",
+          gap: 10,
         }}>
-          <span style={{ fontSize: "clamp(8px,1.4vw,10px)", letterSpacing: "0.16em", textTransform: "uppercase", color: DIM, fontWeight: 600 }}>
+          <span style={{ fontSize: "clamp(9px,1.6vw,11px)", letterSpacing: "0.18em", textTransform: "uppercase", color: DIM, fontWeight: 600 }}>
             {CATEGORIES[q.cat].name}
           </span>
+          <span style={{ color: "rgba(0,85,255,0.3)", fontSize: 10 }}>|</span>
           <span style={{
-            fontSize: "clamp(7px,1.3vw,9px)", letterSpacing: "0.12em", textTransform: "uppercase",
-            padding: "1px 6px", borderRadius: 2,
-            ...(q.diff === "easy"
-              ? { background: "rgba(0,216,122,0.1)", color: GREEN, border: `1px solid rgba(0,216,122,0.28)` }
-              : q.diff === "medium"
-              ? { background: "rgba(0,85,255,0.1)", color: "#6EB0FF", border: `1px solid rgba(0,85,255,0.28)` }
-              : { background: "rgba(255,59,59,0.1)", color: RED, border: `1px solid rgba(255,59,59,0.28)` }),
+            fontSize: "clamp(8px,1.4vw,10px)", letterSpacing: "0.14em", textTransform: "uppercase",
+            fontWeight: 700,
+            ...(q.diff === "easy" ? { color: GREEN } : q.diff === "medium" ? { color: "#6EB0FF" } : { color: RED }),
           }}>{q.diff}</span>
-          <span style={{ fontSize: "clamp(7px,1.3vw,9px)", letterSpacing: "0.12em", textTransform: "uppercase", padding: "1px 6px", borderRadius: 2, border: `1px solid rgba(0,85,255,0.22)`, color: BLUE }}>{q.badge}</span>
+          <span style={{ fontSize: "clamp(8px,1.4vw,10px)", letterSpacing: "0.12em", textTransform: "uppercase", padding: "1px 6px", borderRadius: 2, border: `1px solid rgba(0,85,255,0.22)`, color: BLUE }}>{q.badge}</span>
         </div>
 
-        {/* Question text — max 3 lines */}
-        <p style={{
-          fontSize: "clamp(13px,2.2vw,18px)", fontWeight: 600, lineHeight: 1.4,
-          marginBottom: "clamp(4px,0.8vh,10px)", flexShrink: 0, color: TEXT,
-          overflow: "hidden", display: "-webkit-box",
-          WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
-        }}>{q.text}</p>
-
-        {/* Analogy display */}
-        {q.type === "analogy" && (
-          <div style={{
-            background: "rgba(5,18,45,0.7)", border: `1px solid ${BORD}`,
-            borderRadius: 8, padding: "clamp(6px,1vh,12px) 12px",
-            marginBottom: "clamp(4px,0.8vh,8px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 6, flexWrap: "wrap", flexShrink: 0,
-          }}>
-            <span style={{ fontSize: "clamp(12px,2vw,16px)", fontWeight: 600 }}>{q.w1}</span>
-            <span style={{ fontSize: "clamp(8px,1.3vw,10px)", color: DIM }}>is to</span>
-            <span style={{ fontSize: "clamp(12px,2vw,16px)", fontWeight: 600 }}>{q.w2}</span>
-            <span style={{ fontSize: "clamp(8px,1.3vw,10px)", color: DIM }}>as</span>
-            <span style={{ fontSize: "clamp(12px,2vw,16px)", fontWeight: 600 }}>{q.w3}</span>
-            <span style={{ fontSize: "clamp(8px,1.3vw,10px)", color: DIM }}>is to</span>
-            <span style={{ color: BLUE, borderBottom: "2px dashed rgba(0,85,255,0.5)", minWidth: 44, textAlign: "center", fontSize: "clamp(12px,2vw,16px)" }}>?</span>
-          </div>
-        )}
-
-        {/* Sequence display */}
-        {q.type === "sequence" && q.seq && (
-          <div style={{
-            background: "rgba(5,18,45,0.7)", border: `1px solid ${BORD}`,
-            borderRadius: 8, padding: "clamp(6px,1vh,12px) 10px",
-            marginBottom: "clamp(4px,0.8vh,8px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 5, flexWrap: "wrap", flexShrink: 0,
-          }}>
-            {q.seq.map((s, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <div style={{
-                  minWidth: "clamp(32px,7vw,42px)", height: "clamp(32px,7vw,42px)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  borderRadius: 6, fontSize: "clamp(12px,2vw,15px)", fontWeight: 600,
-                  ...(s === "?"
-                    ? { background: "rgba(0,85,255,0.08)", border: "2px dashed rgba(0,85,255,0.5)", color: BLUE }
-                    : { background: "rgba(5,18,45,0.9)", border: "1px solid rgba(0,85,255,0.2)", color: TEXT }),
-                }}>{s}</div>
-                {i < q.seq!.length - 1 && <span style={{ color: DIM, fontSize: 11 }}>→</span>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* VISUAL AREA — flex:1 within zone 2, max 35vh */}
-        {q.vis ? (
-          <div style={{
-            flex: 1, minHeight: 0, maxHeight: "35vh",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: "rgba(5,18,45,0.55)", border: `1px solid ${BORD}`,
-            borderRadius: 10, padding: "clamp(6px,1.2vh,12px)",
-            overflow: "hidden",
-          }}>
-            <VisualDisplay vis={q.vis} onMemReady={() => setMemReady(true)} />
-          </div>
-        ) : (
-          /* No visual — spacer so question stays top-aligned */
-          <div style={{ flex: 1, minHeight: 0 }} />
-        )}
-      </div>
-
-      {/* ── ZONE 3: OPTIONS — exactly 45vh ────────────────────────────── */}
-      <div style={{
-        height: "45vh", flexShrink: 0, overflow: "hidden",
-        display: "flex", flexDirection: "column",
-        padding: "clamp(4px,0.8vh,8px) clamp(12px,3vw,20px) clamp(4px,0.8vh,8px)",
-        maxWidth: 760, width: "100%", margin: "0 auto",
-        position: "relative", zIndex: 5, boxSizing: "border-box",
-        gap: "clamp(4px,0.8vh,8px)",
-      }}>
-        {/* OPTIONS GRID — fills all remaining space above bottom bar */}
+        {/* ══ ZONE 3 — QUESTION TEXT (10vh) ══════════════════════════════ */}
         <div style={{
-          flex: 1, minHeight: 0,
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gridTemplateRows: "1fr 1fr",
-          gap: "clamp(5px,1.2vw,9px)",
+          height: "10vh", flexShrink: 0, zIndex: 5, position: "relative",
+          display: "flex", alignItems: "center",
+          padding: "0 clamp(12px,3vw,20px)",
+          maxWidth: 760, width: "100%", margin: "0 auto", boxSizing: "border-box",
+          overflow: "hidden",
         }}>
-          {q.opts.map((opt, i) => {
-            const isCorrect = answered && i === q.ans;
-            const isWrong   = answered && i === selected && i !== q.ans;
-            const isSel     = selected === i && !answered;
-            return (
-              <button key={i} onClick={() => selectOpt(i)} disabled={answered}
-                style={{
-                  width: "100%", height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: hasVisOpts ? "center" : "flex-start",
-                  flexDirection: hasVisOpts ? "column" : "row",
-                  gap: hasVisOpts ? 4 : 8,
-                  padding: hasVisOpts ? "clamp(4px,1vw,8px)" : "clamp(6px,1.2vh,10px) clamp(8px,1.8vw,14px)",
-                  border: "1px solid",
-                  borderRadius: 8,
-                  cursor: answered ? "default" : "pointer",
-                  transition: "border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.1s",
-                  background: isCorrect ? "rgba(0,216,122,0.10)" : isWrong ? "rgba(255,59,59,0.10)" : isSel ? "rgba(0,85,255,0.10)" : GLASS,
-                  borderColor: isCorrect ? GREEN : isWrong ? RED : isSel ? BLUE : BORD,
-                  boxShadow: isCorrect
-                    ? `0 0 0 1px ${GREEN}, 0 0 16px rgba(0,216,122,0.22)`
-                    : isWrong ? `0 0 10px rgba(255,59,59,0.18)` : "none",
-                  backdropFilter: "blur(12px)",
-                  overflow: "hidden",
-                }}
-                onMouseEnter={e => { if (!answered) (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)"; }}
-              >
-                {/* Letter badge */}
-                <div style={{
-                  minWidth: hasVisOpts ? "auto" : 22, height: hasVisOpts ? "auto" : 22,
-                  border: "1px solid",
-                  borderColor: isCorrect ? GREEN : isWrong ? RED : "rgba(0,85,255,0.3)",
-                  borderRadius: 4,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "clamp(8px,1.4vw,10px)", fontWeight: 700, letterSpacing: "0.06em",
-                  color: isCorrect ? GREEN : isWrong ? RED : "#5A78A8",
-                  padding: hasVisOpts ? "2px 5px" : "0 3px",
-                  flexShrink: 0,
-                  marginBottom: hasVisOpts ? 3 : 0,
-                }}>
-                  {["A", "B", "C", "D"][i]}
-                </div>
-                {/* Option content */}
-                <div style={{
-                  flex: hasVisOpts ? 1 : "auto" as "auto",
-                  width: hasVisOpts ? "100%" : "auto",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  minWidth: 0, overflow: "hidden",
-                }}>
-                  <OptionContent vis={q.vis} opt={opt} idx={i} />
-                </div>
-              </button>
-            );
-          })}
+          {/* Analogy: inline with question */}
+          {q.type === "analogy" ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", width: "100%", overflow: "hidden" }}>
+              <p style={{ fontSize: "clamp(13px,2vw,17px)", fontWeight: 600, color: TEXT, lineHeight: 1.35, margin: 0 }}>{q.text}</p>
+              <span style={{ fontSize: "clamp(12px,2vw,16px)", fontWeight: 600 }}>{q.w1}</span>
+              <span style={{ fontSize: "clamp(9px,1.5vw,11px)", color: DIM }}>is to</span>
+              <span style={{ fontSize: "clamp(12px,2vw,16px)", fontWeight: 600 }}>{q.w2}</span>
+              <span style={{ fontSize: "clamp(9px,1.5vw,11px)", color: DIM }}>as</span>
+              <span style={{ fontSize: "clamp(12px,2vw,16px)", fontWeight: 600 }}>{q.w3}</span>
+              <span style={{ fontSize: "clamp(9px,1.5vw,11px)", color: DIM }}>is to</span>
+              <span style={{ color: BLUE, borderBottom: "2px dashed rgba(0,85,255,0.5)", minWidth: 40, textAlign: "center", fontSize: "clamp(12px,2vw,16px)" }}>?</span>
+            </div>
+          ) : q.type === "sequence" && q.seq ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", overflow: "hidden" }}>
+              <p style={{ fontSize: "clamp(13px,2vw,17px)", fontWeight: 600, color: TEXT, lineHeight: 1.3, margin: 0,
+                overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical" }}>
+                {q.text}
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "nowrap", overflow: "hidden" }}>
+                {q.seq.map((s, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+                    <div style={{
+                      width: "clamp(28px,6vw,38px)", height: "clamp(28px,6vw,38px)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      borderRadius: 5, fontSize: "clamp(11px,2vw,14px)", fontWeight: 600,
+                      flexShrink: 0,
+                      ...(s === "?"
+                        ? { background: "rgba(0,85,255,0.08)", border: "2px dashed rgba(0,85,255,0.5)", color: BLUE }
+                        : { background: "rgba(5,18,45,0.9)", border: "1px solid rgba(0,85,255,0.2)", color: TEXT }),
+                    }}>{s}</div>
+                    {i < q.seq!.length - 1 && <span style={{ color: DIM, fontSize: 10 }}>→</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p style={{
+              fontSize: "clamp(14px,2vw,18px)", fontWeight: 600, lineHeight: 1.4, color: TEXT,
+              margin: 0, overflow: "hidden", display: "-webkit-box",
+              WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+            }}>{q.text}</p>
+          )}
         </div>
 
-        {/* BOTTOM BAR — feedback + nav */}
+        {/* ══ ZONE 4 — MATRIX / VISUAL (32vh) ════════════════════════════ */}
         <div style={{
-          height: "clamp(36px,5vh,44px)", flexShrink: 0,
+          height: "32vh", flexShrink: 0, zIndex: 5, position: "relative",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "clamp(4px,0.8vh,8px) clamp(12px,3vw,20px)",
+          maxWidth: 760, width: "100%", margin: "0 auto", boxSizing: "border-box",
+          overflow: "hidden",
+        }}>
+          {q.vis ? (
+            <div style={{
+              width: "100%", height: "100%",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: "rgba(5,18,45,0.55)", border: `1px solid ${BORD}`,
+              borderRadius: 10, padding: "clamp(6px,1.2vh,12px)",
+              overflow: "hidden", boxSizing: "border-box",
+            }}>
+              <VisualDisplay vis={q.vis} onMemReady={() => setMemReady(true)} />
+            </div>
+          ) : (
+            /* No visual — empty zone keeps spacing */
+            <div style={{ width: "100%", height: "100%" }} />
+          )}
+        </div>
+
+        {/* ══ ZONE 5 — OPTIONS GRID 2×2 (40vh) ══════════════════════════ */}
+        <div style={{
+          height: "40vh", flexShrink: 0, zIndex: 5, position: "relative",
+          padding: "clamp(4px,0.8vh,6px) clamp(12px,3vw,20px) 0",
+          maxWidth: 760, width: "100%", margin: "0 auto", boxSizing: "border-box",
+          overflow: "hidden",
+        }}>
+          <div style={{
+            width: "100%", height: "100%",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gridTemplateRows: "1fr 1fr",
+            gap: "clamp(5px,1.2vw,8px)",
+          }}>
+            {q.opts.map((opt, i) => {
+              const isCorrect = answered && i === q.ans;
+              const isWrong   = answered && i === selected && i !== q.ans;
+              const isSel     = selected === i && !answered;
+              return (
+                <button key={i} onClick={() => selectOpt(i)} disabled={answered}
+                  style={{
+                    width: "100%", height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: hasVisOpts ? "center" : "flex-start",
+                    flexDirection: hasVisOpts ? "column" : "row",
+                    gap: hasVisOpts ? 4 : 8,
+                    padding: hasVisOpts ? "clamp(4px,1vw,8px)" : "clamp(6px,1.2vh,10px) clamp(8px,1.8vw,14px)",
+                    border: "1px solid",
+                    borderRadius: 8,
+                    cursor: answered ? "default" : "pointer",
+                    transition: "border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.1s",
+                    background: isCorrect ? "rgba(0,216,122,0.10)" : isWrong ? "rgba(255,59,59,0.10)" : isSel ? "rgba(0,85,255,0.10)" : GLASS,
+                    borderColor: isCorrect ? GREEN : isWrong ? RED : isSel ? BLUE : BORD,
+                    boxShadow: isCorrect
+                      ? `0 0 0 1px ${GREEN}, 0 0 16px rgba(0,216,122,0.22)`
+                      : isWrong ? `0 0 10px rgba(255,59,59,0.18)` : "none",
+                    backdropFilter: "blur(12px)",
+                    overflow: "hidden",
+                    boxSizing: "border-box",
+                  }}
+                  onMouseEnter={e => { if (!answered) (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)"; }}
+                >
+                  <div style={{
+                    minWidth: hasVisOpts ? "auto" : 22, height: hasVisOpts ? "auto" : 22,
+                    border: "1px solid",
+                    borderColor: isCorrect ? GREEN : isWrong ? RED : "rgba(0,85,255,0.3)",
+                    borderRadius: 4,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "clamp(8px,1.4vw,10px)", fontWeight: 700, letterSpacing: "0.06em",
+                    color: isCorrect ? GREEN : isWrong ? RED : "#5A78A8",
+                    padding: hasVisOpts ? "2px 5px" : "0 3px",
+                    flexShrink: 0,
+                    marginBottom: hasVisOpts ? 3 : 0,
+                  }}>
+                    {["A", "B", "C", "D"][i]}
+                  </div>
+                  <div style={{
+                    flex: hasVisOpts ? 1 : "auto" as "auto",
+                    width: hasVisOpts ? "100%" : "auto",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    minWidth: 0, overflow: "hidden",
+                  }}>
+                    <OptionContent vis={q.vis} opt={opt} idx={i} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ══ ZONE 6 — NAV BUTTONS (5vh) ═════════════════════════════════ */}
+        <div style={{
+          height: "5vh", flexShrink: 0, zIndex: 5, position: "relative",
           display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "0 clamp(12px,3vw,20px)",
+          maxWidth: 760, width: "100%", margin: "0 auto", boxSizing: "border-box",
+          borderTop: "1px solid rgba(0,85,255,0.07)",
           gap: 8,
         }}>
-          {/* Feedback — left side, single line */}
-          <div style={{
-            flex: 1, minWidth: 0, height: "100%",
-            display: "flex", alignItems: "center",
-            overflow: "hidden",
-          }}>
+          {/* Feedback — left, single line, truncated */}
+          <div style={{ flex: 1, minWidth: 0, overflow: "hidden", display: "flex", alignItems: "center" }}>
             {feedback && (
-              <div className="animate-scale-in" style={{
-                display: "flex", alignItems: "center", gap: 6,
-                padding: "0 10px", height: "100%", borderRadius: 6,
-                fontSize: "clamp(10px,1.6vw,12px)", lineHeight: 1.3,
+              <div style={{
+                display: "flex", alignItems: "center", gap: 5,
+                fontSize: "clamp(10px,1.6vw,12px)", lineHeight: 1,
                 overflow: "hidden",
-                ...(feedback.correct
-                  ? { background: "rgba(0,216,122,0.07)", border: "1px solid rgba(0,216,122,0.25)", color: "#5DCBA5" }
-                  : { background: "rgba(255,59,59,0.06)", border: "1px solid rgba(255,59,59,0.22)", color: "#F09595" }),
+                ...(feedback.correct ? { color: GREEN } : { color: "#F09595" }),
               }}>
                 <span style={{ fontWeight: 700, flexShrink: 0 }}>{feedback.correct ? "✓" : "✕"}</span>
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{feedback.text}</span>
@@ -1323,25 +1313,25 @@ function QuizScreen() {
             )}
           </div>
 
-          {/* Nav buttons — right side */}
+          {/* Skip + Next */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <button onClick={handleNext} style={{
               background: "none", border: "none", cursor: "pointer",
               fontSize: "clamp(9px,1.6vw,11px)", letterSpacing: "0.14em", textTransform: "uppercase",
-              color: DIM, padding: "4px 0",
+              color: DIM, padding: 0,
             }}
               onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = TEXT)}
               onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = DIM)}
             >Skip →</button>
 
             <button onClick={handleNext} disabled={!answered} style={{
-              padding: "0 clamp(16px,3.5vw,24px)",
-              height: "clamp(30px,4.5vh,38px)",
-              fontSize: "clamp(9px,1.6vw,11px)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
-              borderRadius: 7, border: "none", cursor: answered ? "pointer" : "not-allowed",
+              padding: "0 clamp(14px,3vw,22px)",
+              height: "clamp(28px,3.5vh,36px)",
+              fontSize: "clamp(9px,1.5vw,11px)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+              borderRadius: 6, border: "none", cursor: answered ? "pointer" : "not-allowed",
               background: answered ? `linear-gradient(135deg,${BLUE},${CYAN})` : "rgba(0,85,255,0.2)",
-              color: "#fff", opacity: answered ? 1 : 0.4,
-              boxShadow: answered ? "0 3px 16px rgba(0,85,255,0.42)" : "none",
+              color: "#fff", opacity: answered ? 1 : 0.35,
+              boxShadow: answered ? "0 3px 14px rgba(0,85,255,0.42)" : "none",
               transition: "opacity 0.2s, box-shadow 0.2s, transform 0.15s",
             }}
               onMouseEnter={e => { if (answered) (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; }}
@@ -1351,7 +1341,8 @@ function QuizScreen() {
             </button>
           </div>
         </div>
-      </div>
+
+      </div>{/* end fade wrapper */}
     </div>
   );
 }

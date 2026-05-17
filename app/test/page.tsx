@@ -58,7 +58,7 @@ function RavenCellSVG({ cell, isQuestion = false }: { cell: RavenCell | null; is
 
 function RavenDisplay({ cells }: { cells: (RavenCell | null)[] }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(280px, calc(35vh - 20px), calc(100vw - 48px))", margin: "0 auto" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(320px, calc(92dvh - 410px), calc(50vw))", margin: "0 auto" }}>
       {cells.map((cell, i) => (
         <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
           <RavenCellSVG cell={cell} isQuestion={cell === null} />
@@ -256,7 +256,7 @@ function DiceNetDisplay({ faces }: { faces: number[] }) {
 
 function Raven2Display({ cells }: { cells: (RavenCell|null)[] }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 4, width: "min(200px, calc(24vh - 16px), calc(100vw - 48px))", margin: "0 auto" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 4, width: "min(220px, calc(92dvh - 410px), calc(40vw))", margin: "0 auto" }}>
       {cells.map((cell, i) => (
         <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
           <RavenCellSVG cell={cell} isQuestion={cell === null} />
@@ -270,7 +270,7 @@ function Raven2Display({ cells }: { cells: (RavenCell|null)[] }) {
 
 function RavenRotDisplay({ path, angles }: { path: string; angles: (number|null)[] }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(280px, calc(35vh - 20px), calc(100vw - 48px))", margin: "0 auto" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(320px, calc(92dvh - 410px), calc(50vw))", margin: "0 auto" }}>
       {angles.map((angle, i) => (
         <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
           {angle === null ? (
@@ -344,7 +344,7 @@ function PatternCellSVG({ cell, cellIdx = 0, isQ = false }: {
 
 function RavenPatternDisplay({ cells }: { cells: (PCell|null)[] }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(280px, calc(35vh - 20px), calc(100vw - 48px))", margin: "0 auto" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(320px, calc(92dvh - 410px), calc(50vw))", margin: "0 auto" }}>
       {cells.map((cell, i) => (
         <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
           <PatternCellSVG cell={cell} cellIdx={i} isQ={cell === null} />
@@ -498,7 +498,7 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
       </svg>
     );
   }
-  return <span style={{ fontSize: "clamp(14px,3.5vw,18px)", lineHeight: 1.3, fontWeight: 500 }}>{opt}</span>;
+  return <span style={{ fontSize: "clamp(13px,3vw,16px)", lineHeight: 1.25, fontWeight: 500 }}>{opt}</span>;
 }
 
 /* ── Animated test background ───────────────────────────────────────────── */
@@ -1219,9 +1219,9 @@ function QuizScreen() {
           )}
         </div>
 
-        {/* ── OPTIONS GRID 2×2 (clamp 190px–32vh fixed) ─────────────────── */}
+        {/* ── OPTIONS GRID 2×2 (compact — visual gets priority) ───────────── */}
         <div style={{
-          height: "clamp(190px,32vh,280px)", flexShrink: 0, zIndex: 5, position: "relative",
+          height: "clamp(130px,22vh,200px)", flexShrink: 0, zIndex: 5, position: "relative",
           padding: "4px clamp(12px,3vw,20px) 0",
           maxWidth: 760, width: "100%", margin: "0 auto", boxSizing: "border-box",
           overflow: "hidden",

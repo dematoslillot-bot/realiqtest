@@ -699,11 +699,6 @@ export default function ResultsPage() {
               Reveal My Full Report — €1.99
             </button>
 
-            {/* Real test counter */}
-            <p style={{ fontSize:11,color:"#8AABCC",textAlign:"center",marginTop:12 }}>
-              <strong style={{ color:"#C0C8D8" }}>{testsToday} {testsToday === 1 ? "person" : "people"}</strong> completed this test today
-            </p>
-
             {/* Scientific badges */}
             <div style={{ display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap",marginTop:16 }}>
               {["Scientifically calibrated","6 cognitive dimensions","Visual pattern recognition"].map((badge,i)=>(

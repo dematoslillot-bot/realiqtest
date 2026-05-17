@@ -101,7 +101,7 @@ function BellCurveChart({ markerIQ = 100 }: { markerIQ?: number }) {
         {/* Tick labels */}
         {ticks.map(t => (
           <text key={t} x={xToPixel(t)} y={H + 18} textAnchor="middle"
-            fill="#3A5A8A" fontSize="11" fontFamily="monospace">{t}</text>
+            fill="#8AABCC" fontSize="11" fontFamily="monospace">{t}</text>
         ))}
 
         {/* Marker */}
@@ -206,7 +206,7 @@ export default function IQScoreRangesPage() {
           ].map(b => (
             <div key={b.label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
               <div style={{ width: 10, height: 10, borderRadius: "50%", background: b.color }} />
-              <span style={{ color: "#3A5A8A" }}>{b.label}</span>
+              <span style={{ color: "#8AABCC" }}>{b.label}</span>
             </div>
           ))}
         </div>
@@ -239,16 +239,16 @@ export default function IQScoreRangesPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
                 <div>
                   <span style={{ fontSize: 20, fontWeight: 300, color: r.color }}>{r.range}</span>
-                  <span style={{ fontSize: 13, color: "#8AAAD0", marginLeft: 12 }}>{r.label}</span>
+                  <span style={{ fontSize: 13, color: "#C0C8D8", marginLeft: 12 }}>{r.label}</span>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 11, padding: "3px 10px", background: `${r.color}15`, color: r.color, borderRadius: 2 }}>{r.pct} of population</span>
-                  <span style={{ fontSize: 11, padding: "3px 10px", background: "rgba(0,85,255,0.10)", color: "#3A5A8A", borderRadius: 2 }}>{r.percentile}</span>
+                  <span style={{ fontSize: 11, padding: "3px 10px", background: "rgba(0,85,255,0.10)", color: "#8AABCC", borderRadius: 2 }}>{r.percentile}</span>
                 </div>
               </div>
-              <p style={{ fontSize: 14, color: "#8AAAD0", lineHeight: 1.75, marginBottom: r.famous || r.note ? 10 : 0 }}>{r.desc}</p>
-              {r.famous && <p style={{ fontSize: 13, color: "#3A5A8A", lineHeight: 1.65, marginBottom: r.note ? 8 : 0 }}><strong style={{ color: "#5A78B0" }}>Context:</strong> {r.famous}</p>}
-              {r.note && <p style={{ fontSize: 12, color: "#2A4060", lineHeight: 1.6, fontStyle: "italic" }}>{r.note}</p>}
+              <p style={{ fontSize: 14, color: "#C0C8D8", lineHeight: 1.75, marginBottom: r.famous || r.note ? 10 : 0 }}>{r.desc}</p>
+              {r.famous && <p style={{ fontSize: 13, color: "#8AABCC", lineHeight: 1.65, marginBottom: r.note ? 8 : 0 }}><strong style={{ color: "#8AABCC" }}>Context:</strong> {r.famous}</p>}
+              {r.note && <p style={{ fontSize: 12, color: "#8AABCC", lineHeight: 1.6, fontStyle: "italic" }}>{r.note}</p>}
             </div>
           ))}
         </div>

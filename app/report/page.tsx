@@ -14,7 +14,7 @@ const ROSE = "#FB7185";
 const BG   = "#020617";
 const GLASS = "rgba(6,14,40,0.78)";
 const BORD  = "rgba(0,85,255,0.22)";
-const DIM_C = "#3A5A8A";
+const DIM_C = "#8AABCC";
 const TEXT  = "#E2EEFF";
 
 const DIM_COLORS  = [B, PURP, CYAN, GOLD, GRN, ROSE];
@@ -133,19 +133,7 @@ function AnimBar({ pct, color, delay=200 }: { pct:number; color:string; delay?:n
   );
 }
 
-/* ─── Fake leaderboard data ──────────────────────────────────────────────────── */
-const FAKE_LB = [
-  {country:"Germany",   iq:134,h:"2h ago"},
-  {country:"Spain",     iq:127,h:"5h ago"},
-  {country:"France",    iq:118,h:"7h ago"},
-  {country:"UK",        iq:141,h:"12h ago"},
-  {country:"Italy",     iq:109,h:"1d ago"},
-  {country:"Netherlands",iq:132,h:"1d ago"},
-  {country:"Portugal",  iq:122,h:"2d ago"},
-  {country:"Poland",    iq:115,h:"2d ago"},
-  {country:"Sweden",    iq:138,h:"3d ago"},
-  {country:"Brazil",    iq:124,h:"3d ago"},
-];
+/* ─── No fake leaderboard data — only real user entries ─────────────────────── */
 
 /* ─── Career SVG icons (simple, consistent) ──────────────────────────────────── */
 function CIcon({ i }: { i:number }) {
@@ -358,13 +346,8 @@ function ReportInner() {
     const polyPoints = pts.map(p=>`${p.x},${p.y}`).join(" ");
     const gridPts = (p:number)=>angles.map(a=>`${cx+R*p*Math.cos(a)},${cy+R*p*Math.sin(a)}`).join(" ");
 
-    /* Leaderboard: merge fake + user entry, sort by IQ desc */
+    /* Leaderboard: only the real user's entry */
     const userEntry = { country:"You", iq, h:"just now", isUser:true };
-    const lbAll = [...FAKE_LB.map(e=>({...e,isUser:false})), userEntry]
-      .sort((a,b)=>b.iq-a.iq);
-    const userRank = lbAll.findIndex(e=>e.isUser)+1;
-    const totalLb  = lbAll.length;
-    const topPct   = Math.round((userRank/totalLb)*100);
 
     return (
       <div style={{minHeight:"100dvh",background:BG,color:TEXT,overflowX:"hidden"}}>
@@ -571,68 +554,39 @@ function ReportInner() {
           <div style={{marginBottom:40}}>
             <SectionH title="Premium Intelligence Board" accent={`linear-gradient(90deg,${GOLD},#FF9500)`}/>
 
-            {/* Exclusivity banner */}
+            {/* User's own entry */}
             <div className="animate-fade-up" style={{
-              background:`linear-gradient(135deg,rgba(245,158,11,0.08),rgba(251,191,36,0.04))`,
-              border:`1px solid rgba(245,158,11,0.3)`,borderRadius:12,padding:"20px 24px",
-              marginBottom:16,textAlign:"center",
-              boxShadow:`0 0 30px rgba(245,158,11,0.08)`,
+              display:"flex",alignItems:"center",gap:14,padding:"16px 20px",
+              background:`linear-gradient(135deg,rgba(245,158,11,0.14),rgba(255,149,0,0.06))`,
+              border:`1px solid rgba(245,158,11,0.5)`,borderRadius:10,marginBottom:16,
+              boxShadow:`0 0 20px rgba(245,158,11,0.1)`,
             }}>
               <div style={{
-                fontSize:"clamp(28px,6vw,42px)",fontWeight:900,letterSpacing:"-0.03em",
-                background:`linear-gradient(135deg,${GOLD},#FDE68A,#FF9500)`,
+                width:36,height:36,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",
+                background:`linear-gradient(135deg,${GOLD},#FFA500)`,fontSize:12,fontWeight:800,color:BG,flexShrink:0,
+                boxShadow:`0 0 10px ${GOLD}66`,
+              }}>1</div>
+              <div style={{flex:1}}>
+                <p style={{fontSize:14,fontWeight:700,color:GOLD,marginBottom:2}}>You — just now</p>
+                <p style={{fontSize:11,color:DIM_C}}>Your verified cognitive assessment</p>
+              </div>
+              <div style={{
+                fontSize:22,fontWeight:900,
+                background:`linear-gradient(135deg,${GOLD},#FDE68A)`,
                 WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
-                marginBottom:4,
-              }}>#{userRank}</div>
-              <p style={{fontSize:13,color:TEXT,fontWeight:600,marginBottom:4}}>Your position on the Intelligence Board</p>
-              <p style={{fontSize:11,color:DIM_C,lineHeight:1.6}}>
-                You are among the <strong style={{color:GOLD}}>{topPct}%</strong> who completed the full cognitive assessment.
-                Your IQ of <strong style={{color:TEXT}}>{iq}</strong> places you above <strong style={{color:GOLD}}>{100-topPct}%</strong> of all assessees.
+              }}>IQ {userEntry.iq}</div>
+            </div>
+
+            {/* Empty state */}
+            <div style={{
+              textAlign:"center",padding:"32px 24px",
+              background:"rgba(6,14,40,0.4)",border:`1px solid ${BORD}`,borderRadius:10,
+            }}>
+              <p style={{fontSize:13,color:DIM_C,lineHeight:1.7,marginBottom:4}}>
+                Be the first to complete the test and claim your spot on the Intelligence Board.
               </p>
+              <p style={{fontSize:11,color:"#8AABCC"}}>Board populates as more premium assessments are completed.</p>
             </div>
-
-            {/* Board entries */}
-            <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              {lbAll.slice(0,11).map((e,i)=>(
-                <div key={i} className={`lb-card ${e.isUser?"animate-fade-up":""}`} style={{
-                  display:"flex",alignItems:"center",gap:14,padding:"12px 18px",
-                  background: e.isUser
-                    ?`linear-gradient(135deg,rgba(245,158,11,0.14),rgba(255,149,0,0.06))`
-                    :`rgba(6,14,40,0.6)`,
-                  border:`1px solid ${e.isUser?"rgba(245,158,11,0.5)":BORD}`,
-                  borderRadius:10,
-                  boxShadow: e.isUser?`0 0 20px rgba(245,158,11,0.1)`:"none",
-                  animationDelay:e.isUser?`${i*40}ms`:"0ms",
-                }}>
-                  {/* Rank */}
-                  <div style={{
-                    width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",
-                    background:i===0?`linear-gradient(135deg,${GOLD},#FFA500)`:i===1?"linear-gradient(135deg,#C0C0C0,#888)":i===2?"linear-gradient(135deg,#CD7F32,#8B4513)":"rgba(255,255,255,0.05)",
-                    fontSize:11,fontWeight:800,color:i<3?BG:DIM_C,flexShrink:0,
-                    boxShadow:i===0?`0 0 10px ${GOLD}66`:i===1?"0 0 8px rgba(192,192,192,0.3)":i===2?"0 0 8px rgba(205,127,50,0.3)":"none",
-                  }}>
-                    {i+1}
-                  </div>
-                  {/* Info */}
-                  <div style={{flex:1,minWidth:0}}>
-                    <p style={{fontSize:13,fontWeight:e.isUser?700:500,color:e.isUser?GOLD:TEXT,marginBottom:1}}>
-                      {e.isUser?"You":e.country==="UK"?"User from United Kingdom":`User from ${e.country}`}
-                    </p>
-                    <p style={{fontSize:10,color:DIM_C}}>{(e as any).h}</p>
-                  </div>
-                  {/* IQ score */}
-                  <div style={{
-                    fontSize:20,fontWeight:900,
-                    background:e.isUser?`linear-gradient(135deg,${GOLD},#FDE68A)`:iqGradient(e.iq),
-                    WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
-                  }}>IQ {e.iq}</div>
-                </div>
-              ))}
-            </div>
-
-            <p style={{fontSize:10,color:DIM_C,textAlign:"center",marginTop:12,lineHeight:1.6}}>
-              Scores shown are anonymised. Board updates with each new premium assessment.
-            </p>
           </div>
 
           {/* ── Career matches ──────────────────────────────────────────────── */}
@@ -855,7 +809,7 @@ function ReportInner() {
             <div>
               <p style={{fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C,marginBottom:6}}>Premium Report — One time</p>
               <div style={{display:"flex",alignItems:"baseline",gap:10}}>
-                <span style={{fontSize:13,textDecoration:"line-through",color:"#1E3460"}}>€9.99</span>
+                <span style={{fontSize:13,textDecoration:"line-through",color:"#6A88AA"}}>€9.99</span>
                 <span style={{fontSize:32,fontWeight:800,
                   background:`linear-gradient(135deg,${B},${CYAN})`,
                   WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
@@ -908,8 +862,8 @@ function ReportInner() {
             <button onClick={handlePay} className="btn btn-primary" style={{width:"100%",cursor:consent?"pointer":"not-allowed",opacity:consent?1:0.4}}>
               Pay €1.99 — Unlock Premium Report
             </button>
-            <p style={{textAlign:"center",fontSize:10,color:"#1E3460"}}>Powered by Stripe · Your card data is never stored</p>
-            <p style={{textAlign:"center",fontSize:10,color:"#1E3460"}}>No subscription · One-time payment</p>
+            <p style={{textAlign:"center",fontSize:10,color:"#6A88AA"}}>Powered by Stripe · Your card data is never stored</p>
+            <p style={{textAlign:"center",fontSize:10,color:"#6A88AA"}}>No subscription · One-time payment</p>
           </div>
         </div>
       </div>

@@ -1,316 +1,146 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { LEADERBOARD, TOTAL_TESTS, type CountryEntry, type Region } from "@/lib/leaderboard-data";
+import Link from "next/link";
 
-const REGIONS: Array<"All" | Region> = ["All", "Europe", "Asia", "Americas", "Oceania", "Africa & Middle East"];
-
-/* ── Animated counter ────────────────────────────────────────────────────── */
-
-function AnimatedCount({ target, suffix = "" }: { target: number; suffix?: string }) {
-  const [val, setVal] = useState(0);
-  const ran = useRef(false);
-  useEffect(() => {
-    if (ran.current) return;
-    ran.current = true;
-    const dur = 1600, t0 = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min((now - t0) / dur, 1);
-      setVal(Math.round(target * (1 - Math.pow(1 - p, 3))));
-      if (p < 1) requestAnimationFrame(tick);
-      else setVal(target);
-    };
-    requestAnimationFrame(tick);
-  }, [target]);
-  return <>{val.toLocaleString()}{suffix}</>;
-}
-
-/* ── Podium ──────────────────────────────────────────────────────────────── */
-
-function Podium({ top3 }: { top3: CountryEntry[] }) {
-  const blue  = "#0055FF";
-  const blue2 = "rgba(0,85,255,0.16)";
-
-  const heights = [130, 100, 80];
-  const order   = [1, 0, 2]; // silver, gold, bronze layout
-  const medals  = ["🥈", "🥇", "🥉"];
-  const colors  = [
-    "rgba(192,192,192,0.15)", // silver
-    "rgba(255,215,0,0.18)",   // gold
-    "rgba(205,127,50,0.15)",  // bronze
-  ];
-  const borders = ["rgba(192,192,192,0.4)", "rgba(255,215,0,0.6)", "rgba(205,127,50,0.4)"];
-  const glows   = [
-    "0 0 24px rgba(192,192,192,0.15)",
-    "0 0 40px rgba(255,215,0,0.25)",
-    "0 0 24px rgba(205,127,50,0.15)",
-  ];
-
-  return (
-    <div style={{
-      display: "flex", alignItems: "flex-end", justifyContent: "center",
-      gap: 12, margin: "0 auto 40px", maxWidth: 500,
-    }}>
-      {order.map((pos) => {
-        const c = top3[pos];
-        if (!c) return null;
-        const isGold = pos === 0;
-        return (
-          <div key={pos} className="animate-fade-up" style={{
-            display: "flex", flexDirection: "column", alignItems: "center", flex: 1,
-            animationDelay: `${pos * 120}ms`,
-          }}>
-            {/* Country card */}
-            <div style={{
-              background: colors[pos], border: `1px solid ${borders[pos]}`,
-              borderRadius: 8, padding: "14px 10px", textAlign: "center", width: "100%",
-              boxShadow: glows[pos],
-              transform: isGold ? "scale(1.06)" : "scale(1)",
-              transition: "transform 0.2s ease",
-            }}>
-              <div style={{ fontSize: isGold ? 40 : 32, marginBottom: 4 }}>{c.flag}</div>
-              <p style={{ fontSize: isGold ? 13 : 11, fontWeight: 600, color: "#D6E4FF", marginBottom: 2, lineHeight: 1.2 }}>
-                {c.name}
-              </p>
-              <p style={{ fontSize: isGold ? 22 : 18, fontWeight: 300, color: blue }}>
-                {c.avgIQ}
-              </p>
-              <p style={{ fontSize: 9, color: "#3A5A8A", letterSpacing: "0.08em" }}>IQ avg</p>
-            </div>
-
-            {/* Podium block */}
-            <div style={{
-              width: "100%", height: heights[pos],
-              background: `linear-gradient(180deg, ${colors[pos]}, rgba(5,18,45,0.5))`,
-              border: `1px solid ${borders[pos]}`,
-              borderTop: "none",
-              borderRadius: "0 0 4px 4px",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: glows[pos],
-            }}>
-              <span style={{ fontSize: 28 }}>{medals[pos]}</span>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ── Table row ───────────────────────────────────────────────────────────── */
-
-function CountryRow({ c, userCode, animate }: { c: CountryEntry; userCode: string; animate: boolean }) {
-  const isUser = c.code === userCode;
-  const blue   = "#0055FF";
-  const blue2  = "rgba(0,85,255,0.16)";
-  const dim    = "#3A5A8A";
-
-  const rankColor =
-    c.rank === 1 ? "#FFD700" :
-    c.rank === 2 ? "#C0C0C0" :
-    c.rank === 3 ? "#CD7F32" : dim;
-
-  return (
-    <div className={animate ? "animate-fade-up" : ""} style={{
-      display: "grid",
-      gridTemplateColumns: "44px 36px 1fr 64px 80px",
-      alignItems: "center", gap: 8,
-      padding: "11px 16px",
-      background: isUser ? "rgba(0,85,255,0.08)" : "rgba(5,18,45,0.6)",
-      border: `1px solid ${isUser ? "rgba(0,85,255,0.4)" : blue2}`,
-      borderRadius: 6,
-      boxShadow: isUser ? "0 0 16px rgba(0,85,255,0.15)" : "none",
-      transition: "background 0.2s",
-    }}>
-      {/* Rank */}
-      <span style={{ fontSize: 14, fontWeight: 700, color: rankColor, textAlign: "center" }}>
-        {c.rank <= 3 ? ["🥇","🥈","🥉"][c.rank - 1] : `#${c.rank}`}
-      </span>
-      {/* Flag */}
-      <span style={{ fontSize: 22, textAlign: "center" }}>{c.flag}</span>
-      {/* Name */}
-      <div>
-        <p style={{ fontSize: 13, color: "#D6E4FF", fontWeight: isUser ? 600 : 400 }}>
-          {c.name}
-          {isUser && <span style={{ fontSize: 9, color: blue, marginLeft: 6, letterSpacing: "0.1em" }}>YOU</span>}
-        </p>
-        <p style={{ fontSize: 9, color: dim, letterSpacing: "0.06em" }}>{c.region}</p>
-      </div>
-      {/* Avg IQ */}
-      <span style={{ fontSize: 16, fontWeight: 600, color: blue, textAlign: "right" }}>
-        {c.avgIQ}
-      </span>
-      {/* Tests */}
-      <span style={{ fontSize: 11, color: dim, textAlign: "right" }}>
-        {c.tests.toLocaleString()}
-      </span>
-    </div>
-  );
-}
-
-/* ── Main leaderboard page ───────────────────────────────────────────────── */
+const BLUE  = "#0055FF";
+const CYAN  = "#06B6D4";
+const DIM   = "#8AABCC";
+const BG    = "#050A14";
+const BORD  = "rgba(0,85,255,0.16)";
+const TEXT  = "#E8F0FF";
 
 export default function LeaderboardPage() {
   const router = useRouter();
-  const [region, setRegion] = useState<"All" | Region>("All");
-  const [userCode, setUserCode] = useState("");
-  const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    // Detect user's country on mount
-    import("@/lib/leaderboard-data").then(({ detectCountryCode }) => {
-      setUserCode(detectCountryCode());
-    });
-  }, []);
-
-  const filtered = LEADERBOARD.filter(c => {
-    const matchRegion = region === "All" || c.region === region;
-    const matchSearch = search === "" || c.name.toLowerCase().includes(search.toLowerCase());
-    return matchRegion && matchSearch;
-  });
-
-  const top3   = LEADERBOARD.slice(0, 3);
-  const blue   = "#0055FF";
-  const blue2  = "rgba(0,85,255,0.16)";
-  const dim    = "#3A5A8A";
 
   return (
-    <div style={{ minHeight: "100dvh", background: "#050A14", color: "#D6E4FF" }}>
+    <div style={{ minHeight: "100dvh", background: BG, color: TEXT, fontFamily: "'Inter',system-ui,sans-serif" }}>
 
       {/* Nav */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 10,
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "14px 24px", borderBottom: `1px solid ${blue2}`,
+        padding: "14px 24px", borderBottom: `1px solid ${BORD}`,
         background: "rgba(5,10,20,0.95)", backdropFilter: "blur(18px)",
       }}>
         <button
           onClick={() => router.push("/")}
-          style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, fontWeight: 600, letterSpacing: "-0.02em", color: "#D6E4FF" }}
+          style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, fontWeight: 600, letterSpacing: "-0.02em", color: TEXT }}
         >
-          Real<span style={{ color: blue }}>IQ</span>Test
+          Real<span style={{ color: BLUE }}>IQ</span>Test
         </button>
-        <span style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: dim }}>
+        <span style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: DIM }}>
           Global IQ Rankings
         </span>
-        <button onClick={() => router.push("/test")} className="btn btn-primary" style={{ fontSize: 11, padding: "7px 16px" }}>
+        <button onClick={() => router.push("/test")} style={{
+          fontSize: 11, padding: "8px 18px", background: BLUE, color: "#fff",
+          border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600,
+          letterSpacing: "0.08em", textTransform: "uppercase",
+          boxShadow: "0 0 14px rgba(0,85,255,0.4)",
+        }}>
           Take Test
         </button>
       </nav>
 
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 16px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "60px 20px 80px" }}>
 
         {/* Header */}
-        <div className="animate-fade-up" style={{ textAlign: "center", marginBottom: 40 }}>
-          <p style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: dim, marginBottom: 10 }}>
-            Based on cross-national IQ research
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <p style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: CYAN, marginBottom: 10 }}>
+            Intelligence Rankings
           </p>
-          <h1 style={{ fontSize: "clamp(28px,6vw,42px)", fontWeight: 300, letterSpacing: "-0.03em", marginBottom: 12, lineHeight: 1.1 }}>
-            Global IQ <span style={{ color: blue }}>Leaderboard</span>
+          <h1 style={{ fontSize: "clamp(28px,6vw,42px)", fontWeight: 300, letterSpacing: "-0.03em", marginBottom: 16, lineHeight: 1.1, color: TEXT }}>
+            Global IQ <span style={{ color: BLUE }}>Leaderboard</span>
           </h1>
+          <p style={{ fontSize: 14, color: DIM, lineHeight: 1.7, maxWidth: 480, margin: "0 auto" }}>
+            Rankings are built entirely from real, verified test completions. No invented scores, no placeholder data.
+          </p>
+        </div>
 
-          {/* Total tests counter */}
+        {/* Empty state */}
+        <div style={{
+          background: "rgba(6,14,40,0.78)", border: `1px solid ${BORD}`,
+          backdropFilter: "blur(20px)", borderRadius: 16,
+          padding: "56px 32px", textAlign: "center",
+        }}>
+          {/* Icon */}
           <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            background: "rgba(0,85,255,0.07)", border: `1px solid ${blue2}`,
-            borderRadius: 6, padding: "10px 20px", marginBottom: 8,
+            width: 72, height: 72, borderRadius: "50%", margin: "0 auto 24px",
+            background: "rgba(0,85,255,0.08)", border: `1px solid rgba(0,85,255,0.25)`,
+            display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <span style={{ fontSize: 22, fontWeight: 600, color: blue }}>
-              <AnimatedCount target={TOTAL_TESTS} />
-            </span>
-            <span style={{ fontSize: 11, color: dim }}>total tests taken worldwide</span>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={CYAN} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
           </div>
 
-          <p style={{ fontSize: 11, color: "#1E3460", marginTop: 8 }}>
-            Average IQ scores based on published academic research (Lynn &amp; Becker, 2019). Data is for educational purposes only.
+          <h2 style={{ fontSize: 22, fontWeight: 600, color: TEXT, marginBottom: 12, letterSpacing: "-0.02em" }}>
+            Be the first to claim your spot
+          </h2>
+          <p style={{ fontSize: 14, color: DIM, lineHeight: 1.75, maxWidth: 420, margin: "0 auto 32px" }}>
+            The leaderboard is waiting for real scores. Complete the free IQ test and your result will appear here instantly.
           </p>
-        </div>
 
-        {/* Podium — top 3 */}
-        <Podium top3={top3} />
+          {/* Stats placeholders */}
+          <div style={{
+            display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+            gap: 12, marginBottom: 36, maxWidth: 480, margin: "0 auto 36px",
+          }}>
+            {["Country rankings","Age group data","Occupation data"].map(label => (
+              <div key={label} style={{
+                background: "rgba(0,85,255,0.05)", border: `1px solid ${BORD}`,
+                borderRadius: 8, padding: "16px 12px",
+              }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: "rgba(0,85,255,0.3)", marginBottom: 4 }}>—</div>
+                <div style={{ fontSize: 11, color: DIM, lineHeight: 1.5 }}>{label}<br/>awaiting first entries</div>
+              </div>
+            ))}
+          </div>
 
-        {/* Filter tabs */}
-        <div style={{
-          display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center",
-          marginBottom: 16,
-        }}>
-          {REGIONS.map(r => (
-            <button
-              key={r}
-              onClick={() => setRegion(r)}
-              style={{
-                background: region === r ? blue : "rgba(0,85,255,0.07)",
-                border: `1px solid ${region === r ? blue : blue2}`,
-                color: region === r ? "#fff" : dim,
-                borderRadius: 4, padding: "6px 14px", fontSize: 11,
-                cursor: "pointer", letterSpacing: "0.06em",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-
-        {/* Search */}
-        <div style={{ marginBottom: 14 }}>
-          <input
-            type="text"
-            placeholder="Search country..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{
-              width: "100%", boxSizing: "border-box",
-              background: "rgba(5,18,45,0.8)", border: `1px solid ${blue2}`,
-              borderRadius: 4, padding: "10px 14px", color: "#D6E4FF",
-              fontSize: 13, outline: "none",
-            }}
-          />
-        </div>
-
-        {/* Table header */}
-        <div style={{
-          display: "grid", gridTemplateColumns: "44px 36px 1fr 64px 80px",
-          gap: 8, padding: "8px 16px", marginBottom: 6,
-        }}>
-          <span style={{ fontSize: 9, color: dim, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center" }}>Rank</span>
-          <span style={{ fontSize: 9, color: dim, letterSpacing: "0.12em", textTransform: "uppercase" }}></span>
-          <span style={{ fontSize: 9, color: dim, letterSpacing: "0.12em", textTransform: "uppercase" }}>Country</span>
-          <span style={{ fontSize: 9, color: dim, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "right" }}>Avg IQ</span>
-          <span style={{ fontSize: 9, color: dim, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "right" }}>Tests</span>
-        </div>
-
-        {/* Rows */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {filtered.map((c, i) => (
-            <CountryRow key={c.code} c={c} userCode={userCode} animate={i < 20} />
-          ))}
-          {filtered.length === 0 && (
-            <p style={{ textAlign: "center", color: dim, padding: "32px 0", fontSize: 13 }}>
-              No countries found for this filter.
-            </p>
-          )}
-        </div>
-
-        {/* CTA */}
-        <div className="animate-fade-up" style={{ textAlign: "center", marginTop: 48 }}>
-          <p style={{ fontSize: 13, color: dim, marginBottom: 16 }}>
-            Don&apos;t know where you stand yet?
-          </p>
           <button
             onClick={() => router.push("/test")}
-            className="btn btn-primary"
+            style={{
+              fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+              padding: "14px 36px", background: `linear-gradient(135deg,${BLUE},${CYAN})`,
+              color: "#fff", border: "none", borderRadius: 8, cursor: "pointer",
+              boxShadow: "0 0 24px rgba(0,85,255,0.5)",
+            }}
           >
             Take the Free IQ Test →
           </button>
         </div>
 
-        {/* Disclaimer */}
-        <p style={{ fontSize: 10, color: "#1E3460", textAlign: "center", marginTop: 28, lineHeight: 1.7 }}>
-          Rankings are based on academic research averages, not live user data. Individual IQ varies widely within all countries.
-          Test counts are estimates based on platform usage patterns.
-        </p>
+        {/* How it works */}
+        <div style={{ marginTop: 40, padding: "24px 28px", background: "rgba(0,85,255,0.04)", border: `1px solid ${BORD}`, borderRadius: 10 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: TEXT, marginBottom: 10 }}>How rankings work</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {[
+              "Complete the free 30-question cognitive assessment",
+              "Your score is added anonymously to the global database",
+              "Country, age group, and occupation tables update in real time",
+              "Unlock the premium report to see your detailed breakdown",
+            ].map((step, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+                  background: "rgba(0,85,255,0.15)", border: `1px solid rgba(0,85,255,0.3)`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontWeight: 700, color: CYAN,
+                }}>{i + 1}</div>
+                <span style={{ fontSize: 13, color: DIM, lineHeight: 1.6, paddingTop: 2 }}>{step}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Links */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 40, flexWrap: "wrap" }}>
+          {[{href:"/rankings",l:"Full Rankings"},{href:"/what-is-iq",l:"What is IQ?"},{href:"/faq",l:"FAQ"}].map(({href,l})=>(
+            <Link key={href} href={href} style={{ fontSize: 12, color: DIM, textDecoration: "none" }}>{l}</Link>
+          ))}
+        </div>
       </div>
     </div>
   );

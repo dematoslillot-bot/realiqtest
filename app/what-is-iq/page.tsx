@@ -108,7 +108,7 @@ export default function WhatIsIQPage() {
             ["Below 70", "Extremely Low", "~2.3%", "Bottom 2%"],
           ]}
         />
-        <p style={{ fontSize: 12, color: "#3A5A8A", marginTop: 8 }}>
+        <p style={{ fontSize: 12, color: "#8AABCC", marginTop: 8 }}>
           Note: Classification labels vary between test publishers. The ranges above reflect the most widely used conventions (WAIS-IV / DSM-5 framework). See our full{" "}
           <a href="/iq-score-ranges" style={{ color: cyan }}>IQ Score Ranges guide</a> for detailed descriptions of what each range means in practice.
         </p>

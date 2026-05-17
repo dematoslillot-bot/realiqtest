@@ -8,7 +8,7 @@ export const metadata = {
 const blue  = "#0055FF";
 const cyan  = "#00AAFF";
 const blue2 = "rgba(0,85,255,0.18)";
-const dim   = "#3A5A8A";
+const dim   = "#8AABCC";
 const bg    = "#03050F";
 
 const LINKS = [
@@ -130,7 +130,7 @@ export default function NotFound() {
               padding: "11px 16px",
               background: "rgba(0,85,255,0.06)",
               border: `1px solid ${blue2}`,
-              color: "#8AAAD0",
+              color: "#C0C8D8",
               textDecoration: "none",
               borderRadius: 4,
               fontSize: 13,

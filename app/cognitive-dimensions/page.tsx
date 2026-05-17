@@ -116,7 +116,7 @@ export default function CognitiveDimensionsPage() {
             <div style={{ fontSize: 22, marginBottom: 8 }}>{d.icon}</div>
             <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: d.color, marginBottom: 4 }}>{d.n}</div>
             <div style={{ fontSize: 13, fontWeight: 500, color: "#D6E4FF" }}>{d.name}</div>
-            <div style={{ fontSize: 11, color: "#3A5A8A", marginTop: 4 }}>{d.badge}</div>
+            <div style={{ fontSize: 11, color: "#8AABCC", marginTop: 4 }}>{d.badge}</div>
           </div>
         ))}
       </div>
@@ -167,7 +167,7 @@ export default function CognitiveDimensionsPage() {
         <h3 style={{ fontSize: 20, fontWeight: 300, marginBottom: 10, color: "#D6E4FF" }}>
           Find your cognitive strengths
         </h3>
-        <p style={{ fontSize: 14, color: "#3A5A8A", marginBottom: 20 }}>
+        <p style={{ fontSize: 14, color: "#8AABCC", marginBottom: 20 }}>
           Take the free 30-question test to see your score across all 6 dimensions.
         </p>
         <a href="/test" style={{

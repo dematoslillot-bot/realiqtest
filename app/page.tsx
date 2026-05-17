@@ -888,7 +888,7 @@ function RadarChart() {
         <circle cx={CX} cy={CY} r={3} fill="#0055FF" opacity="0.6" />
       </svg>
 
-      <p style={{ fontSize: 11, color: "#3A5A8A", marginTop: 8, letterSpacing: "0.04em" }}>
+      <p style={{ fontSize: 11, color: "#8AABCC", marginTop: 8, letterSpacing: "0.04em" }}>
         Hover each vertex to explore your dimensions
       </p>
     </div>
@@ -933,7 +933,7 @@ export default function Home() {
   const blue  = "#0055FF";
   const cyan  = "#00AAFF";
   const blue2 = "rgba(0,85,255,0.18)";
-  const dim   = "#3A5A8A";
+  const dim   = "#8AABCC";
 
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -1108,7 +1108,7 @@ export default function Home() {
               <button className="btn btn-outline">View Sample Report</button>
             </div>
 
-            <p className="h4" style={{ marginTop:32, fontSize:10, letterSpacing:"0.10em", color:"#1E3460", textShadow:"0 1px 4px rgba(0,0,0,0.9)" }}>
+            <p className="h4" style={{ marginTop:32, fontSize:10, letterSpacing:"0.10em", color:"#6A88AA", textShadow:"0 1px 4px rgba(0,0,0,0.9)" }}>
               30 questions · 6 dimensions · ~15 min · No signup required
             </p>
           </div>
@@ -1249,7 +1249,7 @@ export default function Home() {
                   </div>
                 </div>
               ))}
-              <p style={{ fontSize:12, marginTop:16, color:"#1E3460" }}>Full breakdown unlocked with Premium Report</p>
+              <p style={{ fontSize:12, marginTop:16, color:"#6A88AA" }}>Full breakdown unlocked with Premium Report</p>
             </div>
           </div>
         </div>
@@ -1275,7 +1275,7 @@ export default function Home() {
             <div className="reveal" style={{ maxWidth: 400, transitionDelay: "160ms" }}>
               <p className="label">Full Report</p>
               <h2 className="sec-title" style={{ marginBottom: 16 }}>Your cognitive<br />radar chart</h2>
-              <p style={{ fontSize: 14, color: "#3A5A8A", lineHeight: 1.75, marginBottom: 24 }}>
+              <p style={{ fontSize: 14, color: "#8AABCC", lineHeight: 1.75, marginBottom: 24 }}>
                 The Premium Report includes your personal radar chart — a hexagonal visualisation
                 of all six cognitive dimensions. See exactly where you excel and where you can grow.
               </p>
@@ -1445,7 +1445,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div style={{ borderTop:`1px solid ${blue2}`, paddingTop:18, display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:8, fontSize:12, color:"#1E3460" }}>
+          <div style={{ borderTop:`1px solid ${blue2}`, paddingTop:18, display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:8, fontSize:12, color:"#6A88AA" }}>
             <span>© 2026 RealIQTest · realiqtest.co</span>
             <span>For informational purposes only. Not a clinical diagnostic tool.</span>
           </div>

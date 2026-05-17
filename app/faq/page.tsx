@@ -6,7 +6,7 @@ import ContentShell from "../components/ContentShell";
 const blue  = "#0055FF";
 const cyan  = "#00AAFF";
 const blue2 = "rgba(0,85,255,0.18)";
-const dim   = "#3A5A8A";
+const dim   = "#8AABCC";
 
 const FAQS: { q: string; a: string | ReactNode }[] = [
   {
@@ -120,7 +120,7 @@ function FAQItem({ q, a, open, onClick }: { q: string; a: string | ReactNode; op
       </button>
 
       {open && (
-        <div style={{ padding: "0 24px 20px", fontSize: 14, color: "#8AAAD0", lineHeight: 1.8 }}>
+        <div style={{ padding: "0 24px 20px", fontSize: 14, color: "#C0C8D8", lineHeight: 1.8 }}>
           {typeof a === "string" ? <p>{a}</p> : a}
         </div>
       )}

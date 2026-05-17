@@ -78,7 +78,7 @@ export default function CookieBanner() {
     >
       {/* Text */}
       <div style={{ flex: "1 1 360px", maxWidth: 680 }}>
-        <p style={{ fontSize: 13, color: "#8AAAD0", lineHeight: 1.65, margin: 0 }}>
+        <p style={{ fontSize: 13, color: "#C0C8D8", lineHeight: 1.65, margin: 0 }}>
           <span style={{ color: "#D6E4FF", fontWeight: 500 }}>We use cookies</span>{" "}
           to analyse site traffic (Google Analytics) and improve your experience.
           By clicking <strong style={{ color: "#D6E4FF" }}>Accept</strong>, you consent to the use of cookies for these purposes.
@@ -97,7 +97,7 @@ export default function CookieBanner() {
             padding: "10px 20px",
             background: "transparent",
             border: "1px solid rgba(0,85,255,0.35)",
-            color: "#8AAAD0",
+            color: "#C0C8D8",
             borderRadius: 3,
             fontSize: 12,
             fontWeight: 500,
@@ -111,7 +111,7 @@ export default function CookieBanner() {
           }}
           onMouseLeave={e => {
             (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,85,255,0.35)";
-            (e.currentTarget as HTMLButtonElement).style.color = "#8AAAD0";
+            (e.currentTarget as HTMLButtonElement).style.color = "#C0C8D8";
           }}
         >
           Reject

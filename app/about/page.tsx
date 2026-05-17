@@ -171,7 +171,7 @@ export default function AboutPage() {
         <h3 style={{ fontSize: 22, fontWeight: 300, marginBottom: 12, color: "#D6E4FF" }}>
           Ready to discover your cognitive profile?
         </h3>
-        <p style={{ fontSize: 14, color: "#3A5A8A", marginBottom: 24 }}>
+        <p style={{ fontSize: 14, color: "#8AABCC", marginBottom: 24 }}>
           30 questions · 6 dimensions · Free · No signup required
         </p>
         <a href="/test" style={{

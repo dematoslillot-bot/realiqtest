@@ -83,7 +83,7 @@ function RotationSVG({ path, angle, size = 80, mirror = false }: { path: string;
 function RotationDisplay({ path, showAngle }: { path: string; showAngle: number }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#3A5A8A" }}>Source shape</p>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#8AABCC" }}>Source shape</p>
       <RotationSVG path={path} angle={showAngle} size={100} />
     </div>
   );
@@ -118,7 +118,7 @@ function BarsDisplay({ values, max }: { values: (number | null)[]; max: number }
                   <rect x={x} y={H - h} width={bw} height={h} rx={2}
                     fill="rgba(0,85,255,0.55)" stroke="#0055FF" strokeWidth={1}
                     style={{ filter: "drop-shadow(0 0 6px rgba(0,85,255,0.7))" }} />
-                  <text x={x + bw / 2} y={H + 14} textAnchor="middle" fontSize={9} fill="#3A5A8A">{v}</text>
+                  <text x={x + bw / 2} y={H + 14} textAnchor="middle" fontSize={9} fill="#8AABCC">{v}</text>
                 </>
               )}
             </g>
@@ -171,12 +171,12 @@ function MemoryDisplay({
         ))}
       </div>
       {phase === "showing" && (
-        <p style={{ fontSize: 11, color: "#3A5A8A", letterSpacing: "0.08em" }}>
+        <p style={{ fontSize: 11, color: "#8AABCC", letterSpacing: "0.08em" }}>
           Memorise — {countdown}s remaining
         </p>
       )}
       {phase === "hidden" && (
-        <p style={{ fontSize: 11, color: "#3A5A8A" }}>Now answer the question below ↓</p>
+        <p style={{ fontSize: 11, color: "#8AABCC" }}>Now answer the question below ↓</p>
       )}
     </div>
   );
@@ -187,7 +187,7 @@ function MemoryDisplay({
 function EmbeddedDisplay({ display }: { display: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#3A5A8A" }}>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#8AABCC" }}>
         Combined figure
       </p>
       <svg width={120} height={120} viewBox="0 0 60 60">
@@ -236,7 +236,7 @@ function DiceNetDisplay({ faces }: { faces: number[] }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#3A5A8A" }}>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#8AABCC" }}>
         Dice net — fold to assemble
       </p>
       <svg width={S * 3} height={S * 4} viewBox={`0 0 ${S * 3} ${S * 4}`} style={{ display: "block" }}>
@@ -364,7 +364,7 @@ function TopViewDisplay() {
   const cubes: [number, number][] = [[0,0],[0,1],[1,0],[2,0]]; // back→front
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#3A5A8A" }}>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#8AABCC" }}>
         3D arrangement
       </p>
       <svg width={120} height={90} viewBox="0 0 60 45">
@@ -422,7 +422,7 @@ function SymbolsDisplay({ target, compare }: { target: string; compare?: string[
               color: "#8AB0E0",
               letterSpacing: "0.04em",
             }}>
-              <span style={{ fontSize: 9, color: "#3A5A8A", marginRight: 6, letterSpacing: "0.1em" }}>
+              <span style={{ fontSize: 9, color: "#8AABCC", marginRight: 6, letterSpacing: "0.1em" }}>
                 {["1st", "2nd", "3rd", "4th"][i]}
               </span>
               {item}
@@ -581,13 +581,13 @@ export default function TestPage() {
   if (screen === "form") {
     const blue  = "#0055FF";
     const blue2 = "rgba(0,85,255,0.18)";
-    const dim   = "#3A5A8A";
+    const dim   = "#8AABCC";
     const pill  = (active: boolean): React.CSSProperties => ({
       padding:"9px 18px",
       background: active ? blue : "rgba(5,18,45,0.8)",
       border: `1px solid ${active ? blue : blue2}`,
       borderRadius: 8, cursor:"pointer",
-      fontSize: 13, color: active ? "#fff" : "#8AAAD0",
+      fontSize: 13, color: active ? "#fff" : "#C0C8D8",
       fontWeight: active ? 700 : 400,
       transition:"all 150ms",
       boxShadow: active ? `0 0 14px rgba(0,85,255,0.4)` : "none",
@@ -673,7 +673,7 @@ export default function TestPage() {
             >
               Start Test →
             </button>
-            <p style={{ fontSize:10, color:"#1E3460", textAlign:"center", marginTop:12 }}>30 questions · ~15 minutes · No signup required</p>
+            <p style={{ fontSize:10, color:"#6A88AA", textAlign:"center", marginTop:12 }}>30 questions · ~15 minutes · No signup required</p>
           </div>
         </div>
       </div>
@@ -818,9 +818,9 @@ function QuizScreen() {
               <p style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: "#00D87A", marginBottom: 12 }}>
                 ✓ Section complete
               </p>
-              <p style={{ fontSize: 13, color: "#3A5A8A", marginBottom: 6 }}>{prevCat.name}</p>
+              <p style={{ fontSize: 13, color: "#8AABCC", marginBottom: 6 }}>{prevCat.name}</p>
               <div style={{ fontSize: 64, fontWeight: 300, color: "#0055FF", lineHeight: 1, margin: "12px 0", textShadow: "0 0 30px rgba(0,85,255,0.5)" }}>
-                {catScore}<span style={{ fontSize: 24, color: "#3A5A8A" }}>/{catTotal}</span>
+                {catScore}<span style={{ fontSize: 24, color: "#8AABCC" }}>/{catTotal}</span>
               </div>
               <div style={{ height: 3, background: "rgba(0,85,255,0.12)", borderRadius: 2, overflow: "hidden", marginTop: 16 }}>
                 <div className="progress-neon" style={{ height: "100%", width: `${catTotal > 0 ? (catScore / catTotal) * 100 : 0}%`, transition: "width 0.9s ease", borderRadius: 2 }} />
@@ -829,7 +829,7 @@ function QuizScreen() {
             <h2 style={{ fontSize: 18, fontWeight: 400, marginBottom: 6 }}>
               Next: <span style={{ color: "#0055FF" }}>{nextCat.name}</span>
             </h2>
-            <p style={{ fontSize: 13, color: "#3A5A8A", marginBottom: 28 }}>Take a breath before continuing.</p>
+            <p style={{ fontSize: 13, color: "#8AABCC", marginBottom: 28 }}>Take a breath before continuing.</p>
             <button
               onClick={continueAfterTransition}
               className="btn btn-primary"
@@ -856,7 +856,7 @@ function QuizScreen() {
 
           {/* Category + question info */}
           <div style={{ textAlign: "center" }}>
-            <p style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#3A5A8A", lineHeight: 1, marginBottom: 2 }}>
+            <p style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#8AABCC", lineHeight: 1, marginBottom: 2 }}>
               {CATEGORIES[q.cat].name}
             </p>
             <p style={{ fontSize: 11, fontWeight: 500, color: "#5A78A8" }}>
@@ -883,7 +883,7 @@ function QuizScreen() {
             </svg>
             <span style={{
               position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 11, fontWeight: 700, color: timerPaused ? "#3A5A8A" : timerColor,
+              fontSize: 11, fontWeight: 700, color: timerPaused ? "#8AABCC" : timerColor,
             }}>
               {timerPaused ? "—" : timeLeft}
             </span>
@@ -892,7 +892,7 @@ function QuizScreen() {
 
         {/* Progress bar + dots */}
         <div style={{ padding: "0 20px 12px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#3A5A8A", marginBottom: 5, letterSpacing: "0.08em" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#8AABCC", marginBottom: 5, letterSpacing: "0.08em" }}>
             <span>Q{qIdx + 1} / {ALL_QUESTIONS.length}</span>
             <span>Score: {score}</span>
           </div>
@@ -955,11 +955,11 @@ function QuizScreen() {
               gap: 10, flexWrap: "wrap", fontSize: 16, fontWeight: 500,
             }}>
               <span>{q.w1}</span>
-              <span style={{ fontSize: 10, color: "#3A5A8A", fontWeight: 400 }}>is to</span>
+              <span style={{ fontSize: 10, color: "#8AABCC", fontWeight: 400 }}>is to</span>
               <span>{q.w2}</span>
-              <span style={{ fontSize: 10, color: "#3A5A8A", fontWeight: 400 }}>as</span>
+              <span style={{ fontSize: 10, color: "#8AABCC", fontWeight: 400 }}>as</span>
               <span>{q.w3}</span>
-              <span style={{ fontSize: 10, color: "#3A5A8A", fontWeight: 400 }}>is to</span>
+              <span style={{ fontSize: 10, color: "#8AABCC", fontWeight: 400 }}>is to</span>
               <span style={{ color: "#0055FF", borderBottom: "2px dashed rgba(0,85,255,0.5)", minWidth: 60, textAlign: "center" }}>?</span>
             </div>
           )}
@@ -981,7 +981,7 @@ function QuizScreen() {
                       : { background: "rgba(5,18,45,0.9)", border: "1px solid rgba(0,85,255,0.2)", color: "#D6E4FF" }
                     ),
                   }}>{s}</div>
-                  {i < q.seq!.length - 1 && <span style={{ color: "#3A5A8A", fontSize: 12 }}>→</span>}
+                  {i < q.seq!.length - 1 && <span style={{ color: "#8AABCC", fontSize: 12 }}>→</span>}
                 </div>
               ))}
             </div>
@@ -1076,10 +1076,10 @@ function QuizScreen() {
               style={{
                 background: "none", border: "none", cursor: "pointer", padding: "8px 0",
                 fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase",
-                color: "#3A5A8A", transition: "color 0.15s",
+                color: "#8AABCC", transition: "color 0.15s",
               }}
               onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#D6E4FF")}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "#3A5A8A")}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "#8AABCC")}
             >
               Skip →
             </button>

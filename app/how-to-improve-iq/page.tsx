@@ -164,7 +164,7 @@ export default function HowToImproveIQPage() {
                   <div style={{ fontSize: 13, fontWeight: 500, color: i % 2 === 0 ? "#7AC0FF" : "#00CCFF", marginBottom: 5 }}>
                     {j + 1}. {s.title}
                   </div>
-                  <div style={{ fontSize: 13, color: "#8AAAD0", lineHeight: 1.7 }}>{s.desc}</div>
+                  <div style={{ fontSize: 13, color: "#C0C8D8", lineHeight: 1.7 }}>{s.desc}</div>
                 </div>
               ))}
             </div>

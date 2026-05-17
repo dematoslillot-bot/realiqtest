@@ -6,7 +6,7 @@ import ContentShell, { Section } from "../components/ContentShell";
 const blue = "#0055FF";
 const cyan = "#00AAFF";
 const blue2 = "rgba(0,85,255,0.18)";
-const dim  = "#3A5A8A";
+const dim  = "#8AABCC";
 
 function ContactForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -153,7 +153,7 @@ export default function ContactPage() {
               ) : (
                 <div style={{ fontSize: 14, color: "#D6E4FF", marginBottom: 4 }}>{card.info}</div>
               )}
-              <div style={{ fontSize: 12, color: "#3A5A8A" }}>{card.sub}</div>
+              <div style={{ fontSize: 12, color: "#8AABCC" }}>{card.sub}</div>
             </div>
           ))}
         </div>
@@ -170,10 +170,10 @@ export default function ContactPage() {
           padding: "24px", background: "rgba(0,85,255,0.05)",
           border: "1px solid rgba(0,85,255,0.15)", borderRadius: 6,
         }}>
-          <p style={{ fontSize: 14, color: "#8AAAD0", marginBottom: 10 }}>
+          <p style={{ fontSize: 14, color: "#C0C8D8", marginBottom: 10 }}>
             <strong style={{ color: "#D6E4FF" }}>Looking for a quick answer?</strong>
           </p>
-          <p style={{ fontSize: 14, color: "#3A5A8A", lineHeight: 1.7 }}>
+          <p style={{ fontSize: 14, color: "#8AABCC", lineHeight: 1.7 }}>
             Many common questions are answered in our{" "}
             <a href="/faq" style={{ color: "#00AAFF", textDecoration: "underline" }}>FAQ page</a>
             , including information about how scores are calculated, what the premium report includes,

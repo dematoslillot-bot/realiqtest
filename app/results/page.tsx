@@ -77,9 +77,9 @@ function BellCurve({ iq }: { iq: number }) {
       <circle cx={userX} cy={userY} r={5}  fill="#0055FF" style={{ filter: "drop-shadow(0 0 6px rgba(0,85,255,0.9))" }} />
       <text x={userX} y={padT - 6} textAnchor="middle" fontSize={10} fill="#0055FF" fontWeight="700"
         style={{ filter: "drop-shadow(0 0 8px rgba(0,85,255,0.7))" }}>{iq}</text>
-      <text x={padL}            y={H - 8} textAnchor="middle" fontSize={9} fill="#3A5A8A">55</text>
-      <text x={padL + plotW/2}  y={H - 8} textAnchor="middle" fontSize={9} fill="#3A5A8A">100</text>
-      <text x={padL + plotW}    y={H - 8} textAnchor="middle" fontSize={9} fill="#3A5A8A">145</text>
+      <text x={padL}            y={H - 8} textAnchor="middle" fontSize={9} fill="#8AABCC">55</text>
+      <text x={padL + plotW/2}  y={H - 8} textAnchor="middle" fontSize={9} fill="#8AABCC">100</text>
+      <text x={padL + plotW}    y={H - 8} textAnchor="middle" fontSize={9} fill="#8AABCC">145</text>
       <line x1={padL + plotW/2} y1={padT + plotH - 4} x2={padL + plotW/2} y2={padT + plotH + 4}
         stroke="rgba(0,85,255,0.3)" strokeWidth={1} />
     </svg>
@@ -119,7 +119,7 @@ function LeaderboardPopup({ iq, onClose }: { iq: number; onClose: () => void }) 
   }, []);
   const blue  = "#0055FF";
   const blue2 = "rgba(0,85,255,0.16)";
-  const dim   = "#3A5A8A";
+  const dim   = "#8AABCC";
   return (
     <div style={{ position:"fixed",inset:0,zIndex:50,background:"rgba(5,10,20,0.82)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20 }}>
       <div className="animate-fade-up" style={{ maxWidth:380,width:"100%",background:"#080E1A",border:`1px solid ${blue2}`,borderRadius:10,padding:"28px 24px",textAlign:"center",boxShadow:"0 0 60px rgba(0,85,255,0.18)" }}>
@@ -197,7 +197,7 @@ export default function ResultsPage() {
   const catOffsets = [5, -2, -8, 3, -5, -12];
   const blue       = "#0055FF";
   const blue2      = "rgba(0,85,255,0.16)";
-  const dim        = "#3A5A8A";
+  const dim        = "#8AABCC";
 
   /* Personalised comparison */
   const personalPct = userCountry
@@ -247,7 +247,7 @@ export default function ResultsPage() {
         <p className="animate-fade-up" style={{ fontSize:13,color:dim,animationDelay:"340ms" }}>
           You answered {score} out of {total} questions correctly
         </p>
-        <p className="animate-fade-up" style={{ fontSize:11,color:"#1E3460",marginTop:6,maxWidth:340,margin:"6px auto 24px",animationDelay:"380ms" }}>
+        <p className="animate-fade-up" style={{ fontSize:11,color:"#6A88AA",marginTop:6,maxWidth:340,margin:"6px auto 24px",animationDelay:"380ms" }}>
           This is an estimate based on performance. Not a certified clinical assessment.
         </p>
 
@@ -339,7 +339,7 @@ export default function ResultsPage() {
             {/* Price */}
             <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:20,textAlign:"left" }}>
               <div>
-                <span style={{ fontSize:13,color:"#1E3460",textDecoration:"line-through",display:"block",marginBottom:2 }}>€9.99</span>
+                <span style={{ fontSize:13,color:"#6A88AA",textDecoration:"line-through",display:"block",marginBottom:2 }}>€9.99</span>
                 <span style={{ fontSize:38,fontWeight:800,background:"linear-gradient(135deg,#0055FF,#06B6D4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",letterSpacing:"-0.03em" }}>€1.99</span>
               </div>
               <span style={{ fontSize:10,background:"rgba(16,185,129,0.12)",color:"#10B981",border:"1px solid rgba(16,185,129,0.3)",padding:"4px 10px",borderRadius:99,fontWeight:700,letterSpacing:"0.1em" }}>−80%</span>
@@ -382,8 +382,8 @@ export default function ResultsPage() {
             </button>
 
             {/* Social proof */}
-            <p style={{ fontSize:11,color:"#3A5A8A",textAlign:"center",marginTop:12 }}>
-              Join <strong style={{ color:"#8AAAD0" }}>2,847 people</strong> who discovered their full cognitive profile
+            <p style={{ fontSize:11,color:"#8AABCC",textAlign:"center",marginTop:12 }}>
+              Join <strong style={{ color:"#C0C8D8" }}>2,847 people</strong> who discovered their full cognitive profile
             </p>
 
             {/* Testimonials */}
@@ -397,8 +397,8 @@ export default function ResultsPage() {
                   <div style={{ display:"flex",gap:2,marginBottom:8 }}>
                     {[1,2,3,4,5].map(s=><span key={s} style={{ color:"#F59E0B",fontSize:10 }}>★</span>)}
                   </div>
-                  <p style={{ fontSize:11,color:"#8AAAD0",lineHeight:1.6,marginBottom:6 }}>&ldquo;{t.text}&rdquo;</p>
-                  <p style={{ fontSize:10,color:"#3A5A8A" }}>— {t.name}</p>
+                  <p style={{ fontSize:11,color:"#C0C8D8",lineHeight:1.6,marginBottom:6 }}>&ldquo;{t.text}&rdquo;</p>
+                  <p style={{ fontSize:10,color:"#8AABCC" }}>— {t.name}</p>
                 </div>
               ))}
             </div>
@@ -409,7 +409,7 @@ export default function ResultsPage() {
         <div className="animate-fade-up" style={{ display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",animationDelay:"800ms" }}>
           <button onClick={() => router.push("/test")} className="btn btn-outline">Retry</button>
         </div>
-        <p style={{ fontSize:10,color:"#1E3460",marginTop:16 }}>No subscription · One-time payment · Instant access</p>
+        <p style={{ fontSize:10,color:"#6A88AA",marginTop:16 }}>No subscription · One-time payment · Instant access</p>
       </div>
     </div>
   );

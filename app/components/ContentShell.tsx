@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 const blue  = "#0055FF";
 const cyan  = "#00AAFF";
 const blue2 = "rgba(0,85,255,0.15)";
-const dim   = "#3A5A8A";
+const dim   = "#8AABCC";
 const bg    = "#03050F";
 
 const NAV_LINKS = [
@@ -163,7 +163,7 @@ export default function ContentShell({ children, eyebrow, title, subtitle, maxWi
               </p>
             </div>
           </div>
-          <div style={{ borderTop: `1px solid ${blue2}`, paddingTop: 20, fontSize: 12, color: "#1E3460", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+          <div style={{ borderTop: `1px solid ${blue2}`, paddingTop: 20, fontSize: 12, color: "#6A88AA", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
             <span>© 2026 RealIQTest · realiqtest.co</span>
             <span>For informational purposes only. Not a clinical diagnostic tool.</span>
           </div>
@@ -184,7 +184,7 @@ export function Section({ title, children }: { title: string; children: ReactNod
         paddingBottom: 10,
         borderBottom: "1px solid rgba(0,85,255,0.12)",
       }}>{title}</h2>
-      <div style={{ fontSize: 15, color: "#8AAAD0", lineHeight: 1.8 }}>{children}</div>
+      <div style={{ fontSize: 15, color: "#C0C8D8", lineHeight: 1.8 }}>{children}</div>
     </section>
   );
 }
@@ -200,7 +200,7 @@ export function InfoCard({ icon, title, children }: { icon: string; title: strin
         <span style={{ fontSize: 20 }}>{icon}</span>
         <span style={{ fontSize: 14, fontWeight: 500, color: "#D6E4FF" }}>{title}</span>
       </div>
-      <div style={{ fontSize: 14, color: "#8AAAD0", lineHeight: 1.75 }}>{children}</div>
+      <div style={{ fontSize: 14, color: "#C0C8D8", lineHeight: 1.75 }}>{children}</div>
     </div>
   );
 }
@@ -225,7 +225,7 @@ export function Table({ headers, rows }: { headers: string[]; rows: (string | Re
           {rows.map((row, i) => (
             <tr key={i} style={{ borderBottom: "1px solid rgba(0,85,255,0.08)" }}>
               {row.map((cell, j) => (
-                <td key={j} style={{ padding: "10px 16px", color: "#8AAAD0", verticalAlign: "top" }}>{cell}</td>
+                <td key={j} style={{ padding: "10px 16px", color: "#C0C8D8", verticalAlign: "top" }}>{cell}</td>
               ))}
             </tr>
           ))}

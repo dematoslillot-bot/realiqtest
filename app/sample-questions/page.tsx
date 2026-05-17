@@ -24,7 +24,7 @@ const schemaOrg = {
 const blue  = "#0055FF";
 const cyan  = "#00AAFF";
 const blue2 = "rgba(0,85,255,0.18)";
-const dim   = "#3A5A8A";
+const dim   = "#8AABCC";
 
 function SampleQ({ n, badge, q, opts, ans, exp }: {
   n: string; badge: string; q: string;
@@ -36,7 +36,7 @@ function SampleQ({ n, badge, q, opts, ans, exp }: {
       borderRadius: 6, padding: "20px 24px", marginBottom: 16,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <span style={{ fontFamily: "monospace", fontSize: 11, color: "#1E3460" }}>{n}</span>
+        <span style={{ fontFamily: "monospace", fontSize: 11, color: "#6A88AA" }}>{n}</span>
         <span style={{
           fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase",
           padding: "3px 10px", background: "rgba(0,85,255,0.12)", color: cyan,
@@ -50,7 +50,7 @@ function SampleQ({ n, badge, q, opts, ans, exp }: {
             padding: "10px 14px", borderRadius: 4, fontSize: 13,
             background: i === ans ? "rgba(0,216,122,0.12)" : "rgba(0,85,255,0.06)",
             border: `1px solid ${i === ans ? "rgba(0,216,122,0.40)" : "rgba(0,85,255,0.15)"}`,
-            color: i === ans ? "#00D87A" : "#8AAAD0",
+            color: i === ans ? "#00D87A" : "#C0C8D8",
           }}>
             <span style={{ marginRight: 8, fontWeight: 600 }}>{String.fromCharCode(65 + i)}.</span>
             {opt}

@@ -11,9 +11,10 @@ const dim   = "#3A5A8A";
 const bg    = "#03050F";
 
 const NAV_LINKS = [
-  { href: "/about",    label: "About" },
-  { href: "/faq",      label: "FAQ" },
-  { href: "/what-is-iq", label: "What is IQ?" },
+  { href: "/rankings",    label: "Rankings" },
+  { href: "/about",       label: "About" },
+  { href: "/faq",         label: "FAQ" },
+  { href: "/what-is-iq",  label: "What is IQ?" },
 ];
 
 const RESOURCE_LINKS = [

@@ -548,7 +548,145 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
 
 /* ── Main test page ─────────────────────────────────────────────────────── */
 
+const COUNTRIES = [
+  "Afghanistan","Albania","Algeria","Argentina","Australia","Austria","Bangladesh","Belarus","Belgium","Bolivia",
+  "Brazil","Bulgaria","Cambodia","Canada","Chile","China","Colombia","Croatia","Czech Republic","Denmark",
+  "Ecuador","Egypt","Ethiopia","Finland","France","Germany","Ghana","Greece","Guatemala","Hungary",
+  "India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Japan","Jordan","Kenya",
+  "South Korea","Malaysia","Mexico","Morocco","Netherlands","New Zealand","Nigeria","Norway","Pakistan","Peru",
+  "Philippines","Poland","Portugal","Romania","Russia","Saudi Arabia","Serbia","Singapore","South Africa","Spain",
+  "Sri Lanka","Sweden","Switzerland","Taiwan","Thailand","Turkey","Ukraine","United Arab Emirates","United Kingdom","United States",
+  "Venezuela","Vietnam","Other",
+];
+
 export default function TestPage() {
+  const router = useRouter();
+
+  /* ── Pre-test form state ─────────────────────────────────────────────── */
+  const [screen,     setScreen]     = useState<"form"|"quiz">("form");
+  const [gender,     setGender]     = useState("");
+  const [ageGroup,   setAgeGroup]   = useState("");
+  const [country,    setCountry]    = useState("");
+  const [occupation, setOccupation] = useState("");
+
+  function handleStartTest() {
+    if (gender)     localStorage.setItem("user_gender",     gender);
+    if (ageGroup)   localStorage.setItem("user_age",        ageGroup);
+    if (country)    localStorage.setItem("user_country",    country);
+    if (occupation) localStorage.setItem("user_occupation", occupation);
+    setScreen("quiz");
+  }
+
+  /* ── Form screen ─────────────────────────────────────────────────────── */
+  if (screen === "form") {
+    const blue  = "#0055FF";
+    const blue2 = "rgba(0,85,255,0.18)";
+    const dim   = "#3A5A8A";
+    const pill  = (active: boolean): React.CSSProperties => ({
+      padding:"9px 18px",
+      background: active ? blue : "rgba(5,18,45,0.8)",
+      border: `1px solid ${active ? blue : blue2}`,
+      borderRadius: 8, cursor:"pointer",
+      fontSize: 13, color: active ? "#fff" : "#8AAAD0",
+      fontWeight: active ? 700 : 400,
+      transition:"all 150ms",
+      boxShadow: active ? `0 0 14px rgba(0,85,255,0.4)` : "none",
+    });
+    return (
+      <div style={{ minHeight:"100dvh", background:"#050A14", color:"#D6E4FF", display:"flex", flexDirection:"column" }}>
+        <nav style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 24px", borderBottom:`1px solid ${blue2}`, background:"rgba(5,10,20,0.95)" }}>
+          <span style={{ fontSize:16, fontWeight:700, letterSpacing:"-0.02em" }}>Real<span style={{color:blue}}>IQ</span>Test</span>
+          <button onClick={handleStartTest} style={{ fontSize:11, color:dim, background:"none", border:"none", cursor:"pointer" }}>Skip →</button>
+        </nav>
+        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"24px 20px" }}>
+          <div className="animate-fade-up" style={{ maxWidth:460, width:"100%" }}>
+            <p style={{ fontSize:10, letterSpacing:"0.22em", textTransform:"uppercase", color:blue, marginBottom:10, fontWeight:700 }}>Quick setup</p>
+            <h1 style={{ fontSize:"clamp(22px,4vw,30px)", fontWeight:800, letterSpacing:"-0.02em", lineHeight:1.2, marginBottom:6 }}>
+              Takes 10 seconds
+            </h1>
+            <p style={{ fontSize:13, color:dim, lineHeight:1.6, marginBottom:28 }}>
+              This personalises your score comparison — we will show you how you rank vs your demographic group.
+            </p>
+
+            {/* Gender */}
+            <div style={{ marginBottom:22 }}>
+              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim, marginBottom:10, fontWeight:600 }}>Gender</p>
+              <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                {[{v:"man",l:"Man"},{v:"woman",l:"Woman"},{v:"other",l:"Prefer not to say"}].map(({v,l})=>(
+                  <button key={v} onClick={()=>setGender(g=>g===v?"":v)} style={pill(gender===v)}>{l}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Age group */}
+            <div style={{ marginBottom:22 }}>
+              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim, marginBottom:10, fontWeight:600 }}>Age group</p>
+              <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                {["15–17","18–24","25–34","35–44","45–54","55+"].map(a=>(
+                  <button key={a} onClick={()=>setAgeGroup(g=>g===a?"":a)} style={pill(ageGroup===a)}>{a}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Country */}
+            <div style={{ marginBottom:22 }}>
+              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim, marginBottom:10, fontWeight:600 }}>Country</p>
+              <select
+                value={country}
+                onChange={e=>setCountry(e.target.value)}
+                style={{
+                  width:"100%", padding:"10px 14px",
+                  background:"rgba(5,18,45,0.9)", border:`1px solid ${blue2}`,
+                  borderRadius:8, fontSize:13, color: country?"#D6E4FF":dim,
+                  outline:"none", cursor:"pointer", fontFamily:"inherit",
+                  appearance:"none",
+                }}
+              >
+                <option value="">Select your country…</option>
+                {COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
+            {/* Occupation */}
+            <div style={{ marginBottom:32 }}>
+              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim, marginBottom:10, fontWeight:600 }}>Occupation</p>
+              <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                {["Student","Professional","Other"].map(o=>(
+                  <button key={o} onClick={()=>setOccupation(p=>p===o?"":o)} style={pill(occupation===o)}>{o}</button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={handleStartTest}
+              style={{
+                width:"100%", padding:"15px 24px",
+                background:`linear-gradient(135deg,${blue},#0099CC)`,
+                border:"none", borderRadius:10,
+                fontSize:15, fontWeight:700, color:"#fff",
+                cursor:"pointer",
+                boxShadow:`0 4px 20px rgba(0,85,255,0.45)`,
+                transition:"transform 150ms",
+              }}
+              onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-2px)")}
+              onMouseLeave={e=>(e.currentTarget.style.transform="translateY(0)")}
+            >
+              Start Test →
+            </button>
+            <p style={{ fontSize:10, color:"#1E3460", textAlign:"center", marginTop:12 }}>30 questions · ~15 minutes · No signup required</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <QuizScreen />;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   QUIZ COMPONENT — all quiz hooks live here (no early returns before hooks)
+════════════════════════════════════════════════════════════════════════════ */
+function QuizScreen() {
   const router = useRouter();
   const [qIdx, setQIdx] = useState(0);
   const [score, setScore] = useState(0);

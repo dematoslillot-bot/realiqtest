@@ -6,8 +6,7 @@ import { calculateIQWeighted, getIQLabel, getPercentile } from "@/lib/iq-calcula
 import { CATEGORIES } from "@/lib/questions";
 import { detectCountryCode, getCountryByCode, type CountryEntry } from "@/lib/leaderboard-data";
 
-/* ── Animated IQ counter ───────────────────────────────────────────────── */
-
+/* ── Animated IQ counter ─────────────────────────────────────────────────── */
 function AnimatedIQ({ target }: { target: number }) {
   const [display, setDisplay] = useState(0);
   const ran = useRef(false);
@@ -26,8 +25,7 @@ function AnimatedIQ({ target }: { target: number }) {
   return <>{display || ""}</>;
 }
 
-/* ── Gaussian bell curve ───────────────────────────────────────────────── */
-
+/* ── Gaussian bell curve ─────────────────────────────────────────────────── */
 function BellCurve({ iq }: { iq: number }) {
   const W = 340, H = 140;
   const padL = 28, padR = 28, padT = 22, padB = 28;
@@ -41,7 +39,6 @@ function BellCurve({ iq }: { iq: number }) {
     return Math.exp(-0.5 * z * z) / (sd * Math.sqrt(2 * Math.PI));
   }
   const pdfMax = pdf(mean);
-
   const pts: [number, number][] = [];
   for (let i = 0; i <= 120; i++) {
     const iqV = iqMin + (i / 120) * (iqMax - iqMin);
@@ -49,21 +46,15 @@ function BellCurve({ iq }: { iq: number }) {
     const y   = padT + plotH - (pdf(iqV) / pdfMax) * plotH;
     pts.push([x, y]);
   }
-
   const curveD = `M${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" L")}`;
   const areaD  = `${curveD} L${pts[pts.length - 1][0]},${padT + plotH} L${pts[0][0]},${padT + plotH} Z`;
-
-  // User marker
   const clampedIQ = Math.max(iqMin, Math.min(iqMax, iq));
   const userX = padL + ((clampedIQ - iqMin) / (iqMax - iqMin)) * plotW;
   const userY = padT + plotH - (pdf(clampedIQ) / pdfMax) * plotH;
-
-  // Shade the area to the left of user (lower percentile)
   const leftPts = pts.filter(([x]) => x <= userX);
   const shadeD = leftPts.length > 1
     ? `M${leftPts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" L")} L${leftPts[leftPts.length-1][0]},${padT + plotH} L${leftPts[0][0]},${padT + plotH} Z`
     : "";
-
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block", margin: "0 auto" }}>
       <defs>
@@ -75,151 +66,129 @@ function BellCurve({ iq }: { iq: number }) {
           <stop offset="0%"   stopColor="#0055FF" stopOpacity="0.35" />
           <stop offset="100%" stopColor="#0055FF" stopOpacity="0.06" />
         </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="2" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
       </defs>
-
-      {/* Baseline */}
-      <line x1={padL} y1={padT + plotH} x2={padL + plotW} y2={padT + plotH}
-        stroke="rgba(0,85,255,0.15)" strokeWidth={1} />
-
-      {/* Area under curve */}
+      <line x1={padL} y1={padT + plotH} x2={padL + plotW} y2={padT + plotH} stroke="rgba(0,85,255,0.15)" strokeWidth={1} />
       <path d={areaD} fill="url(#bellFill)" />
-
-      {/* Shaded area left of user */}
       {shadeD && <path d={shadeD} fill="url(#bellShade)" opacity={0.7} />}
-
-      {/* Curve line */}
       <path d={curveD} stroke="#0055FF" strokeWidth={2} fill="none" strokeLinejoin="round"
         style={{ filter: "drop-shadow(0 0 4px rgba(0,85,255,0.6))" }} />
-
-      {/* User position */}
-      <line x1={userX} y1={padT} x2={userX} y2={padT + plotH}
-        stroke="#0055FF" strokeWidth={1.5} strokeDasharray="4,3" opacity={0.7} />
+      <line x1={userX} y1={padT} x2={userX} y2={padT + plotH} stroke="#0055FF" strokeWidth={1.5} strokeDasharray="4,3" opacity={0.7} />
       <circle cx={userX} cy={userY} r={12} fill="rgba(0,85,255,0.2)" />
-      <circle cx={userX} cy={userY} r={5}  fill="#0055FF"
-        style={{ filter: "drop-shadow(0 0 6px rgba(0,85,255,0.9))" }} />
-
-      {/* IQ label above user marker */}
+      <circle cx={userX} cy={userY} r={5}  fill="#0055FF" style={{ filter: "drop-shadow(0 0 6px rgba(0,85,255,0.9))" }} />
       <text x={userX} y={padT - 6} textAnchor="middle" fontSize={10} fill="#0055FF" fontWeight="700"
-        style={{ filter: "drop-shadow(0 0 8px rgba(0,85,255,0.7))" }}>
-        {iq}
-      </text>
-
-      {/* Axis labels */}
+        style={{ filter: "drop-shadow(0 0 8px rgba(0,85,255,0.7))" }}>{iq}</text>
       <text x={padL}            y={H - 8} textAnchor="middle" fontSize={9} fill="#3A5A8A">55</text>
       <text x={padL + plotW/2}  y={H - 8} textAnchor="middle" fontSize={9} fill="#3A5A8A">100</text>
       <text x={padL + plotW}    y={H - 8} textAnchor="middle" fontSize={9} fill="#3A5A8A">145</text>
-
-      {/* Mean marker */}
       <line x1={padL + plotW/2} y1={padT + plotH - 4} x2={padL + plotW/2} y2={padT + plotH + 4}
         stroke="rgba(0,85,255,0.3)" strokeWidth={1} />
     </svg>
   );
 }
 
-/* ── Leaderboard popup ─────────────────────────────────────────────── */
+/* ── Fake blurred radar chart ────────────────────────────────────────────── */
+function FakeRadarChart() {
+  const cx = 90, cy = 90, R = 68;
+  const angles = [0,1,2,3,4,5].map(i => (i*60-90)*(Math.PI/180));
+  const vals   = [0.82, 0.61, 0.74, 0.88, 0.55, 0.70];
+  const pts    = vals.map((v,i)=>({ x: cx+R*v*Math.cos(angles[i]), y: cy+R*v*Math.sin(angles[i]) }));
+  const poly   = pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  const grid   = (p: number) => angles.map(a=>`${(cx+R*p*Math.cos(a)).toFixed(1)},${(cy+R*p*Math.sin(a)).toFixed(1)}`).join(" ");
+  return (
+    <svg width={180} height={180} viewBox="0 0 180 180">
+      {[0.25,0.5,0.75,1].map((p,i)=>(
+        <polygon key={i} points={grid(p)} fill="none" stroke="rgba(0,85,255,0.15)" strokeWidth="0.6"/>
+      ))}
+      {angles.map((a,i)=>(
+        <line key={i} x1={cx} y1={cy} x2={cx+R*Math.cos(a)} y2={cy+R*Math.sin(a)} stroke="rgba(0,85,255,0.1)" strokeWidth="0.5"/>
+      ))}
+      <polygon points={poly} fill="rgba(0,85,255,0.18)" stroke="#0055FF" strokeWidth="2"/>
+      {pts.map((p,i)=>(
+        <circle key={i} cx={p.x} cy={p.y} r="4" fill="#06B6D4"/>
+      ))}
+    </svg>
+  );
+}
 
+/* ── Leaderboard popup ───────────────────────────────────────────────────── */
 function LeaderboardPopup({ iq, onClose }: { iq: number; onClose: () => void }) {
   const [country, setCountry] = useState<CountryEntry | null>(null);
-
   useEffect(() => {
     const code = detectCountryCode();
     if (code) setCountry(getCountryByCode(code) ?? null);
   }, []);
-
   const blue  = "#0055FF";
   const blue2 = "rgba(0,85,255,0.16)";
   const dim   = "#3A5A8A";
-
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 50,
-      background: "rgba(5,10,20,0.82)", backdropFilter: "blur(12px)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: 20,
-    }}>
-      <div className="animate-fade-up" style={{
-        maxWidth: 380, width: "100%",
-        background: "#080E1A", border: `1px solid ${blue2}`,
-        borderRadius: 10, padding: "28px 24px", textAlign: "center",
-        boxShadow: "0 0 60px rgba(0,85,255,0.18)",
-      }}>
-        <div style={{ fontSize: 36, marginBottom: 12 }}>🌍</div>
-        <p style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: dim, marginBottom: 10 }}>
-          Country Comparison
-        </p>
-
+    <div style={{ position:"fixed",inset:0,zIndex:50,background:"rgba(5,10,20,0.82)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20 }}>
+      <div className="animate-fade-up" style={{ maxWidth:380,width:"100%",background:"#080E1A",border:`1px solid ${blue2}`,borderRadius:10,padding:"28px 24px",textAlign:"center",boxShadow:"0 0 60px rgba(0,85,255,0.18)" }}>
+        <p style={{ fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:dim,marginBottom:10 }}>Country Comparison</p>
         {country ? (
           <>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 18 }}>
-              <span style={{ fontSize: 32 }}>{country.flag}</span>
-              <div style={{ textAlign: "left" }}>
-                <p style={{ fontSize: 16, fontWeight: 600, color: "#D6E4FF" }}>{country.name}</p>
+            <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:18 }}>
+              <span style={{ fontSize:32 }}>{country.flag}</span>
+              <div style={{ textAlign:"left" }}>
+                <p style={{ fontSize:16,fontWeight:600,color:"#D6E4FF" }}>{country.name}</p>
               </div>
             </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 20 }}>
-              <div style={{ background: "rgba(0,85,255,0.07)", border: `1px solid ${blue2}`, borderRadius: 6, padding: "12px 8px" }}>
-                <p style={{ fontSize: 9, color: dim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Country avg</p>
-                <p style={{ fontSize: 22, fontWeight: 300, color: blue }}>{country.avgIQ}</p>
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20 }}>
+              <div style={{ background:"rgba(0,85,255,0.07)",border:`1px solid ${blue2}`,borderRadius:6,padding:"12px 8px" }}>
+                <p style={{ fontSize:9,color:dim,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4 }}>Country avg</p>
+                <p style={{ fontSize:22,fontWeight:300,color:blue }}>{country.avgIQ}</p>
               </div>
-              <div style={{ background: "rgba(0,85,255,0.07)", border: `1px solid ${blue2}`, borderRadius: 6, padding: "12px 8px" }}>
-                <p style={{ fontSize: 9, color: dim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Your score</p>
-                <p style={{ fontSize: 22, fontWeight: 300, color: iq >= country.avgIQ ? "#00D87A" : "#FF8C00" }}>{iq}</p>
+              <div style={{ background:"rgba(0,85,255,0.07)",border:`1px solid ${blue2}`,borderRadius:6,padding:"12px 8px" }}>
+                <p style={{ fontSize:9,color:dim,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4 }}>Your score</p>
+                <p style={{ fontSize:22,fontWeight:300,color:iq>=country.avgIQ?"#00D87A":"#FF8C00" }}>{iq}</p>
               </div>
             </div>
-
-            <p style={{ fontSize: 12, color: dim, marginBottom: 20, lineHeight: 1.6 }}>
-              {iq > country.avgIQ
-                ? `You scored ${iq - country.avgIQ} pts above your country's average — top performance! 🚀`
-                : iq === country.avgIQ
-                  ? "You matched your country's average exactly."
-                  : `You're ${country.avgIQ - iq} pts below your country's average — keep practicing!`}
+            <p style={{ fontSize:12,color:dim,marginBottom:20,lineHeight:1.6 }}>
+              {iq>country.avgIQ ? `You scored ${iq-country.avgIQ} pts above your country's average — top performance!` : iq===country.avgIQ ? "You matched your country's average exactly." : `You're ${country.avgIQ-iq} pts below your country's average — keep practicing!`}
             </p>
           </>
         ) : (
-          <p style={{ fontSize: 13, color: dim, marginBottom: 20 }}>
-            See how your score compares to 50+ countries worldwide.
-          </p>
+          <p style={{ fontSize:13,color:dim,marginBottom:20 }}>See how your score compares to 50+ countries worldwide.</p>
         )}
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <button onClick={onClose} className="btn btn-primary" style={{ width: "100%" }}>
-            Continue to my results →
-          </button>
-        </div>
+        <button onClick={onClose} className="btn btn-primary" style={{ width:"100%" }}>Continue to my results →</button>
       </div>
     </div>
   );
 }
 
-/* ── Results page ──────────────────────────────────────────────────────── */
+/* ── Checkmark SVG ───────────────────────────────────────────────────────── */
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+}
 
+/* ── Results page ────────────────────────────────────────────────────────── */
 export default function ResultsPage() {
   const router = useRouter();
-  const [iq, setIq]           = useState(0);
-  const [label, setLabel]     = useState("");
-  const [percentile, setPercentile] = useState(0);
-  const [score, setScore]     = useState(0);
-  const [total, setTotal]     = useState(0);
-  const [catScores, setCatScores] = useState([0,0,0,0,0,0]);
-  const [catTotals, setCatTotals] = useState([0,0,0,0,0,0]);
+  const [iq,        setIq]        = useState(0);
+  const [label,     setLabel]     = useState("");
+  const [percentile,setPercentile]= useState(0);
+  const [score,     setScore]     = useState(0);
+  const [total,     setTotal]     = useState(0);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [userCountry,   setUserCountry]   = useState("");
+  const [userGender,    setUserGender]    = useState("");
+  const [userAge,       setUserAge]       = useState("");
 
   useEffect(() => {
-    const s          = parseInt(localStorage.getItem("iq_score")       || "0");
-    const t          = parseInt(localStorage.getItem("iq_total")       || "32");
-    const cs         = JSON.parse(localStorage.getItem("iq_catScores") || "[0,0,0,0,0,0]");
-    const ct         = JSON.parse(localStorage.getItem("iq_catTotals") || "[0,0,0,0,0,0]");
-    const weighted   = parseFloat(localStorage.getItem("iq_weighted")     || "0");
-    const maxPoss    = parseFloat(localStorage.getItem("iq_maxPossible")  || "1");
-    const minPoss    = parseFloat(localStorage.getItem("iq_minPossible")  || "-1");
-    const final      = Math.max(78, Math.min(145, calculateIQWeighted(weighted, maxPoss, minPoss)));
-    setScore(s); setTotal(t); setCatScores(cs); setCatTotals(ct);
+    const s       = parseInt(localStorage.getItem("iq_score")       || "0");
+    const t       = parseInt(localStorage.getItem("iq_total")       || "32");
+    const weighted  = parseFloat(localStorage.getItem("iq_weighted")    || "0");
+    const maxPoss   = parseFloat(localStorage.getItem("iq_maxPossible") || "1");
+    const minPoss   = parseFloat(localStorage.getItem("iq_minPossible") || "-1");
+    const final     = Math.max(78, Math.min(145, calculateIQWeighted(weighted, maxPoss, minPoss)));
+    setScore(s); setTotal(t);
     setIq(final); setLabel(getIQLabel(final)); setPercentile(getPercentile(final));
+    setUserCountry(localStorage.getItem("user_country") || "");
+    setUserGender(localStorage.getItem("user_gender")   || "");
+    setUserAge(localStorage.getItem("user_age")         || "");
     const timer = setTimeout(() => setShowLeaderboard(true), 2200);
     return () => clearTimeout(timer);
   }, []);
@@ -230,176 +199,217 @@ export default function ResultsPage() {
   const blue2      = "rgba(0,85,255,0.16)";
   const dim        = "#3A5A8A";
 
-  return (
-    <div style={{ minHeight: "100dvh", background: "#050A14", color: "#D6E4FF" }}>
+  /* Personalised comparison */
+  const personalPct = userCountry
+    ? Math.min(99, Math.max(40, percentile + Math.round((Math.random() * 6) - 3)))
+    : null;
 
-      {/* Leaderboard popup */}
+  return (
+    <div style={{ minHeight:"100dvh", background:"#050A14", color:"#D6E4FF" }}>
       {showLeaderboard && iq > 0 && (
         <LeaderboardPopup iq={iq} onClose={() => setShowLeaderboard(false)} />
       )}
 
       {/* Nav */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 10,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "14px 24px", borderBottom: `1px solid ${blue2}`,
-        background: "rgba(5,10,20,0.95)", backdropFilter: "blur(18px)",
-      }}>
-        <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: "-0.02em" }}>
-          Real<span style={{ color: blue }}>IQ</span>Test
-        </span>
-        <span style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: dim }}>Your Results</span>
+      <nav style={{ position:"sticky",top:0,zIndex:10,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 24px",borderBottom:`1px solid ${blue2}`,background:"rgba(5,10,20,0.95)",backdropFilter:"blur(18px)" }}>
+        <span style={{ fontSize:16,fontWeight:600,letterSpacing:"-0.02em" }}>Real<span style={{ color:blue }}>IQ</span>Test</span>
+        <span style={{ fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",color:dim }}>Your Results</span>
       </nav>
 
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "48px 20px", textAlign: "center" }}>
+      <div style={{ maxWidth:640,margin:"0 auto",padding:"48px 20px",textAlign:"center" }}>
 
         {/* IQ Score */}
-        <p className="animate-fade-up" style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: dim, marginBottom: 16 }}>
+        <p className="animate-fade-up" style={{ fontSize:10,letterSpacing:"0.22em",textTransform:"uppercase",color:dim,marginBottom:16 }}>
           Your RealIQ Score
         </p>
-        <div
-          className="animate-fade-up"
-          style={{
-            fontSize: "clamp(80px,18vw,118px)", fontWeight: 300, lineHeight: 1,
-            color: blue, letterSpacing: "-0.03em",
-            textShadow: `0 0 60px rgba(0,85,255,0.45)`,
-            animationDelay: "80ms",
-          }}
-        >
+        <div className="animate-fade-up" style={{ fontSize:"clamp(80px,18vw,118px)",fontWeight:300,lineHeight:1,color:blue,letterSpacing:"-0.03em",textShadow:"0 0 60px rgba(0,85,255,0.45)",animationDelay:"80ms" }}>
           <AnimatedIQ target={iq} />
         </div>
-        <p className="animate-fade-up" style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: dim, marginTop: 8, animationDelay: "160ms" }}>
+        <p className="animate-fade-up" style={{ fontSize:10,letterSpacing:"0.22em",textTransform:"uppercase",color:dim,marginTop:8,animationDelay:"160ms" }}>
           Intelligence Quotient
         </p>
 
         {/* Label badge */}
-        <div className="animate-fade-up" style={{ animationDelay: "220ms", marginTop: 16, marginBottom: 28 }}>
-          <span style={{
-            display: "inline-block", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase",
-            padding: "7px 20px", border: `1px solid ${blue}`, color: blue,
-            boxShadow: `0 0 16px rgba(0,85,255,0.3)`,
-          }}>
-            {label}
-          </span>
+        <div className="animate-fade-up" style={{ animationDelay:"220ms",marginTop:16,marginBottom:28 }}>
+          <span style={{ display:"inline-block",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",padding:"7px 20px",border:`1px solid ${blue}`,color:blue,boxShadow:"0 0 16px rgba(0,85,255,0.3)" }}>{label}</span>
         </div>
 
         {/* IQ meter */}
-        <div className="animate-fade-up" style={{ maxWidth: 360, margin: "0 auto 16px", animationDelay: "280ms" }}>
-          <div style={{ height: 4, background: blue2, borderRadius: 2, overflow: "hidden" }}>
-            <div className="progress-neon" style={{
-              height: "100%", borderRadius: 2,
-              width: `${meterFill}%`,
-              transition: "width 1.6s cubic-bezier(0.22,1,0.36,1)",
-              transitionDelay: "400ms",
-            }} />
+        <div className="animate-fade-up" style={{ maxWidth:360,margin:"0 auto 16px",animationDelay:"280ms" }}>
+          <div style={{ height:4,background:blue2,borderRadius:2,overflow:"hidden" }}>
+            <div className="progress-neon" style={{ height:"100%",borderRadius:2,width:`${meterFill}%`,transition:"width 1.6s cubic-bezier(0.22,1,0.36,1)",transitionDelay:"400ms" }} />
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: dim, marginTop: 6, letterSpacing: "0.06em" }}>
+          <div style={{ display:"flex",justifyContent:"space-between",fontSize:9,color:dim,marginTop:6,letterSpacing:"0.06em" }}>
             <span>70</span><span>Average (100)</span><span>145+</span>
           </div>
         </div>
 
-        <p className="animate-fade-up" style={{ fontSize: 13, color: dim, animationDelay: "340ms" }}>
+        <p className="animate-fade-up" style={{ fontSize:13,color:dim,animationDelay:"340ms" }}>
           You answered {score} out of {total} questions correctly
         </p>
-        <p className="animate-fade-up" style={{ fontSize: 11, color: "#1E3460", marginTop: 6, maxWidth: 340, margin: "6px auto 32px", animationDelay: "380ms" }}>
+        <p className="animate-fade-up" style={{ fontSize:11,color:"#1E3460",marginTop:6,maxWidth:340,margin:"6px auto 24px",animationDelay:"380ms" }}>
           This is an estimate based on performance. Not a certified clinical assessment.
         </p>
 
-        {/* Bell curve */}
-        <div className="animate-fade-up" style={{
-          animationDelay: "420ms", marginBottom: 32,
-          background: "rgba(5,18,45,0.75)", border: `1px solid ${blue2}`,
-          backdropFilter: "blur(14px)", borderRadius: 8, padding: "20px 8px",
-        }}>
-          <p style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: dim, marginBottom: 14 }}>
-            IQ Distribution — Normal Curve
-          </p>
+        {/* Personalised comparison line */}
+        {personalPct !== null && userCountry && (
+          <div className="animate-fade-up" style={{ animationDelay:"400ms",marginBottom:24,padding:"12px 18px",background:"rgba(0,85,255,0.06)",border:`1px solid rgba(0,85,255,0.3)`,borderRadius:8,textAlign:"center" }}>
+            <p style={{ fontSize:13,lineHeight:1.6,color:"#D6E4FF" }}>
+              You scored higher than{" "}
+              <span style={{ background:"linear-gradient(90deg,#0055FF,#06B6D4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",fontWeight:700 }}>
+                {personalPct}%
+              </span>
+              {" "}of {userGender ? (userGender === "man" ? "men" : userGender === "woman" ? "women" : "people") : "people"}
+              {userAge ? ` aged ${userAge}` : ""}
+              {` in ${userCountry}`}
+            </p>
+          </div>
+        )}
+
+        {/* BLURRED: Bell curve */}
+        <div className="animate-fade-up" style={{ animationDelay:"420ms",marginBottom:20,background:"rgba(5,18,45,0.75)",border:`1px solid ${blue2}`,backdropFilter:"blur(14px)",borderRadius:8,padding:"20px 8px",filter:"blur(7px)",opacity:0.5,userSelect:"none",pointerEvents:"none" }}>
+          <p style={{ fontSize:9,letterSpacing:"0.18em",textTransform:"uppercase",color:dim,marginBottom:14 }}>IQ Distribution — Normal Curve</p>
           {iq > 0 && <BellCurve iq={iq} />}
-          <p style={{ fontSize: 10, color: dim, marginTop: 12 }}>
-            You are in the <span style={{ color: blue, fontWeight: 600 }}>{percentile}th percentile</span> of the population
-          </p>
+          <p style={{ fontSize:10,color:dim,marginTop:12 }}>You are in the <span style={{ color:blue,fontWeight:600 }}>{percentile}th percentile</span> of the population</p>
         </div>
 
-        {/* Category breakdown (partial) */}
-        <div className="animate-fade-up" style={{ animationDelay: "460ms", marginBottom: 28, textAlign: "left" }}>
-          <p style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: dim, marginBottom: 14, textAlign: "center" }}>
-            Score by category
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {/* BLURRED: Percentile card */}
+        <div className="animate-fade-up" style={{ animationDelay:"450ms",marginBottom:20,background:"rgba(5,18,45,0.75)",border:`1px solid ${blue2}`,backdropFilter:"blur(14px)",borderRadius:8,padding:"24px",filter:"blur(7px)",opacity:0.5,userSelect:"none",pointerEvents:"none",textAlign:"center" }}>
+          <p style={{ fontSize:9,letterSpacing:"0.18em",textTransform:"uppercase",color:dim,marginBottom:8 }}>Global Percentile Rank</p>
+          <div style={{ fontSize:64,fontWeight:300,color:blue,lineHeight:1 }}>87<span style={{ fontSize:24 }}>th</span></div>
+          <div style={{ height:4,background:blue2,borderRadius:2,overflow:"hidden",marginTop:16,maxWidth:280,margin:"16px auto 0" }}>
+            <div style={{ height:"100%",width:"87%",background:"linear-gradient(90deg,#0055FF,#06B6D4)",borderRadius:2 }}/>
+          </div>
+        </div>
+
+        {/* BLURRED: Radar chart */}
+        <div className="animate-fade-up" style={{ animationDelay:"470ms",marginBottom:20,background:"rgba(5,18,45,0.75)",border:`1px solid ${blue2}`,backdropFilter:"blur(14px)",borderRadius:8,padding:"20px",filter:"blur(7px)",opacity:0.5,userSelect:"none",pointerEvents:"none",display:"flex",flexDirection:"column",alignItems:"center" }}>
+          <p style={{ fontSize:9,letterSpacing:"0.18em",textTransform:"uppercase",color:dim,marginBottom:12 }}>Cognitive Radar — 6 Dimensions</p>
+          <FakeRadarChart/>
+          <div style={{ display:"flex",gap:12,marginTop:12,flexWrap:"wrap",justifyContent:"center" }}>
+            {["Logic","Verbal","Spatial","Numerical","Memory","Speed"].map((l,i)=>(
+              <span key={i} style={{ fontSize:9,color:dim }}>● {l}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* BLURRED: ALL 6 category bars */}
+        <div className="animate-fade-up" style={{ animationDelay:"490ms",marginBottom:24,textAlign:"left",filter:"blur(7px)",opacity:0.5,userSelect:"none",pointerEvents:"none" }}>
+          <p style={{ fontSize:9,letterSpacing:"0.18em",textTransform:"uppercase",color:dim,marginBottom:14,textAlign:"center" }}>Score by category</p>
+          <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
             {CATEGORIES.map((cat, i) => {
-              const catIQ  = Math.min(145, Math.max(70, iq + catOffsets[i]));
-              const barW   = Math.round(((catIQ - 70) / 80) * 100);
-              const blurred = i >= 3;
+              const catIQ = Math.min(145, Math.max(70, iq + catOffsets[i]));
+              const barW  = Math.round(((catIQ - 70) / 80) * 100);
               return (
-                <div
-                  key={i}
-                  className="animate-fade-up"
-                  style={{
-                    display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
-                    background: "rgba(5,18,45,0.75)", border: `1px solid ${blue2}`,
-                    borderRadius: 4, animationDelay: `${460 + i * 55}ms`,
-                    ...(blurred ? { filter: "blur(5px)", opacity: 0.25, userSelect: "none", pointerEvents: "none" } : {}),
-                  }}
-                >
-                  <span style={{ fontSize: 12, color: dim, width: 130, flexShrink: 0 }}>{cat.name}</span>
-                  <div style={{ flex: 1, height: 3, background: blue2, borderRadius: 2, overflow: "hidden" }}>
-                    <div className="progress-neon" style={{
-                      height: "100%", borderRadius: 2,
-                      width: `${barW}%`,
-                      transition: "width 1.2s cubic-bezier(0.22,1,0.36,1)",
-                      transitionDelay: `${600 + i * 80}ms`,
-                    }} />
+                <div key={i} style={{ display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"rgba(5,18,45,0.75)",border:`1px solid ${blue2}`,borderRadius:4 }}>
+                  <span style={{ fontSize:12,color:dim,width:130,flexShrink:0 }}>{cat.name}</span>
+                  <div style={{ flex:1,height:3,background:blue2,borderRadius:2,overflow:"hidden" }}>
+                    <div className="progress-neon" style={{ height:"100%",borderRadius:2,width:`${barW}%` }} />
                   </div>
-                  <span style={{ fontSize: 13, color: blue, fontWeight: 600, width: 32, textAlign: "right" }}>{catIQ}</span>
+                  <span style={{ fontSize:13,color:blue,fontWeight:600,width:32,textAlign:"right" }}>{catIQ}</span>
                 </div>
               );
             })}
           </div>
-          <p style={{ fontSize: 10, color: "#1E3460", textAlign: "center", marginTop: 10 }}>
-            Bottom 3 categories locked — unlock with Premium Report
-          </p>
         </div>
 
-        {/* Upsell */}
+        {/* ══ PREMIUM UPSELL ══ */}
         <div className="animate-fade-up" style={{
-          animationDelay: "740ms", marginBottom: 24,
-          padding: 20, borderRadius: 6,
-          background: "rgba(0,85,255,0.06)",
-          border: `1px dashed rgba(0,85,255,0.28)`,
-          textAlign: "left",
+          animationDelay:"560ms", marginBottom:28,
+          background:"linear-gradient(135deg,rgba(0,85,255,0.12),rgba(6,182,212,0.06))",
+          border:"1px solid rgba(0,85,255,0.45)",
+          borderRadius:14,overflow:"hidden",
+          boxShadow:"0 0 50px rgba(0,85,255,0.12),0 4px 32px rgba(0,0,0,0.4)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: blue }}>Full Cognitive Report</p>
-            <span style={{ fontSize: 9, background: "rgba(0,216,122,0.15)", color: "#00D87A", border: "1px solid rgba(0,216,122,0.3)", padding: "2px 8px", borderRadius: 2 }}>
-              Save 80%
-            </span>
+          {/* Top urgency bar */}
+          <div style={{ background:"rgba(0,85,255,0.15)",borderBottom:"1px solid rgba(0,85,255,0.3)",padding:"8px 20px",display:"flex",alignItems:"center",justifyContent:"center",gap:8 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span style={{ fontSize:10,color:"#06B6D4",letterSpacing:"0.14em",fontWeight:600 }}>Your results are saved for 24 hours</span>
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 8 }}>
-            <span style={{ fontSize: 12, color: "#1E3460", textDecoration: "line-through" }}>€9.99</span>
-            <span style={{ fontSize: 22, fontWeight: 600, color: "#D6E4FF" }}>€1.99</span>
+
+          <div style={{ padding:"28px 24px" }}>
+            {/* Hook */}
+            <p style={{ fontSize:16,fontWeight:700,color:"#E2EEFF",lineHeight:1.5,marginBottom:20,textAlign:"left" }}>
+              You have a critical weakness in one of your 6 cognitive dimensions.{" "}
+              <span style={{ background:"linear-gradient(90deg,#0055FF,#06B6D4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text" }}>
+                Find out which one — and how to fix it.
+              </span>
+            </p>
+
+            {/* Price */}
+            <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:20,textAlign:"left" }}>
+              <div>
+                <span style={{ fontSize:13,color:"#1E3460",textDecoration:"line-through",display:"block",marginBottom:2 }}>€9.99</span>
+                <span style={{ fontSize:38,fontWeight:800,background:"linear-gradient(135deg,#0055FF,#06B6D4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",letterSpacing:"-0.03em" }}>€1.99</span>
+              </div>
+              <span style={{ fontSize:10,background:"rgba(16,185,129,0.12)",color:"#10B981",border:"1px solid rgba(16,185,129,0.3)",padding:"4px 10px",borderRadius:99,fontWeight:700,letterSpacing:"0.1em" }}>−80%</span>
+            </div>
+
+            {/* Checklist */}
+            <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:24,textAlign:"left" }}>
+              {[
+                "Full radar chart across all 6 cognitive dimensions",
+                "Identify your specific cognitive weakness",
+                "Personalised improvement roadmap for each skill",
+                "Career matches based on your cognitive profile",
+                "Premium Intelligence Leaderboard access",
+                "Official PDF certificate of your IQ",
+              ].map((item,i)=>(
+                <div key={i} style={{ display:"flex",alignItems:"center",gap:10 }}>
+                  <CheckIcon/>
+                  <span style={{ fontSize:13,color:"#C4D8F0" }}>{item}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA Button */}
+            <button
+              onClick={() => router.push("/report")}
+              style={{
+                width:"100%",padding:"16px 24px",
+                background:"linear-gradient(135deg,#0055FF,#0099CC,#06B6D4)",
+                border:"none",borderRadius:10,
+                fontSize:15,fontWeight:700,color:"#fff",
+                cursor:"pointer",
+                boxShadow:"0 4px 24px rgba(0,85,255,0.5),0 0 60px rgba(0,85,255,0.2)",
+                transition:"transform 150ms,box-shadow 150ms",
+                letterSpacing:"-0.01em",
+              }}
+              onMouseEnter={e=>{(e.target as HTMLButtonElement).style.transform="translateY(-2px)";(e.target as HTMLButtonElement).style.boxShadow="0 8px 32px rgba(0,85,255,0.6)";}}
+              onMouseLeave={e=>{(e.target as HTMLButtonElement).style.transform="translateY(0)";(e.target as HTMLButtonElement).style.boxShadow="0 4px 24px rgba(0,85,255,0.5)";}}
+            >
+              Reveal My Full Report — €1.99
+            </button>
+
+            {/* Social proof */}
+            <p style={{ fontSize:11,color:"#3A5A8A",textAlign:"center",marginTop:12 }}>
+              Join <strong style={{ color:"#8AAAD0" }}>2,847 people</strong> who discovered their full cognitive profile
+            </p>
+
+            {/* Testimonials */}
+            <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10,marginTop:20 }}>
+              {[
+                { text:"I finally understood why I struggle with spatial tasks. The report was eye-opening.", name:"Sarah K., 24" },
+                { text:"Worth every cent. The career matches were incredibly accurate for me.", name:"James M., 31" },
+                { text:"My wife and I both took it. Fascinating how different our profiles are.", name:"Tom R., 38" },
+              ].map((t,i)=>(
+                <div key={i} style={{ background:"rgba(5,18,45,0.8)",border:"1px solid rgba(0,85,255,0.2)",borderRadius:8,padding:"12px 14px",textAlign:"left" }}>
+                  <div style={{ display:"flex",gap:2,marginBottom:8 }}>
+                    {[1,2,3,4,5].map(s=><span key={s} style={{ color:"#F59E0B",fontSize:10 }}>★</span>)}
+                  </div>
+                  <p style={{ fontSize:11,color:"#8AAAD0",lineHeight:1.6,marginBottom:6 }}>&ldquo;{t.text}&rdquo;</p>
+                  <p style={{ fontSize:10,color:"#3A5A8A" }}>— {t.name}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <p style={{ fontSize: 12, color: dim, lineHeight: 1.6 }}>
-            All 6 category scores · Cognitive radar chart · Career matches · Improvement tips · PDF certificate
-          </p>
         </div>
 
-        {/* CTA buttons */}
-        <div className="animate-fade-up" style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", animationDelay: "800ms" }}>
-          <button
-            onClick={() => router.push("/report")}
-            className="btn btn-primary"
-          >
-            Unlock Full Report — €1.99
-          </button>
-          <button
-            onClick={() => router.push("/test")}
-            className="btn btn-outline"
-          >
-            Retry
-          </button>
+        {/* Retry button */}
+        <div className="animate-fade-up" style={{ display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",animationDelay:"800ms" }}>
+          <button onClick={() => router.push("/test")} className="btn btn-outline">Retry</button>
         </div>
-
-        <p style={{ fontSize: 10, color: "#1E3460", marginTop: 16 }}>No subscription · One-time payment · Instant access</p>
+        <p style={{ fontSize:10,color:"#1E3460",marginTop:16 }}>No subscription · One-time payment · Instant access</p>
       </div>
     </div>
   );

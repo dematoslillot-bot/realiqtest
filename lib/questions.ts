@@ -268,12 +268,12 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 0, type: "raven", diff: "easy", badge: "Pattern Matrix", time: 30,
     text: "Which image completes the 2×2 pattern?",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
+    ans: 1,
     exp: "Each row contains one filled and one outline shape. Each column contains one circle and one square. The missing cell (filled square) follows from both rules simultaneously.",
     vis: {
       kind: "raven2",
       cells: [C1, S1o, C1o, null],
-      optCells: [S1, S1o, C1, T1],
+      optCells: [S1o, S1, C1, T1],
     },
   },
 
@@ -285,7 +285,7 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 0, type: "raven", diff: "medium", badge: "Shape & Pattern", time: 25,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
+    ans: 2,
     exp: "Two independent rules: the shape type cycles triangle→square→circle per row; the fill pattern cycles horizontal→vertical→diagonal lines per column. Row 3, col 3 needs a circle with diagonal lines.",
     vis: {
       kind: "ravenpattern",
@@ -295,9 +295,9 @@ export const ALL_QUESTIONS: Question[] = [
         {shape:"ci", fill:"h"},{shape:"ci", fill:"v"},null,
       ],
       optCells: [
-        {shape:"ci",fill:"d"},
         {shape:"ci",fill:"v"},
         {shape:"sq",fill:"d"},
+        {shape:"ci",fill:"d"},
         {shape:"ci",fill:"h"},
       ],
     },
@@ -330,12 +330,12 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 0, type: "raven", diff: "medium", badge: "Attribute Drift", time: 25,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
+    ans: 3,
     exp: "Two simultaneous rules: (1) the shape set rotates per row (C-S-T → S-T-C → T-C-S); (2) the number of filled shapes increases left-to-right (1 → 2 → 3). Row 3, col 3: T-C-S with all three filled.",
     vis: {
       kind: "raven",
       cells: [adR1C1, adR1C2, adR1C3,  adR2C1, adR2C2, adR2C3,  adR3C1, adR3C2, null],
-      optCells: [adR3C3, adR3w1, adR3w2, adR3w3],
+      optCells: [adR3w1, adR3w2, adR3w3, adR3C3],
     },
   },
 
@@ -348,12 +348,12 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 0, type: "raven", diff: "medium", badge: "Shape Overlay", time: 22,
     text: "Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
+    ans: 1,
     exp: "Rule: column 3 = the shape from column 1 (filled) overlaid with the shape from column 2 (drawn as outline). Row 3: filled triangle overlaid with outline circle — triangle inside a circle ring.",
     vis: {
       kind: "raven",
       cells: [ovC, ovS, ovCS,  ovS, ovT, ovST,  ovT, ovC, null],
-      optCells: [ovTC, ovCT, ovST, ovDS],
+      optCells: [ovCT, ovTC, ovST, ovDS],
     },
   },
 
@@ -368,12 +368,12 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 0, type: "raven", diff: "hard", badge: "Cancellation Matrix", time: 40,
     text: "Find the hidden rule, then choose the image that belongs in the empty cell.",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
+    ans: 2,
     exp: "Cancellation rule: any shape present in BOTH col 1 AND col 2 of a row is removed in col 3 — only unique shapes survive. Row 3 has triangle+diamond and triangle+square → triangle cancels → answer is diamond+square.",
     vis: {
       kind: "raven",
       cells: [xCS, xCD, xSD,  xST, xSC, xTC,  xTD, xTS, null],
-      optCells: [xDS, xTD, xTC, xCS],
+      optCells: [xTD, xTC, xDS, xCS],
     },
   },
 
@@ -401,12 +401,12 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 0, type: "raven", diff: "hard", badge: "Fill Shift", time: 40,
     text: "Find the hidden rule, then choose the image that belongs in the empty cell.",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
+    ans: 3,
     exp: "Two simultaneous rules: (1) shape order cycles per row — C-S-T → T-C-S → S-T-C. (2) exactly one shape is filled and it shifts right by one position per column. Row 3, col 3: shapes are S-T-C and the rightmost (circle) must be filled.",
     vis: {
       kind: "raven",
       cells: [fsR1C1, fsR1C2, fsR1C3,  fsR2C1, fsR2C2, fsR2C3,  fsR3C1, fsR3C2, null],
-      optCells: [fsR3C3, fsR3C1, fsR3C2, fsAllF],
+      optCells: [fsR3C1, fsR3C2, fsAllF, fsR3C3],
     },
   },
 
@@ -419,12 +419,12 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 0, type: "raven", diff: "hard", badge: "Row Operations", time: 45,
     text: "Each row applies a different logical operation to its shapes. Discover the three rules, then choose the image for the empty cell.",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
+    ans: 1,
     exp: "Three row rules: Row 1 UNION (col 3 = all shapes from col 1 and col 2 combined). Row 2 SUBTRACT (col 3 = col 1 minus any shape that also appears in col 2). Row 3 XOR (shapes present in BOTH col 1 and col 2 cancel — only shapes unique to one column survive). Row 3: {T,C} ⊕ {T,S} → triangle cancels → answer is {C,S}.",
     vis: {
       kind: "raven",
       cells: [moR1C1, moR1C2, moR1C3,  moR2C1, moR2C2, moR2C3,  moR3C1, moR3C2, null],
-      optCells: [moR1C1, moR3C1, moR3C2, moR1C3],
+      optCells: [moR3C1, moR1C1, moR3C2, moR1C3],
     },
   },
 
@@ -434,16 +434,16 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 1, type: "analogy", diff: "easy", badge: "Word Analogy", time: 30,
     text: "Complete the analogy:",
     w1: "Light", w2: "Dark", w3: "Hot", missing: "?",
-    opts: ["Warm", "Fire", "Cold", "Sun"],
-    ans: 2,
+    opts: ["Cold", "Warm", "Fire", "Sun"],
+    ans: 0,
     exp: "Light is the opposite of Dark. The opposite of Hot is Cold.",
   },
 
   {
     cat: 1, type: "oddone", diff: "medium", badge: "Odd Word Out", time: 25,
     text: "Which word does NOT belong with the others?",
-    opts: ["Simile", "Metaphor", "Algebra", "Alliteration"],
-    ans: 2,
+    opts: ["Simile", "Metaphor", "Alliteration", "Algebra"],
+    ans: 3,
     exp: "Simile, Metaphor and Alliteration are figures of speech. Algebra is mathematics.",
   },
 
@@ -459,9 +459,9 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 1, type: "text", diff: "hard", badge: "Syllogistic Logic", time: 35,
     text: "All Glimbs are Forbs. No Forbs are Splacts. Some Splacts are Yends. Which statement MUST be true?",
-    opts: ["Some Glimbs are Splacts", "All Yends are Forbs", "No Glimbs are Splacts", "Some Forbs are Yends"],
-    ans: 2,
-    exp: "Chain: All Glimbs → Forbs. No Forbs → Splacts. Therefore by transitivity: No Glimbs → Splacts (C). A contradicts this. B and D go beyond what the premises support.",
+    opts: ["No Glimbs are Splacts", "Some Glimbs are Splacts", "All Yends are Forbs", "Some Forbs are Yends"],
+    ans: 0,
+    exp: "Chain: All Glimbs → Forbs. No Forbs → Splacts. Therefore by transitivity: No Glimbs → Splacts (A). B contradicts this. C and D go beyond what the premises support.",
   },
 
   // ── CAT 2 · SPATIAL REASONING — rotation ─────────────────────────────────
@@ -485,12 +485,12 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 2, type: "rotation", diff: "easy", badge: "Hidden Shape", time: 30,
     text: "The figure on the left is formed by overlapping two shapes. Which of the four shapes below is one of the two components?",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
+    ans: 1,
     exp: "The complex figure is formed by the ARROW shape overlapping the BRACKET shape. The arrow's shaft and triangular head are visible within the merged outline.",
     vis: {
       kind: "embedded",
       display: BRACKET + " " + ARROW,
-      optPaths: [ARROW, CELTIC_Z, CROWN_A, STEP],
+      optPaths: [CELTIC_Z, ARROW, CROWN_A, STEP],
     },
   },
 
@@ -500,12 +500,12 @@ export const ALL_QUESTIONS: Question[] = [
     cat: 2, type: "rotation", diff: "medium", badge: "Compound Rotation", time: 22,
     text: "Which option shows this crown shape rotated exactly 115° clockwise?",
     opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "115° sits between 90° and 135°. Option A is only 95° (20° short). Option C looks identical to B but is horizontally mirrored — a reflection is not the same as a rotation.",
+    ans: 2,
+    exp: "115° sits between 90° and 135°. Option A is only 95° (20° short). Option B looks identical to C but is horizontally mirrored — a reflection is not the same as a rotation.",
     vis: {
       kind: "rotation", path: CROWN_A, showAngle: 0,
       optAngles:  [95, 115, 115, 135],
-      optMirrors: [false, false, true, false],
+      optMirrors: [false, true, false, false],
     },
   },
 
@@ -555,8 +555,8 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 3, type: "bars", diff: "easy", badge: "Number Series", time: 30,
     text: "What value completes this series?",
-    opts: ["36", "42", "48", "30"],
-    ans: 2,
+    opts: ["36", "48", "42", "30"],
+    ans: 1,
     exp: "Each term doubles. 24 × 2 = 48.",
     vis: { kind: "bars", values: [3, 6, 12, 24, null], max: 60 },
   },
@@ -565,8 +565,8 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 3, type: "bars", diff: "easy", badge: "Decreasing Series", time: 30,
     text: "What is the missing bar value?",
-    opts: ["25", "30", "35", "40"],
-    ans: 0,
+    opts: ["30", "35", "25", "40"],
+    ans: 2,
     exp: "Gaps: −5, −10, −15, −20, −25. So 50 − 25 = 25.",
     vis: { kind: "bars", values: [100, 95, 85, 70, 50, null], max: 110 },
   },
@@ -576,8 +576,8 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 3, type: "bars", diff: "medium", badge: "Alternating Rule", time: 25,
     text: "Which value completes this alternating-operation series?",
-    opts: ["12", "16", "18", "32"],
-    ans: 1,
+    opts: ["16", "12", "18", "32"],
+    ans: 0,
     exp: "Pattern alternates ×3 then ÷1.5: 2→6→4→12→8→24→16. After 24: 24 ÷ 1.5 = 16.",
     vis: { kind: "bars", values: [2, 6, 4, 12, 8, 24, null], max: 28 },
   },
@@ -586,8 +586,8 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 3, type: "bars", diff: "medium", badge: "Modified Fibonacci", time: 22,
     text: "What completes this Fibonacci-variant series?",
-    opts: ["24", "26", "28", "30"],
-    ans: 1,
+    opts: ["24", "28", "30", "26"],
+    ans: 3,
     exp: "Each term = sum of previous two (starting at 2,2). 2,2,4,6,10,16 → 10+16 = 26.",
     vis: { kind: "bars", values: [2, 2, 4, 6, 10, 16, null], max: 30 },
   },
@@ -618,8 +618,8 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 4, type: "memory", diff: "medium", badge: "Colour Count", time: 28,
     text: "How many DIFFERENT colours appeared in the sequence?",
-    opts: ["4", "5", "6", "7"],
-    ans: 1,
+    opts: ["5", "4", "6", "7"],
+    ans: 0,
     exp: "Sequence: Blue, Red, Yellow, Purple, Red, Green — 5 distinct colours (Red appeared twice).",
     vis: { kind: "memory", colors: ["#00AAFF", "#FF3B3B", "#FFD700", "#9B59B6", "#FF3B3B", "#00D87A"], showMs: 2200 },
   },
@@ -628,8 +628,8 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 4, type: "memory", diff: "medium", badge: "Sequence Recall", time: 25,
     text: "What was the 6th colour?",
-    opts: ["Purple", "Orange", "Red", "Blue"],
-    ans: 2,
+    opts: ["Purple", "Orange", "Blue", "Red"],
+    ans: 3,
     exp: "Sequence: Red → Blue → Purple → Green → Orange → Red → Yellow. The 6th colour was Red.",
     vis: { kind: "memory", colors: ["#FF3B3B", "#00AAFF", "#9B59B6", "#00D87A", "#FF8C00", "#FF3B3B", "#FFD700"], showMs: 2200 },
   },
@@ -670,8 +670,8 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 5, type: "symbols", diff: "medium", badge: "Spot the Difference", time: 10,
     text: "Which item is DIFFERENT from the others?",
-    opts: ["1st", "2nd", "3rd", "4th"],
-    ans: 2,
+    opts: ["1st", "2nd", "4th", "3rd"],
+    ans: 3,
     exp: "The 3rd item has C instead of G (N5X8C2Z vs N5X8G2Z). All others are identical.",
     vis: { kind: "symbols", target: "N5X8G2Z", compare: ["N5X8G2Z", "N5X8G2Z", "N5X8C2Z", "N5X8G2Z"] },
   },
@@ -680,8 +680,8 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 5, type: "symbols", diff: "medium", badge: "Rapid Calculation", time: 10,
     text: "Solve quickly:",
-    opts: ["27", "29", "31", "33"],
-    ans: 2,
+    opts: ["31", "27", "29", "33"],
+    ans: 0,
     exp: "48 ÷ 6 = 8, then 8 × 5 = 40, then 40 − 9 = 31.",
     vis: { kind: "symbols", target: "48 ÷ 6 × 5 − 9 = ?" },
   },
@@ -690,8 +690,8 @@ export const ALL_QUESTIONS: Question[] = [
   {
     cat: 5, type: "symbols", diff: "hard", badge: "Rapid Deduction", time: 10,
     text: "Which value is the MEDIAN (middle) of these five?",
-    opts: ["S", "T", "P", "R"],
-    ans: 1,
+    opts: ["S", "P", "T", "R"],
+    ans: 2,
     exp: "Order ascending: Q < R < T < P < S. The median (3rd of 5) is T.",
     vis: { kind: "symbols", target: "S > P > T > R > Q" },
   },

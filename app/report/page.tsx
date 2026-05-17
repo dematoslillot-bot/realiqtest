@@ -859,11 +859,51 @@ function ReportInner() {
                 Refunds are only available in case of a technical error preventing access.
               </span>
             </label>
-            <button onClick={handlePay} className="btn btn-primary" style={{width:"100%",cursor:consent?"pointer":"not-allowed",opacity:consent?1:0.4}}>
-              Pay €1.99 — Unlock Premium Report
+            {/* Urgency line */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"8px 12px",
+              background:"rgba(245,158,11,0.06)",border:"1px solid rgba(245,158,11,0.25)",borderRadius:8}}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span style={{fontSize:11,color:"#F59E0B",fontWeight:600}}>80% discount — limited availability</span>
+            </div>
+
+            {/* CTA button */}
+            <button
+              onClick={handlePay}
+              disabled={!consent}
+              style={{
+                width:"100%",padding:"20px 24px",
+                background: consent
+                  ? "linear-gradient(135deg,#0055FF 0%,#0099CC 50%,#06B6D4 100%)"
+                  : "rgba(0,85,255,0.25)",
+                border:"none",borderRadius:10,
+                fontSize:17,fontWeight:800,color:"#fff",
+                cursor:consent?"pointer":"not-allowed",
+                opacity:consent?1:0.45,
+                boxShadow:consent?"0 6px 32px rgba(0,85,255,0.55),0 0 80px rgba(0,85,255,0.2),inset 0 1px 0 rgba(255,255,255,0.15)":"none",
+                letterSpacing:"-0.02em",
+                transition:"transform 150ms,box-shadow 150ms",
+              }}
+              onMouseEnter={e=>{ if(consent){ (e.target as HTMLButtonElement).style.transform="translateY(-2px)"; (e.target as HTMLButtonElement).style.boxShadow="0 10px 40px rgba(0,85,255,0.65),0 0 100px rgba(6,182,212,0.25)"; } }}
+              onMouseLeave={e=>{ (e.target as HTMLButtonElement).style.transform="translateY(0)"; (e.target as HTMLButtonElement).style.boxShadow="0 6px 32px rgba(0,85,255,0.55),0 0 80px rgba(0,85,255,0.2)"; }}
+            >
+              Unlock My Premium Report — €1.99
             </button>
-            <p style={{textAlign:"center",fontSize:10,color:"#6A88AA"}}>Powered by Stripe · Your card data is never stored</p>
-            <p style={{textAlign:"center",fontSize:10,color:"#6A88AA"}}>No subscription · One-time payment</p>
+
+            {/* Trust strip */}
+            <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap"}}>
+              {[
+                {icon:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",label:"SSL Encrypted"},
+                {icon:"M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z",label:"Powered by Stripe"},
+                {icon:"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",label:"Instant access"},
+              ].map(({icon,label},i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8AABCC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={icon}/>
+                  </svg>
+                  <span style={{fontSize:10,color:"#6A88AA"}}>{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

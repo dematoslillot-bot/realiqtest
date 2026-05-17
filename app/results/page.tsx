@@ -176,6 +176,7 @@ export default function ResultsPage() {
   const [userCountry,   setUserCountry]   = useState("");
   const [userGender,    setUserGender]    = useState("");
   const [userAge,       setUserAge]       = useState("");
+  const [testsToday,    setTestsToday]    = useState(0);
 
   useEffect(() => {
     const s       = parseInt(localStorage.getItem("iq_score")       || "0");
@@ -189,6 +190,14 @@ export default function ResultsPage() {
     setUserCountry(localStorage.getItem("user_country") || "");
     setUserGender(localStorage.getItem("user_gender")   || "");
     setUserAge(localStorage.getItem("user_age")         || "");
+    /* Real test counter — resets each calendar day */
+    const today = new Date().toDateString();
+    const savedDate = localStorage.getItem("tests_today_date");
+    let count = parseInt(localStorage.getItem("tests_today") || "0");
+    if (savedDate !== today) { count = 0; localStorage.setItem("tests_today_date", today); }
+    count += 1;
+    localStorage.setItem("tests_today", String(count));
+    setTestsToday(count);
     const timer = setTimeout(() => setShowLeaderboard(true), 2200);
     return () => clearTimeout(timer);
   }, []);
@@ -366,41 +375,39 @@ export default function ResultsPage() {
             <button
               onClick={() => router.push("/report")}
               style={{
-                width:"100%",padding:"16px 24px",
-                background:"linear-gradient(135deg,#0055FF,#0099CC,#06B6D4)",
+                width:"100%",padding:"20px 24px",
+                background:"linear-gradient(135deg,#0055FF 0%,#0099CC 50%,#06B6D4 100%)",
                 border:"none",borderRadius:10,
-                fontSize:15,fontWeight:700,color:"#fff",
+                fontSize:17,fontWeight:800,color:"#fff",
                 cursor:"pointer",
-                boxShadow:"0 4px 24px rgba(0,85,255,0.5),0 0 60px rgba(0,85,255,0.2)",
+                boxShadow:"0 6px 32px rgba(0,85,255,0.55),0 0 80px rgba(0,85,255,0.2),inset 0 1px 0 rgba(255,255,255,0.15)",
                 transition:"transform 150ms,box-shadow 150ms",
-                letterSpacing:"-0.01em",
+                letterSpacing:"-0.02em",
               }}
-              onMouseEnter={e=>{(e.target as HTMLButtonElement).style.transform="translateY(-2px)";(e.target as HTMLButtonElement).style.boxShadow="0 8px 32px rgba(0,85,255,0.6)";}}
-              onMouseLeave={e=>{(e.target as HTMLButtonElement).style.transform="translateY(0)";(e.target as HTMLButtonElement).style.boxShadow="0 4px 24px rgba(0,85,255,0.5)";}}
+              onMouseEnter={e=>{(e.target as HTMLButtonElement).style.transform="translateY(-2px)";(e.target as HTMLButtonElement).style.boxShadow="0 10px 40px rgba(0,85,255,0.65),0 0 100px rgba(6,182,212,0.25)";}}
+              onMouseLeave={e=>{(e.target as HTMLButtonElement).style.transform="translateY(0)";(e.target as HTMLButtonElement).style.boxShadow="0 6px 32px rgba(0,85,255,0.55),0 0 80px rgba(0,85,255,0.2)";}}
             >
               Reveal My Full Report — €1.99
             </button>
 
-            {/* Social proof */}
+            {/* Real test counter */}
             <p style={{ fontSize:11,color:"#8AABCC",textAlign:"center",marginTop:12 }}>
-              Join <strong style={{ color:"#C0C8D8" }}>2,847 people</strong> who discovered their full cognitive profile
+              <strong style={{ color:"#C0C8D8" }}>{testsToday} {testsToday === 1 ? "person" : "people"}</strong> completed this test today
             </p>
 
-            {/* Testimonials */}
-            <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10,marginTop:20 }}>
-              {[
-                { text:"I finally understood why I struggle with spatial tasks. The report was eye-opening.", name:"Sarah K., 24" },
-                { text:"Worth every cent. The career matches were incredibly accurate for me.", name:"James M., 31" },
-                { text:"My wife and I both took it. Fascinating how different our profiles are.", name:"Tom R., 38" },
-              ].map((t,i)=>(
-                <div key={i} style={{ background:"rgba(5,18,45,0.8)",border:"1px solid rgba(0,85,255,0.2)",borderRadius:8,padding:"12px 14px",textAlign:"left" }}>
-                  <div style={{ display:"flex",gap:2,marginBottom:8 }}>
-                    {[1,2,3,4,5].map(s=><span key={s} style={{ color:"#F59E0B",fontSize:10 }}>★</span>)}
-                  </div>
-                  <p style={{ fontSize:11,color:"#C0C8D8",lineHeight:1.6,marginBottom:6 }}>&ldquo;{t.text}&rdquo;</p>
-                  <p style={{ fontSize:10,color:"#8AABCC" }}>— {t.name}</p>
-                </div>
+            {/* Scientific badges */}
+            <div style={{ display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap",marginTop:16 }}>
+              {["Scientifically calibrated","6 cognitive dimensions","Visual pattern recognition"].map((badge,i)=>(
+                <span key={i} style={{ fontSize:10,color:"#8AABCC",background:"rgba(0,85,255,0.08)",border:"1px solid rgba(0,85,255,0.22)",padding:"4px 10px",borderRadius:99 }}>
+                  <span style={{ color:"#06B6D4",fontWeight:700,marginRight:4 }}>✓</span>{badge}
+                </span>
               ))}
+            </div>
+
+            {/* Urgency */}
+            <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginTop:14 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span style={{ fontSize:11,color:"#06B6D4",fontWeight:600 }}>Your detailed cognitive breakdown expires in 24h</span>
             </div>
           </div>
         </div>

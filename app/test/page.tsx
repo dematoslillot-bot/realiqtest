@@ -817,7 +817,7 @@ function QuizScreen() {
       setMemReady(false);
       setTimeLeft(ALL_QUESTIONS[nextIdx].time);
       setFlipping(false);
-    }, 150);
+    }, 180);
   }, []);
 
   const handleNext = useCallback(() => {
@@ -1013,10 +1013,13 @@ function QuizScreen() {
   }
 
   // ── Main test ────────────────────────────────────────────────────────────
-  // Fade transition: flipping=true means content is fading out (opacity 0)
+  // Apple-style fade + scale transition (iOS feel)
+  const CB = "cubic-bezier(0.25,0.46,0.45,0.94)";
   const fadeStyle: React.CSSProperties = {
     opacity: flipping ? 0 : 1,
-    transition: "opacity 150ms ease",
+    transform: flipping ? "scale(0.97)" : "scale(1)",
+    transformOrigin: "center top",
+    transition: `opacity 180ms ${CB}, transform 180ms ${CB}`,
   };
 
   return (
@@ -1071,7 +1074,7 @@ function QuizScreen() {
           <div style={{
             height: "100%", width: `${progress}%`,
             background: `linear-gradient(90deg,${BLUE},${CYAN})`,
-            transition: "width 0.4s ease",
+            transition: "width 0.5s cubic-bezier(0.25,0.46,0.45,0.94)",
             borderRadius: "0 2px 2px 0",
           }} />
         </div>

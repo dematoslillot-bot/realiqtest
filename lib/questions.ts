@@ -58,6 +58,16 @@ const sq = (x: number, y: number, r: number, f = true): ShapeDef => ({ s: "sq", 
 const tr = (x: number, y: number, r: number, f = true): ShapeDef => ({ s: "tr", x, y, r, f });
 const di = (x: number, y: number, r: number, f = true): ShapeDef => ({ s: "di", x, y, r, f });
 
+// ── Visual density decorators ─────────────────────────────────────────────
+// Corner square anchors — make each cell look anchored and visually dense
+const A4 = [sq(6,6,3), sq(54,6,3), sq(6,54,3), sq(54,54,3)];
+// NESW midpoint markers (small circles at edge midpoints)
+const pAcc = [c(30,5,2), c(55,30,2), c(30,55,2), c(5,30,2)];
+// Plus-cross dot pattern (8 dots forming a + shape)
+const dP = [c(30,14,2),c(30,21,2), c(14,30,2),c(21,30,2), c(39,30,2),c(46,30,2), c(30,39,2),c(30,46,2)];
+// X-cross dot pattern (8 dots forming an × shape)
+const dX = [c(15,15,2),c(22,22,2),c(38,38,2),c(45,45,2), c(45,15,2),c(38,22,2),c(22,38,2),c(15,45,2)];
+
 // ── Preset Raven cells (60×60 viewbox) ────────────────────────────────────
 
 // Single — filled
@@ -128,18 +138,19 @@ const D3o  = [di(13,30,8,false), di(30,30,8,false), di(47,30,8,false)];
 
 // ── XOR / Cancellation cells (side-by-side, r=11) ────────────────────────
 // Rule: shapes appearing in BOTH col1 and col2 cancel; only unique shapes survive in col3
+// Enhanced with corner anchors for visual density
 // Row1: circle|square  +  circle|diamond  →  square|diamond  (circle cancels)
 // Row2: square|triangle+  square|circle   →  triangle|circle (square cancels)
 // Row3: triangle|diamond+ triangle|square →  diamond|square  (triangle cancels) ← ANSWER
-const xCS = [c(18,30,11),  sq(42,30,11)];  // circle | square
-const xCD = [c(18,30,11),  di(42,30,11)];  // circle | diamond
-const xSD = [sq(18,30,11), di(42,30,11)];  // square | diamond   (row1 result)
-const xST = [sq(18,30,11), tr(42,30,11)];  // square | triangle  (row2 col1)
-const xSC = [sq(18,30,11), c(42,30,11)];   // square | circle    (row2 col2)
-const xTC = [tr(18,30,11), c(42,30,11)];   // triangle| circle   (row2 result)
-const xTD = [tr(18,30,11), di(42,30,11)];  // triangle| diamond  (row3 col1)
-const xTS = [tr(18,30,11), sq(42,30,11)];  // triangle| square   (row3 col2)
-const xDS = [di(18,30,11), sq(42,30,11)];  // diamond | square   ← CORRECT ANSWER
+const xCS = [...A4, c(18,30,11),  sq(42,30,11)];  // circle | square
+const xCD = [...A4, c(18,30,11),  di(42,30,11)];  // circle | diamond
+const xSD = [...A4, sq(18,30,11), di(42,30,11)];  // square | diamond   (row1 result)
+const xST = [...A4, sq(18,30,11), tr(42,30,11)];  // square | triangle  (row2 col1)
+const xSC = [...A4, sq(18,30,11), c(42,30,11)];   // square | circle    (row2 col2)
+const xTC = [...A4, tr(18,30,11), c(42,30,11)];   // triangle| circle   (row2 result)
+const xTD = [...A4, tr(18,30,11), di(42,30,11)];  // triangle| diamond  (row3 col1)
+const xTS = [...A4, tr(18,30,11), sq(42,30,11)];  // triangle| square   (row3 col2)
+const xDS = [...A4, di(18,30,11), sq(42,30,11)];  // diamond | square   ← CORRECT ANSWER
 // Distractors: xTD (triangle persists), xTC (from row2), xCS (from row1 input)
 
 // Size-only diamond variant
@@ -153,53 +164,68 @@ const aTbCd = [tr(30,16,12), c(30,44,9)];    // triangle top + circle bottom ←
 const aCbTd = [c(30,16,12),  tr(30,44,9)];   // distractor: circle top + triangle bottom
 const aTbDd = [tr(30,16,12), di(30,44,9)];   // distractor: triangle top + diamond bottom
 
-// Quadrant position cells (4 circles r=8 at corners of 60×60 cell)
-// Filled position rotates clockwise: TL(0)→TR(1)→BR(2)→BL(3)→TL(0)
-const qTL   = [c(15,15,8),         c(45,15,8,false), c(15,45,8,false), c(45,45,8,false)];
-const qTR   = [c(15,15,8,false), c(45,15,8),         c(15,45,8,false), c(45,45,8,false)];
-const qBR   = [c(15,15,8,false), c(45,15,8,false), c(15,45,8,false), c(45,45,8)        ];
-const qBL   = [c(15,15,8,false), c(45,15,8,false), c(15,45,8),         c(45,45,8,false)];
-const qAll4 = [c(15,15,8),         c(45,15,8),         c(15,45,8),         c(45,45,8)  ];
+// ── Decoration-matrix cells (outer outline shape + dot pattern + corner anchors) ──
+// Rule: row → shape type (circle / square / triangle); col → dot decoration (none / + / ×)
+const dmCn = [c(30,30,18,false), ...A4];
+const dmCp = [c(30,30,18,false), ...A4, ...dP];
+const dmCx = [c(30,30,18,false), ...A4, ...dX];
+const dmSn = [sq(30,30,18,false), ...A4];
+const dmSp = [sq(30,30,18,false), ...A4, ...dP];
+const dmSx = [sq(30,30,18,false), ...A4, ...dX];
+const dmTn = [tr(30,30,18,false), ...A4];
+const dmTp = [tr(30,30,18,false), ...A4, ...dP];
+const dmTx = [tr(30,30,18,false), ...A4, ...dX]; // ← ANSWER
 
-// Fill-shift tri-shape cells: 3 shapes at l/m/r positions (r=7), exactly one filled per cell
+// Quadrant position cells — enhanced: r=11 circles + NESW accent markers
+// Filled position rotates clockwise: TL(0)→TR(1)→BR(2)→BL(3)→TL(0)
+const qTL   = [c(15,15,11),           c(45,15,11,false), c(15,45,11,false), c(45,45,11,false), ...pAcc];
+const qTR   = [c(15,15,11,false), c(45,15,11),           c(15,45,11,false), c(45,45,11,false), ...pAcc];
+const qBR   = [c(15,15,11,false), c(45,15,11,false), c(15,45,11,false), c(45,45,11),           ...pAcc];
+const qBL   = [c(15,15,11,false), c(45,15,11,false), c(15,45,11),           c(45,45,11,false), ...pAcc];
+const qAll4 = [c(15,15,11),           c(45,15,11),           c(15,45,11),           c(45,45,11), ...pAcc];
+
+// Fill-shift tri-shape cells: 3 shapes at l/m/r positions (r=8), exactly one filled per cell
+// Enhanced with corner anchors for visual density
 // Row 1 — shapes C S T
-const fsR1C1 = [c(13,30,7),           sq(30,30,7,false), tr(47,30,7,false)];
-const fsR1C2 = [c(13,30,7,false), sq(30,30,7),           tr(47,30,7,false)];
-const fsR1C3 = [c(13,30,7,false), sq(30,30,7,false), tr(47,30,7)          ];
+const fsR1C1 = [...A4, c(13,30,8),            sq(30,30,8,false), tr(47,30,8,false)];
+const fsR1C2 = [...A4, c(13,30,8,false),  sq(30,30,8),           tr(47,30,8,false)];
+const fsR1C3 = [...A4, c(13,30,8,false),  sq(30,30,8,false), tr(47,30,8)          ];
 // Row 2 — shapes T C S
-const fsR2C1 = [tr(13,30,7),           c(30,30,7,false),  sq(47,30,7,false)];
-const fsR2C2 = [tr(13,30,7,false), c(30,30,7),            sq(47,30,7,false)];
-const fsR2C3 = [tr(13,30,7,false), c(30,30,7,false),  sq(47,30,7)          ];
+const fsR2C1 = [...A4, tr(13,30,8),            c(30,30,8,false),  sq(47,30,8,false)];
+const fsR2C2 = [...A4, tr(13,30,8,false),  c(30,30,8),            sq(47,30,8,false)];
+const fsR2C3 = [...A4, tr(13,30,8,false),  c(30,30,8,false),  sq(47,30,8)          ];
 // Row 3 — shapes S T C
-const fsR3C1 = [sq(13,30,7),           tr(30,30,7,false), c(47,30,7,false) ];
-const fsR3C2 = [sq(13,30,7,false), tr(30,30,7),           c(47,30,7,false) ];
-const fsR3C3 = [sq(13,30,7,false), tr(30,30,7,false), c(47,30,7)           ]; // ← ANSWER
-const fsAllF = [sq(13,30,7),           tr(30,30,7),           c(47,30,7)    ]; // distractor
+const fsR3C1 = [...A4, sq(13,30,8),            tr(30,30,8,false), c(47,30,8,false) ];
+const fsR3C2 = [...A4, sq(13,30,8,false),  tr(30,30,8),           c(47,30,8,false) ];
+const fsR3C3 = [...A4, sq(13,30,8,false),  tr(30,30,8,false), c(47,30,8)           ]; // ← ANSWER
+const fsAllF = [...A4, sq(13,30,8),            tr(30,30,8),           c(47,30,8)    ]; // distractor
 
 // ── Overlay combination cells (both shapes at r=14, centred at 30,30) ───────
-// Rule: col3 = col1 shape (filled) OVERLAID with col2 shape (outline) — visually they merge/intersect
-const ovC  = [c(30,30,14)];
-const ovS  = [sq(30,30,14)];
-const ovT  = [tr(30,30,14)];
-const ovCS = [c(30,30,14),  sq(30,30,14,false)];  // filled circle + outline square
-const ovST = [sq(30,30,14), tr(30,30,14,false)];  // filled square + outline triangle
-const ovTC = [tr(30,30,14), c(30,30,14,false)];   // filled triangle + outline circle ← ANSWER
-const ovCT = [c(30,30,14),  tr(30,30,14,false)];  // distractor: wrong order (circle base)
-const ovDS = [di(30,30,14), sq(30,30,14,false)];  // distractor: diamond base (wrong shape)
+// Rule: col3 = col1 shape (filled) OVERLAID with col2 shape (outline)
+// Enhanced with corner anchors for visual density
+const ovC  = [...A4, c(30,30,14)];
+const ovS  = [...A4, sq(30,30,14)];
+const ovT  = [...A4, tr(30,30,14)];
+const ovCS = [...A4, c(30,30,14),  sq(30,30,14,false)];  // filled circle + outline square
+const ovST = [...A4, sq(30,30,14), tr(30,30,14,false)];  // filled square + outline triangle
+const ovTC = [...A4, tr(30,30,14), c(30,30,14,false)];   // filled triangle + outline circle ← ANSWER
+const ovCT = [...A4, c(30,30,14),  tr(30,30,14,false)];  // distractor: wrong order (circle base)
+const ovDS = [...A4, di(30,30,14), sq(30,30,14,false)];  // distractor: diamond base (wrong shape)
 
 // ── Multi-operation cells (3 distinct row rules: UNION / SUBTRACTION / XOR) ──
+// Enhanced with corner anchors for visual density
 // Row 1 UNION  : col3 = col1 ∪ col2 (all shapes appear)
-const moR1C1 = [c(18,30,11),  sq(42,30,11)];              // {C,S}
-const moR1C2 = [sq(18,30,11), tr(42,30,11)];              // {S,T}
-const moR1C3 = [c(13,30,8),   sq(30,30,8), tr(47,30,8)]; // {C,S,T}
+const moR1C1 = [...A4, c(18,30,11),  sq(42,30,11)];               // {C,S}
+const moR1C2 = [...A4, sq(18,30,11), tr(42,30,11)];               // {S,T}
+const moR1C3 = [...A4, c(13,30,8),   sq(30,30,8), tr(47,30,8)];  // {C,S,T}
 // Row 2 SUBTRACT: col3 = col1 − col2 (remove shapes that appear in col2)
-const moR2C1 = [c(13,30,8),   sq(30,30,8), tr(47,30,8)]; // {C,S,T}
-const moR2C2 = [sq(30,30,11)];                             // {S}
-const moR2C3 = [c(18,30,11),  tr(42,30,11)];              // {C,T}  (S removed)
+const moR2C1 = [...A4, c(13,30,8),   sq(30,30,8), tr(47,30,8)];  // {C,S,T}
+const moR2C2 = [...A4, sq(30,30,11)];                              // {S}
+const moR2C3 = [...A4, c(18,30,11),  tr(42,30,11)];               // {C,T}  (S removed)
 // Row 3 XOR: col3 = shapes unique to col1 OR col2 (shared shapes cancel)
-const moR3C1 = [tr(18,30,11), c(42,30,11)];               // {T,C}
-const moR3C2 = [tr(18,30,11), sq(42,30,11)];              // {T,S}
-// ANSWER: T is in both → cancels → {C,S}  = moR1C1
+const moR3C1 = [...A4, tr(18,30,11), c(42,30,11)];                // {T,C}
+const moR3C2 = [...A4, tr(18,30,11), sq(42,30,11)];               // {T,S}
+// ANSWER: T is in both → cancels → {C,S}  = moR1C1 (without A4 for distractor variety)
 
 // ── Concentric shape cells (outer outline r=18, inner filled r=8, centred at 30,30) ──
 // Rule: outer shape = row attribute, inner shape = column attribute
@@ -220,18 +246,19 @@ const ccDT = [di(30,30,18,false), tr(30,30,8)];
 // ── Attribute-Drift cells (l=x13 / m=x30 / r=x47, r=8) ───────────────────
 // Rule 1: shape type per row (C-S-T → S-T-C → T-C-S)
 // Rule 2: number of filled shapes accumulates left-to-right (1 → 2 → 3)
-const adR1C1 = [c(13,30,8),          sq(30,30,8,false), tr(47,30,8,false)];
-const adR1C2 = [c(13,30,8),          sq(30,30,8),       tr(47,30,8,false)];
-const adR1C3 = [c(13,30,8),          sq(30,30,8),       tr(47,30,8)      ];
-const adR2C1 = [sq(13,30,8),         tr(30,30,8,false), c(47,30,8,false) ];
-const adR2C2 = [sq(13,30,8),         tr(30,30,8),       c(47,30,8,false) ];
-const adR2C3 = [sq(13,30,8),         tr(30,30,8),       c(47,30,8)       ];
-const adR3C1 = [tr(13,30,8),         c(30,30,8,false),  sq(47,30,8,false)];
-const adR3C2 = [tr(13,30,8),         c(30,30,8),        sq(47,30,8,false)];
-const adR3C3 = [tr(13,30,8),         c(30,30,8),        sq(47,30,8)      ]; // ← ANSWER
-const adR3w1  = [tr(13,30,8,false),  c(30,30,8),        sq(47,30,8)      ]; // tri not filled
-const adR3w2  = [tr(13,30,8),        c(30,30,8,false),  sq(47,30,8,false)]; // only 1 filled
-const adR3w3  = [sq(13,30,8),        tr(30,30,8),       c(47,30,8)       ]; // wrong shape set
+// Enhanced with corner anchors for visual density
+const adR1C1 = [...A4, c(13,30,8),          sq(30,30,8,false), tr(47,30,8,false)];
+const adR1C2 = [...A4, c(13,30,8),          sq(30,30,8),       tr(47,30,8,false)];
+const adR1C3 = [...A4, c(13,30,8),          sq(30,30,8),       tr(47,30,8)      ];
+const adR2C1 = [...A4, sq(13,30,8),         tr(30,30,8,false), c(47,30,8,false) ];
+const adR2C2 = [...A4, sq(13,30,8),         tr(30,30,8),       c(47,30,8,false) ];
+const adR2C3 = [...A4, sq(13,30,8),         tr(30,30,8),       c(47,30,8)       ];
+const adR3C1 = [...A4, tr(13,30,8),         c(30,30,8,false),  sq(47,30,8,false)];
+const adR3C2 = [...A4, tr(13,30,8),         c(30,30,8),        sq(47,30,8,false)];
+const adR3C3 = [...A4, tr(13,30,8),         c(30,30,8),        sq(47,30,8)      ]; // ← ANSWER
+const adR3w1  = [...A4, tr(13,30,8,false),  c(30,30,8),        sq(47,30,8)      ]; // tri not filled
+const adR3w2  = [...A4, tr(13,30,8),        c(30,30,8,false),  sq(47,30,8,false)]; // only 1 filled
+const adR3w3  = [...A4, sq(13,30,8),        tr(30,30,8),       c(47,30,8)       ]; // wrong shape set
 
 // ── SVG paths for rotation questions ──────────────────────────────────────
 
@@ -260,20 +287,20 @@ export const ALL_QUESTIONS: Question[] = [
 
   // ── CAT 0 · LOGICAL REASONING — Raven matrices ───────────────────────────
 
-  // Q1 easy: 2×2 PATTERN MATRIX — fill and shape follow diagonal rules
-  // (0,0) filled circle  | (0,1) outline square
-  // (1,0) outline circle | (1,1) ???  = filled square
-  // Rule: filled shapes on main diagonal (TL→BR); shapes alternate circle/square per row
+  // Q1 medium: DECORATION MATRIX — outer shape (row) × inner dot-pattern (column)
+  // Row 1: circle outline | Row 2: square outline | Row 3: triangle outline
+  // Col 1: no decoration  | Col 2: plus-cross (●) | Col 3: X-cross (✕)
+  // Answer: row 3 col 3 → triangle + X cross
   {
-    cat: 0, type: "raven", diff: "easy", badge: "Pattern Matrix", time: 30,
-    text: "Which image completes the 2×2 pattern?",
+    cat: 0, type: "raven", diff: "medium", badge: "Shape × Pattern", time: 28,
+    text: "Two independent rules control this matrix. Which image completes it?",
     opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "Each row contains one filled and one outline shape. Each column contains one circle and one square. The missing cell (filled square) follows from both rules simultaneously.",
+    ans: 2,
+    exp: "Row rule: outer shape cycles circle→square→triangle. Column rule: inner dot decoration cycles none→plus cross→X cross. Row 3, col 3 needs a triangle outline with an X cross inside.",
     vis: {
-      kind: "raven2",
-      cells: [C1, S1o, C1o, null],
-      optCells: [S1o, S1, C1, T1],
+      kind: "raven",
+      cells: [dmCn, dmCp, dmCx,  dmSn, dmSp, dmSx,  dmTn, dmTp, null],
+      optCells: [dmTp, dmCx, dmTx, dmSx],
     },
   },
 
@@ -429,32 +456,6 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   // ── CAT 1 · VERBAL INTELLIGENCE ──────────────────────────────────────────
-
-  {
-    cat: 1, type: "analogy", diff: "easy", badge: "Word Analogy", time: 30,
-    text: "Complete the analogy:",
-    w1: "Light", w2: "Dark", w3: "Hot", missing: "?",
-    opts: ["Cold", "Warm", "Fire", "Sun"],
-    ans: 0,
-    exp: "Light is the opposite of Dark. The opposite of Hot is Cold.",
-  },
-
-  {
-    cat: 1, type: "oddone", diff: "medium", badge: "Odd Word Out", time: 25,
-    text: "Which word does NOT belong with the others?",
-    opts: ["Simile", "Metaphor", "Alliteration", "Algebra"],
-    ans: 3,
-    exp: "Simile, Metaphor and Alliteration are figures of speech. Algebra is mathematics.",
-  },
-
-  {
-    cat: 1, type: "analogy", diff: "medium", badge: "Word Analogy", time: 25,
-    text: "Complete the analogy:",
-    w1: "Author", w2: "Novel", w3: "Sculptor", missing: "?",
-    opts: ["Clay", "Museum", "Statue", "Chisel"],
-    ans: 2,
-    exp: "An Author creates a Novel. A Sculptor creates a Statue.",
-  },
 
   {
     cat: 1, type: "text", diff: "hard", badge: "Syllogistic Logic", time: 35,
@@ -646,37 +647,7 @@ export const ALL_QUESTIONS: Question[] = [
 
   // ── CAT 5 · PROCESSING SPEED ─────────────────────────────────────────────
 
-  // Q1 easy, 10 s: exact match in long alphanumeric string
-  {
-    cat: 5, type: "symbols", diff: "easy", badge: "Symbol Match", time: 10,
-    text: "Which option exactly matches the target?",
-    opts: ["1st", "2nd", "3rd", "4th"],
-    ans: 0,
-    exp: "Only the 1st item (4R7Q2M8K) matches the target exactly. The 2nd swaps 2→Z, the 3rd swaps Q→G, the 4th swaps M→N.",
-    vis: { kind: "symbols", target: "4R7Q2M8K", compare: ["4R7Q2M8K", "4R7QZM8K", "4R7G2M8K", "4R7Q2N8K"] },
-  },
-
-  // Q2 easy, 10 s: fast two-step arithmetic
-  {
-    cat: 5, type: "symbols", diff: "easy", badge: "Rapid Arithmetic", time: 10,
-    text: "Solve as fast as you can:",
-    opts: ["49", "51", "53", "55"],
-    ans: 1,
-    exp: "17 × 3 = 51.",
-    vis: { kind: "symbols", target: "17 × 3 = ?" },
-  },
-
-  // Q3 medium, 10 s: spot the ONE different string (strings are visually near-identical)
-  {
-    cat: 5, type: "symbols", diff: "medium", badge: "Spot the Difference", time: 10,
-    text: "Which item is DIFFERENT from the others?",
-    opts: ["1st", "2nd", "4th", "3rd"],
-    ans: 3,
-    exp: "The 3rd item has C instead of G (N5X8C2Z vs N5X8G2Z). All others are identical.",
-    vis: { kind: "symbols", target: "N5X8G2Z", compare: ["N5X8G2Z", "N5X8G2Z", "N5X8C2Z", "N5X8G2Z"] },
-  },
-
-  // Q4 medium, 10 s: three-step calculation
+  // Q1 medium, 10 s: three-step multi-operation calculation
   {
     cat: 5, type: "symbols", diff: "medium", badge: "Rapid Calculation", time: 10,
     text: "Solve quickly:",
@@ -686,7 +657,7 @@ export const ALL_QUESTIONS: Question[] = [
     vis: { kind: "symbols", target: "48 ÷ 6 × 5 − 9 = ?" },
   },
 
-  // Q5 hard, 10 s: ordering chain — identify the median
+  // Q2 hard, 10 s: ordering chain — identify the median
   {
     cat: 5, type: "symbols", diff: "hard", badge: "Rapid Deduction", time: 10,
     text: "Which value is the MEDIAN (middle) of these five?",

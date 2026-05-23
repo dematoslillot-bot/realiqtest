@@ -23,7 +23,10 @@ export type VisualDef =
   | { kind: "raven2";      cells: (RavenCell|null)[];    optCells: RavenCell[] }
   | { kind: "ravenrot";    path: string; angles: (number|null)[]; optAngles: number[] }
   | { kind: "ravenpattern";cells: (PCell|null)[];        optCells: PCell[] }
-  | { kind: "topview";     optGrids: string[] };
+  | { kind: "topview";     optGrids: string[] }
+  | { kind: "clock";   seqH: number[]; seqM: number[]; optH: number[]; optM: number[] }
+  | { kind: "heatmap"; grid: (number|null)[][]; optVals: number[] }
+  | { kind: "mirror";  path: string; optPaths: string[] };
 
 export type PCell = { shape: "tri"|"sq"|"ci"; fill: "h"|"v"|"d" };
 
@@ -287,20 +290,19 @@ export const ALL_QUESTIONS: Question[] = [
 
   // ── CAT 0 · LOGICAL REASONING — Raven matrices ───────────────────────────
 
-  // Q1 medium: DECORATION MATRIX — outer shape (row) × inner dot-pattern (column)
-  // Row 1: circle outline | Row 2: square outline | Row 3: triangle outline
-  // Col 1: no decoration  | Col 2: plus-cross (●) | Col 3: X-cross (✕)
-  // Answer: row 3 col 3 → triangle + X cross
+  // Q1 medium: CLOCK LOGIC — each clock advances +1h 30min
   {
-    cat: 0, type: "raven", diff: "medium", badge: "Shape × Pattern", time: 28,
-    text: "Two independent rules control this matrix. Which image completes it?",
+    cat: 0, type: "raven", diff: "medium", badge: "Clock Logic", time: 32,
+    text: "Each clock advances by the same time interval. What does the 4th clock show?",
     opts: ["A", "B", "C", "D"],
     ans: 2,
-    exp: "Row rule: outer shape cycles circle→square→triangle. Column rule: inner dot decoration cycles none→plus cross→X cross. Row 3, col 3 needs a triangle outline with an X cross inside.",
+    exp: "Each clock advances +1h 30min: 2:00 → 3:30 → 5:00 → 6:30. The answer is 6:30.",
     vis: {
-      kind: "raven",
-      cells: [dmCn, dmCp, dmCx,  dmSn, dmSp, dmSx,  dmTn, dmTp, null],
-      optCells: [dmTp, dmCx, dmTx, dmSx],
+      kind: "clock",
+      seqH: [2, 3, 5],
+      seqM: [0, 30, 0],
+      optH: [6, 7, 6, 5],
+      optM: [0, 0, 30, 30],
     },
   },
 
@@ -366,21 +368,17 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q4 medium: OVERLAY COMBINATION — col3 = col1 shape (filled) merged with col2 shape (outline)
-  // Col1: single filled shapes; Col2: single filled shapes; Col3: both shapes overlaid at same centre
-  // Row1: circle(f) + square(f) → circle(f) inside outline-square
-  // Row2: square(f) + triangle(f) → square(f) inside outline-triangle
-  // Row3: triangle(f) + circle(f) → ??? → triangle(f) inside outline-circle
+  // Q4 medium: HEATMAP — row sums and column sums all equal
   {
-    cat: 0, type: "raven", diff: "medium", badge: "Shape Overlay", time: 22,
-    text: "Which image completes the matrix?",
+    cat: 0, type: "raven", diff: "medium", badge: "Heat Pattern", time: 28,
+    text: "Row sums and column sums are all equal. Which intensity completes the grid?",
     opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "Rule: column 3 = the shape from column 1 (filled) overlaid with the shape from column 2 (drawn as outline). Row 3: filled triangle overlaid with outline circle — triangle inside a circle ring.",
+    ans: 2,
+    exp: "Each row and column sums to 6. Row 3: 1+3+?=6, so ?=2. Column 3 also confirms: 3+1+?=6 → 2.",
     vis: {
-      kind: "raven",
-      cells: [ovC, ovS, ovCS,  ovS, ovT, ovST,  ovT, ovC, null],
-      optCells: [ovCT, ovTC, ovST, ovDS],
+      kind: "heatmap",
+      grid: [[2,1,3],[3,2,1],[1,3,null]],
+      optVals: [0, 1, 2, 4],
     },
   },
 
@@ -550,17 +548,26 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // ── CAT 3 · NUMERICAL ABILITY — bar charts ────────────────────────────────
-
-  // Q1 easy: ×2 series
+  // Q Mirror hard: MIRROR IMAGE — choose the exact horizontal mirror
   {
-    cat: 3, type: "bars", diff: "easy", badge: "Number Series", time: 30,
-    text: "What value completes this series?",
-    opts: ["36", "48", "42", "30"],
+    cat: 2, type: "rotation", diff: "hard", badge: "Mirror Image", time: 22,
+    text: "Choose the exact horizontal mirror image of this shape.",
+    opts: ["A", "B", "C", "D"],
     ans: 1,
-    exp: "Each term doubles. 24 × 2 = 48.",
-    vis: { kind: "bars", values: [3, 6, 12, 24, null], max: 60 },
+    exp: "A horizontal mirror flips left↔right. The step going left in the original goes right in the mirror. Option A is vertically flipped, C is the original, D has a subtly wrong step height.",
+    vis: {
+      kind: "mirror",
+      path: "M8,48 L8,24 L18,24 L18,8 L38,8 L38,20 L28,20 L28,34 L50,34 L50,48 Z",
+      optPaths: [
+        "M8,12 L8,36 L18,36 L18,52 L38,52 L38,40 L28,40 L28,26 L50,26 L50,12 Z",
+        "M52,48 L52,24 L42,24 L42,8 L22,8 L22,20 L32,20 L32,34 L10,34 L10,48 Z",
+        "M8,48 L8,24 L18,24 L18,8 L38,8 L38,20 L28,20 L28,34 L50,34 L50,48 Z",
+        "M52,48 L52,24 L42,24 L42,8 L22,8 L22,20 L32,20 L32,36 L10,36 L10,48 Z",
+      ],
+    },
   },
+
+  // ── CAT 3 · NUMERICAL ABILITY — bar charts ────────────────────────────────
 
   // Q2 easy: decreasing gaps
   {
@@ -665,5 +672,15 @@ export const ALL_QUESTIONS: Question[] = [
     ans: 2,
     exp: "Order ascending: Q < R < T < P < S. The median (3rd of 5) is T.",
     vis: { kind: "symbols", target: "S > P > T > R > Q" },
+  },
+
+  // Q3 medium, 12 s: find the duplicate number
+  {
+    cat: 5, type: "symbols", diff: "medium", badge: "Rapid Scan", time: 12,
+    text: "Which number appears TWICE in this sequence?",
+    opts: ["7", "3", "9", "5"],
+    ans: 0,
+    exp: "Sequence: 3 · 7 · 5 · 2 · 7 · 9 · 1 · 4 — the number 7 appears at positions 2 and 5.",
+    vis: { kind: "symbols", target: "3  ·  7  ·  5  ·  2  ·  7  ·  9  ·  1  ·  4" },
   },
 ];

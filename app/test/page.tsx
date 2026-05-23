@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell } from "@/lib/questions";
 import { DIFF_WEIGHTS } from "@/lib/iq-calculator";
@@ -433,6 +433,118 @@ function SymbolsDisplay({ target, compare }: { target: string; compare?: string[
   );
 }
 
+/* ── Clock face SVG ────────────────────────────────────────────────────── */
+function ClockFaceSVG({ h, m, size = 72, isQ = false }: { h?: number; m?: number; size?: number; isQ?: boolean }) {
+  if (isQ) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 72 72">
+        <circle cx={36} cy={36} r={33} fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
+        <text x={36} y={42} textAnchor="middle" fontSize={22} fill="#0055FF" fontWeight="bold">?</text>
+      </svg>
+    );
+  }
+  const cx = 36, cy = 36, r = 31;
+  const ticks = Array.from({ length: 12 }, (_, i) => {
+    const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+    const isMajor = i % 3 === 0;
+    return { x1: cx + Math.cos(a) * r * (isMajor ? 0.75 : 0.82), y1: cy + Math.sin(a) * r * (isMajor ? 0.75 : 0.82), x2: cx + Math.cos(a) * r, y2: cy + Math.sin(a) * r, major: isMajor };
+  });
+  const nums = [{ n: 12, i: 0 }, { n: 3, i: 3 }, { n: 6, i: 6 }, { n: 9, i: 9 }];
+  const ha = (((h ?? 0) % 12) / 12 + (m ?? 0) / 720) * Math.PI * 2 - Math.PI / 2;
+  const ma = ((m ?? 0) / 60) * Math.PI * 2 - Math.PI / 2;
+  return (
+    <svg width={size} height={size} viewBox="0 0 72 72">
+      <circle cx={cx} cy={cy} r={r} fill="rgba(5,18,45,0.95)" stroke="#0055FF" strokeWidth={1.5} />
+      <circle cx={cx} cy={cy} r={r * 0.92} fill="none" stroke="rgba(0,85,255,0.1)" strokeWidth={0.5} />
+      {ticks.map((t, i) => (
+        <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={t.major ? "#6EB0FF" : "rgba(0,85,255,0.35)"} strokeWidth={t.major ? 2 : 1} />
+      ))}
+      {nums.map(({ n, i }) => {
+        const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+        return <text key={n} x={cx + Math.cos(a) * r * 0.62} y={cy + Math.sin(a) * r * 0.62 + 3.5} textAnchor="middle" fontSize={8} fill="#6EB0FF" fontWeight="700">{n}</text>;
+      })}
+      <line x1={cx} y1={cy} x2={cx + Math.cos(ha) * r * 0.52} y2={cy + Math.sin(ha) * r * 0.52} stroke="#E8F0FF" strokeWidth={2.5} strokeLinecap="round" />
+      <line x1={cx} y1={cy} x2={cx + Math.cos(ma) * r * 0.73} y2={cy + Math.sin(ma) * r * 0.73} stroke="#06B6D4" strokeWidth={1.5} strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r={3} fill="#0055FF" />
+    </svg>
+  );
+}
+
+function ClockDisplay({ seqH, seqM }: { seqH: number[]; seqM: number[] }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: DIM }}>What time does the 4th clock show?</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {seqH.map((h, i) => (
+          <React.Fragment key={i}>
+            <div style={{ border: "1px solid rgba(0,85,255,0.22)", borderRadius: 8, overflow: "hidden", boxShadow: "0 0 12px rgba(0,85,255,0.12)" }}>
+              <ClockFaceSVG h={h} m={seqM[i]} size={72} />
+            </div>
+            {i < seqH.length - 1 && <span style={{ color: DIM, fontSize: 14, flexShrink: 0 }}>→</span>}
+          </React.Fragment>
+        ))}
+        <span style={{ color: DIM, fontSize: 14, flexShrink: 0 }}>→</span>
+        <div style={{ border: "1px dashed rgba(0,85,255,0.4)", borderRadius: 8, overflow: "hidden" }}>
+          <ClockFaceSVG isQ={true} size={72} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Heatmap display ───────────────────────────────────────────────────── */
+function HeatmapDisplay({ grid }: { grid: (number | null)[][] }) {
+  const HEAT_COLORS = ["#070F20", "#0D2558", "#0D50B8", "#1178FF", "#00C4FF"];
+  const S = 46, G = 5, PAD = 4;
+  const W = S * 3 + G * 2 + PAD * 2;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: DIM }}>
+        All rows and columns sum to the same number
+      </p>
+      <svg width={W} height={W} viewBox={`0 0 ${W} ${W}`} style={{ display: "block" }}>
+        {grid.map((row, r) =>
+          row.map((val, c) => {
+            const x = PAD + c * (S + G), y = PAD + r * (S + G);
+            if (val === null) {
+              return (
+                <g key={`${r}${c}`}>
+                  <rect x={x} y={y} width={S} height={S} rx={4} fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
+                  <text x={x + S / 2} y={y + S / 2 + 8} textAnchor="middle" fontSize={22} fill="#0055FF" fontWeight="bold">?</text>
+                </g>
+              );
+            }
+            return (
+              <g key={`${r}${c}`}>
+                <rect x={x} y={y} width={S} height={S} rx={4} fill={HEAT_COLORS[val]} stroke="rgba(0,85,255,0.25)" strokeWidth={1}
+                  style={{ filter: val >= 3 ? "drop-shadow(0 0 8px rgba(0,196,255,0.45))" : "none" }} />
+                {Array.from({ length: val }).map((_, i) => (
+                  <circle key={i} cx={x + 9 + i * 9} cy={y + S - 9} r={2.5} fill="rgba(255,255,255,0.45)" />
+                ))}
+              </g>
+            );
+          })
+        )}
+      </svg>
+    </div>
+  );
+}
+
+/* ── Mirror display ────────────────────────────────────────────────────── */
+function MirrorDisplay({ path }: { path: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+      <p style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: DIM }}>
+        Original shape — choose its exact horizontal mirror
+      </p>
+      <svg viewBox="0 0 60 60" style={{ width: "min(180px, 38vw)", height: "min(180px, 38vw)", display: "block" }}>
+        <rect x={1} y={1} width={58} height={58} rx={3} fill="rgba(5,18,45,0.92)" stroke="rgba(0,85,255,0.3)" strokeWidth={1.5} />
+        <path d={path} fill="#6EB0FF" style={{ filter: "drop-shadow(0 0 6px rgba(0,85,255,0.4))" }} />
+      </svg>
+    </div>
+  );
+}
+
 /* ── Visual question container ──────────────────────────────────────────── */
 
 function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => void }) {
@@ -459,6 +571,12 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
       return <RavenPatternDisplay cells={vis.cells} />;
     case "topview":
       return <TopViewDisplay />;
+    case "clock":
+      return <ClockDisplay seqH={vis.seqH} seqM={vis.seqM} />;
+    case "heatmap":
+      return <HeatmapDisplay grid={vis.grid} />;
+    case "mirror":
+      return <MirrorDisplay path={vis.path} />;
   }
 }
 
@@ -495,6 +613,29 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
         <rect x={1} y={1} width={58} height={58} rx={2}
           fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
         <path d={vis.optGrids[idx]} fill="#6EB0FF" />
+      </svg>
+    );
+  }
+  if (vis?.kind === "clock") {
+    return <ClockFaceSVG h={vis.optH[idx]} m={vis.optM[idx]} size={56} />;
+  }
+  if (vis?.kind === "heatmap") {
+    const HEAT_COLORS = ["#070F20", "#0D2558", "#0D50B8", "#1178FF", "#00C4FF"];
+    const val = vis.optVals[idx];
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 60 60">
+        <rect x={2} y={2} width={56} height={56} rx={4} fill={HEAT_COLORS[val]} stroke="rgba(0,85,255,0.3)" strokeWidth={1} />
+        {Array.from({ length: val }).map((_, i) => (
+          <circle key={i} cx={10 + i * 10} cy={50} r={3} fill="rgba(255,255,255,0.45)" />
+        ))}
+      </svg>
+    );
+  }
+  if (vis?.kind === "mirror") {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 60 60">
+        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
+        <path d={vis.optPaths[idx]} fill="#6EB0FF" />
       </svg>
     );
   }
@@ -795,7 +936,7 @@ function QuizScreen() {
   const [timeLeft, setTimeLeft] = useState(ALL_QUESTIONS[0].time);
   const [showTransition, setShowTransition] = useState(false);
   const [feedback, setFeedback] = useState<{ correct: boolean; text: string } | null>(null);
-  const [flipping, setFlipping] = useState(false);
+  const [transPhase, setTransPhase] = useState<0|1|2>(2); // 0=exit, 1=enter, 2=idle
   const [memReady, setMemReady] = useState(false);
   const [streak, setStreak] = useState(0);
   const [streakFlash, setStreakFlash] = useState(false);
@@ -808,7 +949,7 @@ function QuizScreen() {
   const timerPaused = isMemory && !memReady;
 
   const advanceTo = useCallback((nextIdx: number) => {
-    setFlipping(true);
+    setTransPhase(0);
     setTimeout(() => {
       setQIdx(nextIdx);
       setAnswered(false);
@@ -816,8 +957,9 @@ function QuizScreen() {
       setFeedback(null);
       setMemReady(false);
       setTimeLeft(ALL_QUESTIONS[nextIdx].time);
-      setFlipping(false);
-    }, 180);
+      setTransPhase(1);
+      setTimeout(() => setTransPhase(2), 200);
+    }, 200);
   }, []);
 
   const handleNext = useCallback(() => {
@@ -925,7 +1067,8 @@ function QuizScreen() {
   const progress    = ((qIdx + 1) / ALL_QUESTIONS.length) * 100;
 
   const hasVisOpts = q.vis?.kind === "raven" || q.vis?.kind === "rotation" || q.vis?.kind === "embedded"
-    || q.vis?.kind === "raven2" || q.vis?.kind === "ravenrot" || q.vis?.kind === "ravenpattern" || q.vis?.kind === "topview";
+    || q.vis?.kind === "raven2" || q.vis?.kind === "ravenrot" || q.vis?.kind === "ravenpattern" || q.vis?.kind === "topview"
+    || q.vis?.kind === "clock" || q.vis?.kind === "heatmap" || q.vis?.kind === "mirror";
 
   const keyframes = `
     @keyframes bgPulse1 { 0%,100%{opacity:0.7} 50%{opacity:0.3} }
@@ -934,6 +1077,8 @@ function QuizScreen() {
     @keyframes lineGlow { 0%,100%{opacity:0.06} 50%{opacity:0.18} }
     @keyframes streakSlide { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes qFadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes slideOutUp { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-30px)} }
+    @keyframes slideInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
   `;
 
   // ── Category transition ──────────────────────────────────────────────────
@@ -1013,14 +1158,12 @@ function QuizScreen() {
   }
 
   // ── Main test ────────────────────────────────────────────────────────────
-  // Apple-style fade + scale transition (iOS feel)
-  const CB = "cubic-bezier(0.25,0.46,0.45,0.94)";
-  const fadeStyle: React.CSSProperties = {
-    opacity: flipping ? 0 : 1,
-    transform: flipping ? "scale(0.97)" : "scale(1)",
-    transformOrigin: "center top",
-    transition: `opacity 180ms ${CB}, transform 180ms ${CB}`,
-  };
+  // Apple-style slide up/down transition
+  const CB2 = "cubic-bezier(0.25,0.46,0.45,0.94)";
+  const slideStyle: React.CSSProperties =
+    transPhase === 0 ? { animation: `slideOutUp 200ms ${CB2} forwards` } :
+    transPhase === 1 ? { animation: `slideInUp 200ms ${CB2} forwards` } :
+    {};
 
   return (
     <div style={{
@@ -1069,13 +1212,13 @@ function QuizScreen() {
         background: "rgba(2,6,23,0.85)", backdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(0,85,255,0.12)",
       }}>
-        {/* Progress bar — 3px at very top */}
-        <div style={{ height: 3, background: "rgba(0,85,255,0.08)", flexShrink: 0 }}>
+        {/* Progress bar — 5px at very top */}
+        <div style={{ height: 5, background: "rgba(0,85,255,0.15)", flexShrink: 0 }}>
           <div style={{
             height: "100%", width: `${progress}%`,
             background: `linear-gradient(90deg,${BLUE},${CYAN})`,
             transition: "width 0.5s cubic-bezier(0.25,0.46,0.45,0.94)",
-            borderRadius: "0 2px 2px 0",
+            borderRadius: "0 3px 3px 0",
           }} />
         </div>
         {/* Logo | Q counter | Timer */}
@@ -1127,7 +1270,7 @@ function QuizScreen() {
 
       {/* Content wrapper — fades with question transitions.
           Uses px for nav/feedback (always visible) and flex:1 for visual (adapts). */}
-      <div ref={cardRef} style={{ ...fadeStyle, display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+      <div ref={cardRef} style={{ ...slideStyle, display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
 
         {/* ── CATEGORY (34px fixed) ──────────────────────────────────────── */}
         <div style={{

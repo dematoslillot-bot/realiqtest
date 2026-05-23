@@ -451,6 +451,17 @@ export default function ResultsPage() {
     count += 1;
     localStorage.setItem("tests_today", String(count));
     setTestsToday(count);
+    // Save to leaderboard localStorage
+    const lbEntry = {
+      iq: final,
+      date: new Date().toISOString(),
+      country: localStorage.getItem("user_country") || "",
+      age: localStorage.getItem("user_age") || "",
+    };
+    const existingEntries = JSON.parse(localStorage.getItem("lb_entries") || "[]");
+    existingEntries.unshift(lbEntry);
+    if (existingEntries.length > 10) existingEntries.splice(10);
+    localStorage.setItem("lb_entries", JSON.stringify(existingEntries));
     const timer = setTimeout(() => setShowLeaderboard(true), 2200);
     return () => clearTimeout(timer);
   }, []);
@@ -481,6 +492,21 @@ export default function ResultsPage() {
 
   return (
     <div style={{ minHeight:"100dvh", background:"#050A14", color:"#D6E4FF" }}>
+      <style>{`
+        @keyframes iqGradAnim {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes iqGlow {
+          0%, 100% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.15); }
+        }
+        @keyframes topPctIn {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       {showLeaderboard && iq > 0 && (
         <LeaderboardPopup iq={iq} onClose={() => setShowLeaderboard(false)} />
       )}
@@ -500,8 +526,37 @@ export default function ResultsPage() {
         <p className="animate-fade-up" style={{ fontSize:10,letterSpacing:"0.22em",textTransform:"uppercase",color:dim,marginBottom:16 }}>
           Your RealIQ Score
         </p>
-        <div className="animate-fade-up" style={{ fontSize:"clamp(80px,18vw,118px)",fontWeight:300,lineHeight:1,color:blue,letterSpacing:"-0.03em",textShadow:"0 0 60px rgba(0,85,255,0.45)",animationDelay:"80ms" }}>
-          <AnimatedIQ target={iq} />
+        <div style={{
+          position: "relative",
+          display: "inline-block",
+          marginBottom: 4,
+        }}>
+          {/* Pulsing glow behind number */}
+          <div style={{
+            position: "absolute",
+            inset: "-20px",
+            background: "radial-gradient(ellipse, rgba(0,85,255,0.35) 0%, transparent 70%)",
+            animation: "iqGlow 2s ease-in-out infinite",
+            borderRadius: "50%",
+          }} />
+          <div className="animate-fade-up" style={{
+            fontSize: "clamp(120px,24vw,160px)",
+            fontWeight: 800,
+            lineHeight: 1,
+            letterSpacing: "-0.04em",
+            background: "linear-gradient(135deg, #0055FF 0%, #06B6D4 40%, #8B5CF6 70%, #0055FF 100%)",
+            backgroundSize: "300% 300%",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            filter: "drop-shadow(0 0 30px rgba(0,85,255,0.5))",
+            animation: "iqGradAnim 3s ease infinite, animate-fade-up 0.6s ease forwards",
+            animationDelay: "80ms",
+            position: "relative",
+            zIndex: 1,
+          }}>
+            <AnimatedIQ target={iq} />
+          </div>
         </div>
         <p className="animate-fade-up" style={{ fontSize:10,letterSpacing:"0.22em",textTransform:"uppercase",color:dim,marginTop:8,animationDelay:"160ms" }}>
           Intelligence Quotient
@@ -510,6 +565,20 @@ export default function ResultsPage() {
         {/* Label badge */}
         <div className="animate-fade-up" style={{ animationDelay:"220ms",marginTop:16,marginBottom:28 }}>
           <span style={{ display:"inline-block",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",padding:"7px 20px",border:`1px solid ${blue}`,color:blue,boxShadow:"0 0 16px rgba(0,85,255,0.3)" }}>{label}</span>
+          {iq > 0 && (
+            <div style={{
+              marginTop: 8,
+              fontSize: "clamp(14px,3vw,18px)",
+              fontWeight: 600,
+              color: "#06B6D4",
+              letterSpacing: "0.04em",
+              animation: "topPctIn 0.6s ease forwards",
+              animationDelay: "600ms",
+              opacity: 0,
+            }}>
+              Top {100 - percentile}% of population
+            </div>
+          )}
         </div>
 
         {/* ── Share button ─────────────────────────────────────────────── */}

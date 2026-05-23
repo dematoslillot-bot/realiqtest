@@ -15,14 +15,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RealIQTest — Free IQ Test: 30 Questions, 6 Cognitive Dimensions",
-  description: "Take a free IQ test with 30 visual questions across 6 cognitive dimensions. Get your IQ score instantly. Premium detailed report available for €1.99.",
-  keywords: "IQ test, free IQ test, intelligence test, cognitive assessment, Raven matrices, IQ score, online IQ test",
+  title: "RealIQTest — An Actually Free and Accurate IQ Test",
+  description: "An actually free and accurate IQ test. 27 visual questions across 6 cognitive dimensions. Get your real IQ score instantly — no email, no payment required.",
+  keywords: "IQ test, free IQ test, accurate IQ test, intelligence test, cognitive assessment, Raven matrices, IQ score, online IQ test",
   authors: [{ name: "RealIQTest", url: "https://realiqtest.co" }],
   metadataBase: new URL("https://realiqtest.co"),
   openGraph: {
-    title: "RealIQTest — Free IQ Test: 30 Questions, 6 Cognitive Dimensions",
-    description: "30 visual questions across 6 cognitive dimensions. Get your IQ score instantly. Free.",
+    title: "RealIQTest — An Actually Free and Accurate IQ Test",
+    description: "An actually free and accurate IQ test. 27 visual questions · 6 cognitive dimensions · Instant IQ score. No email required.",
     url: "https://realiqtest.co",
     siteName: "RealIQTest",
     locale: "en_US",
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "RealIQTest — Free IQ Test",
-    description: "30 questions · 6 cognitive dimensions · Instant IQ score · Free",
+    title: "RealIQTest — An Actually Free and Accurate IQ Test",
+    description: "27 questions · 6 cognitive dimensions · Instant IQ score · Actually free",
   },
   robots: {
     index: true,

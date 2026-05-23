@@ -545,6 +545,170 @@ function MirrorDisplay({ path }: { path: string }) {
   );
 }
 
+/* ── Maze display ──────────────────────────────────────────────────── */
+function MazeDisplay({ arrows }: { arrows: string[] }) {
+  const CS = 46, G = 5, PAD = 26;
+  const W = PAD * 2 + CS * 3 + G * 2;
+  const ap = (dir: string) => {
+    const m = CS / 2;
+    if (dir === "R") return `M${CS*0.17},${m-5} L${CS*0.67},${m-5} L${CS*0.67},${m-10} L${CS*0.9},${m} L${CS*0.67},${m+10} L${CS*0.67},${m+5} L${CS*0.17},${m+5} Z`;
+    if (dir === "L") return `M${CS*0.83},${m-5} L${CS*0.33},${m-5} L${CS*0.33},${m-10} L${CS*0.1},${m} L${CS*0.33},${m+10} L${CS*0.33},${m+5} L${CS*0.83},${m+5} Z`;
+    if (dir === "U") return `M${m-5},${CS*0.83} L${m-5},${CS*0.33} L${m-10},${CS*0.33} L${m},${CS*0.1} L${m+10},${CS*0.33} L${m+5},${CS*0.33} L${m+5},${CS*0.83} Z`;
+    return `M${m-5},${CS*0.17} L${m-5},${CS*0.67} L${m-10},${CS*0.67} L${m},${CS*0.9} L${m+10},${CS*0.67} L${m+5},${CS*0.67} L${m+5},${CS*0.17} Z`;
+  };
+  return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
+      <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:DIM }}>Trace mentally from START — which exit do you reach?</p>
+      <svg width={W} height={W} viewBox={`0 0 ${W} ${W}`} style={{ display:"block" }}>
+        <text x={W/2} y={13} textAnchor="middle" fontSize={9} fontWeight="700" fill={BLUE}>A</text>
+        <text x={W/2} y={W-1} textAnchor="middle" fontSize={9} fontWeight="700" fill={BLUE}>B</text>
+        <text x={W-8} y={W/2+3} textAnchor="middle" fontSize={9} fontWeight="700" fill={CYAN}>C</text>
+        <text x={9} y={W/2+3} textAnchor="middle" fontSize={9} fontWeight="700" fill={BLUE}>D</text>
+        {[0,1,2].flatMap(row => [0,1,2].map(col => {
+          const idx=row*3+col, x=PAD+col*(CS+G), y=PAD+row*(CS+G), isS=idx===0;
+          return (
+            <g key={idx} transform={`translate(${x},${y})`}>
+              <rect width={CS} height={CS} rx={4} fill={isS?"rgba(0,85,255,0.18)":"rgba(5,18,45,0.92)"} stroke={isS?BLUE:"rgba(0,85,255,0.3)"} strokeWidth={isS?1.5:1}/>
+              <path d={ap(arrows[idx])} fill={isS?"#6EB0FF":"rgba(110,176,255,0.65)"}/>
+              {isS && <text x={CS/2} y={8} textAnchor="middle" fontSize={6} fill={CYAN} fontWeight="700">START</text>}
+            </g>
+          );
+        }))}
+      </svg>
+    </div>
+  );
+}
+
+/* ── Binary code display ────────────────────────────────────────────── */
+function BinaryDisplay({ rows }: { rows: (0|1|null)[][] }) {
+  const CS=36, G=4, PAD=5, W=PAD*2+CS*4+G*3;
+  return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
+      <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:DIM }}>Each column XOR = 0 (even filled dots per column)</p>
+      <svg width={W} height={W} viewBox={`0 0 ${W} ${W}`} style={{ display:"block" }}>
+        {rows.map((row, r) => row.map((val, c) => {
+          const cx=PAD+c*(CS+G)+CS/2, cy=PAD+r*(CS+G)+CS/2, bx=PAD+c*(CS+G), by=PAD+r*(CS+G);
+          if (val===null) return (
+            <g key={`${r}${c}`}>
+              <rect x={bx} y={by} width={CS} height={CS} rx={3} fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3"/>
+              <text x={cx} y={cy+5} textAnchor="middle" fontSize={13} fill="#0055FF" fontWeight="bold">?</text>
+            </g>
+          );
+          return (
+            <g key={`${r}${c}`}>
+              <rect x={bx} y={by} width={CS} height={CS} rx={3} fill="rgba(5,18,45,0.85)" stroke="rgba(0,85,255,0.18)" strokeWidth={1}/>
+              {val===1
+                ? <circle cx={cx} cy={cy} r={11} fill="#6EB0FF" style={{ filter:"drop-shadow(0 0 4px rgba(0,85,255,0.5))" }}/>
+                : <circle cx={cx} cy={cy} r={11} fill="none" stroke="rgba(0,85,255,0.28)" strokeWidth={1.5} strokeDasharray="4,3"/>}
+            </g>
+          );
+        }))}
+      </svg>
+    </div>
+  );
+}
+
+/* ── Shadow 3D display ──────────────────────────────────────────────── */
+function Shadow3DDisplay() {
+  const u=10, ox=25, oy=22;
+  const cubes: [number,number][] = [[0,0],[1,0],[2,0],[2,1],[2,2]];
+  return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
+      <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:DIM }}>3D arrangement — find the correct FRONT silhouette</p>
+      <svg viewBox="0 0 60 45" style={{ width:"min(160px,38vw)", height:"auto" }}>
+        <rect width={60} height={45} fill="rgba(5,18,45,0.9)" rx={2}/>
+        {cubes.map(([cx,cz]) => {
+          const bx=ox+cx*u, by=oy+cx*(u/2)-cz*u;
+          const top  =`${bx},${by-u} ${bx+u},${by-u/2} ${bx},${by} ${bx-u},${by-u/2}`;
+          const right=`${bx},${by-u} ${bx+u},${by-u/2} ${bx+u},${by+u/2} ${bx},${by}`;
+          const left =`${bx-u},${by-u/2} ${bx},${by-u} ${bx},${by} ${bx-u},${by+u/2}`;
+          return (
+            <g key={`${cx}${cz}`}>
+              <polygon points={left}  fill="#6EB0FF" fillOpacity={0.28} stroke="#0055FF" strokeWidth={0.5}/>
+              <polygon points={right} fill="#6EB0FF" fillOpacity={0.50} stroke="#0055FF" strokeWidth={0.5}/>
+              <polygon points={top}   fill="#6EB0FF" fillOpacity={0.85} stroke="#0055FF" strokeWidth={0.5}/>
+            </g>
+          );
+        })}
+        <text x={30} y={43} textAnchor="middle" fontSize={5} fill={DIM}>← FRONT →</text>
+      </svg>
+    </div>
+  );
+}
+
+/* ── Origami display ────────────────────────────────────────────────── */
+function OrigamiDisplay() {
+  return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
+      <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:DIM }}>Fold → cut → unfold: which hole pattern appears?</p>
+      <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+        {[
+          { label:"Full square", jsx: <rect x={8} y={8} width={44} height={44} fill="rgba(0,85,255,0.18)" stroke="#6EB0FF" strokeWidth={1.5} rx={1}/> },
+          { label:"Fold bottom up", jsx: <><rect x={8} y={8} width={44} height={22} fill="rgba(0,85,255,0.22)" stroke="#6EB0FF" strokeWidth={1.5} rx={1}/><text x={30} y={41} textAnchor="middle" fontSize={6} fill={CYAN}>fold ↑</text></> },
+          { label:"Cut corner", jsx: <><rect x={8} y={8} width={44} height={22} fill="rgba(0,85,255,0.18)" stroke="#6EB0FF" strokeWidth={1.5} rx={1}/><circle cx={48} cy={12} r={7} fill="rgba(255,59,59,0.35)" stroke="#FF3B3B" strokeWidth={1}/><text x={48} y={14} textAnchor="middle" fontSize={8} fill="#FF3B3B">✂</text></> },
+        ].map((s, i) => (
+          <React.Fragment key={i}>
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
+              <svg width={60} height={60} viewBox="0 0 60 60">
+                <rect width={60} height={60} rx={3} fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1}/>
+                {s.jsx}
+              </svg>
+              <span style={{ fontSize:6, color:DIM }}>{s.label}</span>
+            </div>
+            {i < 2 && <span style={{ color:DIM, fontSize:14 }}>→</span>}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Shape sum display ──────────────────────────────────────────────── */
+function ShapeSumDisplay({ exA, exB, exC, qA, qB }: {
+  exA: RavenCell; exB: RavenCell; exC: RavenCell; qA: RavenCell; qB: RavenCell;
+}) {
+  const SZ=44;
+  const box: React.CSSProperties = { width:SZ, height:SZ, flexShrink:0, border:"1px solid rgba(0,85,255,0.25)", borderRadius:4, overflow:"hidden" };
+  const Op = ({ s }: { s: string }) => <span style={{ color:DIM, fontSize:20, fontWeight:300, flexShrink:0 }}>{s}</span>;
+  return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10 }}>
+      <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:DIM }}>Discover the rule → apply it to the second pair</p>
+      <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+        <div style={box}><RavenCellSVG cell={exA}/></div><Op s="+"/>
+        <div style={box}><RavenCellSVG cell={exB}/></div><Op s="="/>
+        <div style={box}><RavenCellSVG cell={exC}/></div>
+      </div>
+      <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+        <div style={box}><RavenCellSVG cell={qA}/></div><Op s="+"/>
+        <div style={box}><RavenCellSVG cell={qB}/></div><Op s="="/>
+        <div style={box}><RavenCellSVG cell={null} isQuestion={true}/></div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Symbol code display ────────────────────────────────────────────── */
+function SymCodeDisplay({ equations }: { equations: string[] }) {
+  return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6, width:"100%", maxWidth:"min(360px,calc(100vw - 48px))" }}>
+      {equations.map((eq, i) => {
+        const isQ = eq.includes("?");
+        return (
+          <div key={i} style={{
+            width:"100%", padding:"10px 20px",
+            background: isQ ? "rgba(0,85,255,0.12)" : "rgba(5,18,45,0.82)",
+            border:`1px solid ${isQ?"rgba(0,85,255,0.45)":"rgba(0,85,255,0.15)"}`,
+            borderRadius:6, fontSize: isQ?20:17, fontWeight: isQ?700:500,
+            color: isQ?"#6EB0FF":"#C0D8FF", letterSpacing:"0.1em",
+            fontFamily:"monospace", textAlign:"center",
+            boxShadow: isQ?"0 0 14px rgba(0,85,255,0.18)":"none",
+          }}>{eq}</div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ── Visual question container ──────────────────────────────────────────── */
 
 function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => void }) {
@@ -577,6 +741,18 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
       return <HeatmapDisplay grid={vis.grid} />;
     case "mirror":
       return <MirrorDisplay path={vis.path} />;
+    case "maze":
+      return <MazeDisplay arrows={vis.arrows} />;
+    case "binary":
+      return <BinaryDisplay rows={vis.rows} />;
+    case "shadow3d":
+      return <Shadow3DDisplay />;
+    case "origami":
+      return <OrigamiDisplay />;
+    case "shapesum":
+      return <ShapeSumDisplay exA={vis.exA} exB={vis.exB} exC={vis.exC} qA={vis.qA} qB={vis.qB} />;
+    case "symcode":
+      return <SymCodeDisplay equations={vis.equations} />;
   }
 }
 
@@ -638,6 +814,45 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
         <path d={vis.optPaths[idx]} fill="#6EB0FF" />
       </svg>
     );
+  }
+  if (vis?.kind === "binary") {
+    const row = vis.optRows[idx];
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 68 22">
+        {row.map((val, c) => {
+          const cx = 7 + c * 18;
+          return val === 1
+            ? <circle key={c} cx={cx} cy={11} r={7} fill="#6EB0FF"/>
+            : <circle key={c} cx={cx} cy={11} r={7} fill="none" stroke="rgba(0,85,255,0.35)" strokeWidth={1.5} strokeDasharray="4,2"/>;
+        })}
+      </svg>
+    );
+  }
+  if (vis?.kind === "shadow3d") {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 60 60">
+        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1}/>
+        <path d={vis.optGrids[idx]} fill="#6EB0FF"/>
+      </svg>
+    );
+  }
+  if (vis?.kind === "origami") {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 60 60">
+        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1}/>
+        <rect x={8} y={8} width={44} height={44} fill="none" stroke="rgba(0,85,255,0.18)" strokeWidth={0.5}/>
+        {idx === 0 && <circle cx={44} cy={16} r={7} fill="#6EB0FF"/>}
+        {idx === 1 && <><circle cx={44} cy={16} r={7} fill="#6EB0FF"/><circle cx={44} cy={44} r={7} fill="#6EB0FF"/></>}
+        {idx === 2 && <><circle cx={14} cy={14} r={6} fill="#6EB0FF"/><circle cx={46} cy={14} r={6} fill="#6EB0FF"/><circle cx={14} cy={46} r={6} fill="#6EB0FF"/><circle cx={46} cy={46} r={6} fill="#6EB0FF"/></>}
+        {idx === 3 && <circle cx={30} cy={30} r={9} fill="#6EB0FF"/>}
+      </svg>
+    );
+  }
+  if (vis?.kind === "shapesum") {
+    return <RavenCellSVG cell={vis.optCells[idx]} />;
+  }
+  if (vis?.kind === "symcode") {
+    return <span style={{ fontSize:"clamp(18px,4vw,26px)", fontWeight:800, fontFamily:"monospace", color:"#6EB0FF" }}>{vis.optVals[idx]}</span>;
   }
   return <span style={{ fontSize: "clamp(13px,3vw,16px)", lineHeight: 1.25, fontWeight: 500 }}>{opt}</span>;
 }
@@ -1068,7 +1283,8 @@ function QuizScreen() {
 
   const hasVisOpts = q.vis?.kind === "raven" || q.vis?.kind === "rotation" || q.vis?.kind === "embedded"
     || q.vis?.kind === "raven2" || q.vis?.kind === "ravenrot" || q.vis?.kind === "ravenpattern" || q.vis?.kind === "topview"
-    || q.vis?.kind === "clock" || q.vis?.kind === "heatmap" || q.vis?.kind === "mirror";
+    || q.vis?.kind === "clock" || q.vis?.kind === "heatmap" || q.vis?.kind === "mirror"
+    || q.vis?.kind === "binary" || q.vis?.kind === "shadow3d" || q.vis?.kind === "origami" || q.vis?.kind === "shapesum";
 
   const keyframes = `
     @keyframes bgPulse1 { 0%,100%{opacity:0.7} 50%{opacity:0.3} }

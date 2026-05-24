@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import NavLogo from "@/app/components/NavLogo";
 import { calculateIQ, getIQLabel, getPercentile, getCategoryResults } from "@/lib/iq-calculator";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────────── */
@@ -271,7 +272,7 @@ function ReportInner() {
     <div style={{minHeight:"100dvh",background:BG,color:TEXT,display:"flex",flexDirection:"column"}}>
       <NeuralBg/>
       <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:`1px solid ${BORD}`,background:"rgba(2,6,23,0.9)",zIndex:10,position:"relative"}}>
-        <span style={{fontSize:16,fontWeight:700}}>Real<span style={{color:B}}>IQ</span>Test</span>
+        <NavLogo />
         <span style={{fontSize:11,color:DIM_C}}>Verifying payment...</span>
       </nav>
       <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 24px",position:"relative",zIndex:1}}>
@@ -289,7 +290,7 @@ function ReportInner() {
     <div style={{minHeight:"100dvh",background:BG,color:TEXT,display:"flex",flexDirection:"column"}}>
       <NeuralBg/>
       <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:`1px solid ${BORD}`,background:"rgba(2,6,23,0.9)",zIndex:10,position:"relative"}}>
-        <span style={{fontSize:16,fontWeight:700}}>Real<span style={{color:B}}>IQ</span>Test</span>
+        <NavLogo />
         <span style={{fontSize:11,color:DIM_C}}>Redirecting to secure payment...</span>
       </nav>
       <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 24px",position:"relative",zIndex:1}}>
@@ -370,7 +371,7 @@ function ReportInner() {
         <nav style={{position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between",
           padding:"14px 28px",borderBottom:`1px solid ${BORD}`,
           background:"rgba(2,6,23,0.92)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}}>
-          <span style={{fontSize:17,fontWeight:800,letterSpacing:"-0.03em"}}>Real<span style={{color:B}}>IQ</span>Test</span>
+          <NavLogo size={17} />
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{width:8,height:8,borderRadius:"50%",background:GRN,boxShadow:`0 0 8px ${GRN}`}}/>
             <span style={{fontSize:10,color:GRN,letterSpacing:"0.14em",fontWeight:600,textTransform:"uppercase"}}>Premium Report Unlocked</span>

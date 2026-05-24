@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase, type ScoreRow } from "@/lib/supabase";
+import NavLogo from "@/app/components/NavLogo";
 
 const BLUE = "#0055FF"; const CYAN = "#06B6D4";
 const DIM = "#8AABCC"; const BG = "#050A14";
@@ -89,9 +90,7 @@ export default function LeaderboardPage() {
         padding: "14px 24px", borderBottom: `1px solid ${BORD}`,
         background: "rgba(5,10,20,0.95)", backdropFilter: "blur(18px)",
       }}>
-        <button onClick={() => router.push("/")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, fontWeight: 600, letterSpacing: "-0.02em", color: TEXT }}>
-          Real<span style={{ color: BLUE }}>IQ</span>Test
-        </button>
+        <NavLogo />
         <span style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: DIM }}>Global IQ Rankings</span>
         <button onClick={() => router.push("/test")} style={{
           fontSize: 11, padding: "8px 18px", background: BLUE, color: "#fff",

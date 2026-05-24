@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import NavLogo from "@/app/components/NavLogo";
 import { useRouter } from "next/navigation";
 import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell } from "@/lib/questions";
 import { DIFF_WEIGHTS } from "@/lib/iq-calculator";
@@ -1045,7 +1046,7 @@ export default function TestPage() {
       <div style={{ minHeight: "100dvh", background: BG, color: TEXT, display: "flex", flexDirection: "column", position: "relative", fontFamily: "'Inter',system-ui,sans-serif" }}>
         <AnimatedTestBg catIdx={0} />
         <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: `1px solid ${BORD}`, background: "rgba(2,6,23,0.9)", position: "relative", zIndex: 5 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>Real<span style={{ color: BLUE }}>IQ</span>Test</span>
+          <NavLogo />
           <button onClick={handleStartTest} style={{ fontSize: 11, color: DIM, background: "none", border: "none", cursor: "pointer" }}>Skip →</button>
         </nav>
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 20px", position: "relative", zIndex: 5 }}>

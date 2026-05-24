@@ -6,6 +6,7 @@ import { calculateIQWeighted, getIQLabel, getPercentile } from "@/lib/iq-calcula
 import { CATEGORIES } from "@/lib/questions";
 import { detectCountryCode, getCountryByCode, type CountryEntry } from "@/lib/leaderboard-data";
 import { supabase } from "@/lib/supabase";
+import NavLogo from "@/app/components/NavLogo";
 
 /* ── Animated IQ counter ─────────────────────────────────────────────────── */
 function AnimatedIQ({ target }: { target: number }) {
@@ -521,7 +522,7 @@ export default function ResultsPage() {
 
       {/* Nav */}
       <nav style={{ position:"sticky",top:0,zIndex:10,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 24px",borderBottom:`1px solid ${blue2}`,background:"rgba(5,10,20,0.95)",backdropFilter:"blur(18px)" }}>
-        <span style={{ fontSize:16,fontWeight:600,letterSpacing:"-0.02em" }}>Real<span style={{ color:blue }}>IQ</span>Test</span>
+        <NavLogo />
         <span style={{ fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",color:dim }}>Your Results</span>
       </nav>
 

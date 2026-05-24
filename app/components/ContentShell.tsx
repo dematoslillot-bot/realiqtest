@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import NavLogo from "./NavLogo";
 
 /* Shared wrapper for all content/resource pages.
    Server component — no "use client" needed. */
@@ -58,12 +59,7 @@ export default function ContentShell({ children, eyebrow, title, subtitle, maxWi
         WebkitBackdropFilter: "blur(18px)",
         position: "sticky", top: 0, zIndex: 50,
       }}>
-        <Link href="/" style={{
-          fontSize: 17, fontWeight: 600, color: "#D6E4FF",
-          textDecoration: "none", letterSpacing: "-0.02em",
-        }}>
-          Real<span style={{ color: blue, textShadow: `0 0 14px rgba(0,85,255,0.8)` }}>IQ</span>Test
-        </Link>
+        <NavLogo />
 
         <div style={{ display: "flex", gap: "24px", alignItems: "center", flexWrap: "wrap" }}>
           {NAV_LINKS.map(l => (
@@ -127,7 +123,7 @@ export default function ContentShell({ children, eyebrow, title, subtitle, maxWi
           }}>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, letterSpacing: "-0.01em" }}>
-                Real<span style={{ color: blue }}>IQ</span>Test
+                Real<span style={{ color: "#0055FF" }}>IQ</span>Test
               </div>
               <p style={{ fontSize: 12, color: dim, lineHeight: 1.7, maxWidth: 200 }}>
                 Scientifically calibrated cognitive assessment across 6 dimensions.

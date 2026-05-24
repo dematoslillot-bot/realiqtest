@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { calculateIQWeighted, getIQLabel, getPercentile } from "@/lib/iq-calculator";
 import { CATEGORIES } from "@/lib/questions";
 import { detectCountryCode, getCountryByCode, type CountryEntry } from "@/lib/leaderboard-data";
+import { supabase } from "@/lib/supabase";
 
 /* ── Animated IQ counter ─────────────────────────────────────────────────── */
 function AnimatedIQ({ target }: { target: number }) {
@@ -451,11 +452,15 @@ export default function ResultsPage() {
     count += 1;
     localStorage.setItem("tests_today", String(count));
     setTestsToday(count);
-    // Save to leaderboard localStorage
+    // Save to Supabase leaderboard (fire-and-forget, non-blocking)
+    const country = localStorage.getItem("user_country") || "";
+    supabase.from("scores").insert({ score: final, country }).then(() => {});
+
+    // Also keep localStorage copy for instant local display
     const lbEntry = {
       iq: final,
       date: new Date().toISOString(),
-      country: localStorage.getItem("user_country") || "",
+      country,
       age: localStorage.getItem("user_age") || "",
     };
     const existingEntries = JSON.parse(localStorage.getItem("lb_entries") || "[]");

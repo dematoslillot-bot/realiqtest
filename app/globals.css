@@ -349,6 +349,9 @@ body {
 .nav-links {
   display: none;
 }
+.hamburger {
+  display: flex !important;
+}
 
 /* ── Layout ────────────────────────────────────────────────────────────── */
 
@@ -668,6 +671,7 @@ body {
 @media (min-width: 768px) {
   .canvas-wrap { opacity: 1; }
   .nav-links   { display: flex !important; }
+  .hamburger   { display: none !important; }
 
   .hero-sub   { font-size: 16px; }
   .hero-ctas  { flex-direction: row; width: auto; max-width: none; }

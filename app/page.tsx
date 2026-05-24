@@ -900,6 +900,7 @@ function RadarChart() {
 export default function Home() {
   const router = useRouter();
   const navRef = useRef<HTMLElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const nav = navRef.current;
@@ -994,8 +995,65 @@ export default function Home() {
           ))}
         </ul>
 
+        {/* Hamburger — mobile only */}
+        <button
+          className="hamburger"
+          aria-label="Menu"
+          onClick={() => setMenuOpen(o => !o)}
+          style={{
+            display: "none", background: "none", border: "none",
+            cursor: "pointer", padding: 6, color: "#D6E4FF",
+          }}
+        >
+          {menuOpen ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          ) : (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="3" y1="6"  x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          )}
+        </button>
+
         <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">Start Free</button>
       </nav>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <div style={{
+          position: "fixed", top: 57, left: 0, right: 0, zIndex: 49,
+          background: "rgba(3,5,15,0.97)", backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(0,85,255,0.18)",
+          padding: "12px 0 16px",
+          display: "flex", flexDirection: "column",
+        }}>
+          {[
+            { label: "The Test",     action: () => { document.getElementById("pillars")?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
+            { label: "How It Works", action: () => { document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
+            { label: "Leaderboard",  action: () => { router.push("/leaderboard"); setMenuOpen(false); }, highlight: true },
+            { label: "Pricing",      action: () => { document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
+            { label: "Start Free →", action: () => { router.push("/test"); setMenuOpen(false); }, cta: true },
+          ].map(item => (
+            <button key={item.label} onClick={item.action} style={{
+              background: item.cta ? "linear-gradient(135deg,#0055FF,#06B6D4)" : "none",
+              border: "none", cursor: "pointer", textAlign: "left",
+              padding: "13px 24px",
+              fontSize: item.cta ? "14px" : "15px",
+              fontWeight: item.cta ? 700 : 400,
+              color: item.cta ? "#fff" : item.highlight ? "#5599FF" : "#D6E4FF",
+              margin: item.cta ? "8px 16px 0" : 0,
+              borderRadius: item.cta ? 8 : 0,
+              fontFamily: "inherit",
+              borderTop: item.cta ? "none" : "1px solid rgba(0,85,255,0.08)",
+            }}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ── Hero ── */}
       <section style={{

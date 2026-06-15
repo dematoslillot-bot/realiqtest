@@ -5,9 +5,9 @@ import NavLogo from "./NavLogo";
 /* Shared wrapper for all content/resource pages.
    Server component — no "use client" needed. */
 
-const blue  = "#5B4FFF";
-const cyan  = "#00F5D4";
-const blue2 = "rgba(91,79,255,0.15)";
+const blue  = "#0055FF";
+const cyan  = "#00AAFF";
+const blue2 = "rgba(0,85,255,0.15)";
 const dim   = "#8AABCC";
 const bg    = "#03050F";
 
@@ -47,7 +47,7 @@ interface ContentShellProps {
 
 export default function ContentShell({ children, eyebrow, title, subtitle, maxWidth = 760 }: ContentShellProps) {
   return (
-    <div style={{ background: bg, color: "#E8E8F0", minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div style={{ background: bg, color: "#D6E4FF", minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* Nav */}
       <nav style={{
@@ -73,7 +73,7 @@ export default function ContentShell({ children, eyebrow, title, subtitle, maxWi
             textTransform: "uppercase", padding: "10px 22px",
             background: blue, color: "#fff", textDecoration: "none",
             borderRadius: 2,
-            boxShadow: `0 0 16px rgba(91,79,255,0.45)`,
+            boxShadow: `0 0 16px rgba(0,85,255,0.45)`,
           }}>Take Test — Free</Link>
         </div>
       </nav>
@@ -89,14 +89,14 @@ export default function ContentShell({ children, eyebrow, title, subtitle, maxWi
             <p style={{
               fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase",
               color: cyan, marginBottom: 12,
-              textShadow: `0 0 12px rgba(0,245,212,0.6)`,
+              textShadow: `0 0 12px rgba(0,170,255,0.6)`,
             }}>{eyebrow}</p>
           )}
           <h1 style={{
             fontSize: "clamp(28px,4vw,44px)", fontWeight: 300,
             letterSpacing: "-0.02em", lineHeight: 1.1,
             marginBottom: subtitle ? 12 : 0,
-            color: "#E8E8F0",
+            color: "#D6E4FF",
           }}>{title}</h1>
           {subtitle && (
             <p style={{ fontSize: 15, color: dim, lineHeight: 1.65, maxWidth: 560, margin: 0 }}>{subtitle}</p>
@@ -123,7 +123,7 @@ export default function ContentShell({ children, eyebrow, title, subtitle, maxWi
           }}>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, letterSpacing: "-0.01em" }}>
-                Real<span style={{ color: "#5B4FFF" }}>IQ</span>Test
+                Real<span style={{ color: "#0055FF" }}>IQ</span>Test
               </div>
               <p style={{ fontSize: 12, color: dim, lineHeight: 1.7, maxWidth: 200 }}>
                 Scientifically calibrated cognitive assessment across 6 dimensions.
@@ -152,7 +152,7 @@ export default function ContentShell({ children, eyebrow, title, subtitle, maxWi
                 letterSpacing: "0.12em", textTransform: "uppercase",
                 padding: "12px 24px", background: blue, color: "#fff",
                 textDecoration: "none", borderRadius: 2,
-                boxShadow: `0 0 18px rgba(91,79,255,0.45)`,
+                boxShadow: `0 0 18px rgba(0,85,255,0.45)`,
               }}>Take Free Test</Link>
               <p style={{ fontSize: 12, color: dim, marginTop: 12, lineHeight: 1.6 }}>
                 30 questions · 6 dimensions<br />~15 minutes · No signup
@@ -176,9 +176,9 @@ export function Section({ title, children }: { title: string; children: ReactNod
       <h2 style={{
         fontSize: "clamp(18px,2.5vw,24px)", fontWeight: 400,
         letterSpacing: "-0.01em", marginBottom: 16,
-        color: "#E8E8F0",
+        color: "#D6E4FF",
         paddingBottom: 10,
-        borderBottom: "1px solid rgba(91,79,255,0.12)",
+        borderBottom: "1px solid rgba(0,85,255,0.12)",
       }}>{title}</h2>
       <div style={{ fontSize: 15, color: "#C0C8D8", lineHeight: 1.8 }}>{children}</div>
     </section>
@@ -188,13 +188,13 @@ export function Section({ title, children }: { title: string; children: ReactNod
 export function InfoCard({ icon, title, children }: { icon: string; title: string; children: ReactNode }) {
   return (
     <div style={{
-      background: "rgba(3,10,30,0.85)", border: "1px solid rgba(91,79,255,0.18)",
+      background: "rgba(3,10,30,0.85)", border: "1px solid rgba(0,85,255,0.18)",
       borderRadius: 6, padding: "20px 24px", marginBottom: 16,
       backdropFilter: "blur(12px)",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
         <span style={{ fontSize: 20 }}>{icon}</span>
-        <span style={{ fontSize: 14, fontWeight: 500, color: "#E8E8F0" }}>{title}</span>
+        <span style={{ fontSize: 14, fontWeight: 500, color: "#D6E4FF" }}>{title}</span>
       </div>
       <div style={{ fontSize: 14, color: "#C0C8D8", lineHeight: 1.75 }}>{children}</div>
     </div>
@@ -211,15 +211,15 @@ export function Table({ headers, rows }: { headers: string[]; rows: (string | Re
               <th key={i} style={{
                 textAlign: "left", padding: "10px 16px",
                 fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "#00F5D4", background: "rgba(91,79,255,0.08)",
-                borderBottom: "1px solid rgba(91,79,255,0.25)",
+                color: "#00AAFF", background: "rgba(0,85,255,0.08)",
+                borderBottom: "1px solid rgba(0,85,255,0.25)",
               }}>{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} style={{ borderBottom: "1px solid rgba(91,79,255,0.08)" }}>
+            <tr key={i} style={{ borderBottom: "1px solid rgba(0,85,255,0.08)" }}>
               {row.map((cell, j) => (
                 <td key={j} style={{ padding: "10px 16px", color: "#C0C8D8", verticalAlign: "top" }}>{cell}</td>
               ))}

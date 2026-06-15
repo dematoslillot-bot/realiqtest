@@ -3,9 +3,9 @@
 import { useState, type ReactNode } from "react";
 import ContentShell from "../components/ContentShell";
 
-const blue  = "#5B4FFF";
-const cyan  = "#00F5D4";
-const blue2 = "rgba(91,79,255,0.18)";
+const blue  = "#0055FF";
+const cyan  = "#00AAFF";
+const blue2 = "rgba(0,85,255,0.18)";
 const dim   = "#8AABCC";
 
 const FAQS: { q: string; a: string | ReactNode }[] = [
@@ -17,12 +17,12 @@ const FAQS: { q: string; a: string | ReactNode }[] = [
     q: "What does each cognitive dimension measure?",
     a: (
       <ul style={{ paddingLeft: 18, display: "flex", flexDirection: "column", gap: 8 }}>
-        <li><strong style={{ color: "#E8E8F0" }}>Logical Reasoning:</strong> Abstract pattern recognition using Raven-style progressive matrices. Measures fluid intelligence — the ability to solve novel problems without prior knowledge.</li>
-        <li><strong style={{ color: "#E8E8F0" }}>Verbal Intelligence:</strong> Vocabulary depth, analogy completion, and linguistic categorisation. Reflects crystallised intelligence and educational experience.</li>
-        <li><strong style={{ color: "#E8E8F0" }}>Spatial Reasoning:</strong> Mental rotation of 2D asymmetric shapes. Measures visual-spatial processing ability.</li>
-        <li><strong style={{ color: "#E8E8F0" }}>Numerical Ability:</strong> Pattern recognition in number series (arithmetic, geometric, Fibonacci, alternating). Measures quantitative reasoning.</li>
-        <li><strong style={{ color: "#E8E8F0" }}>Working Memory:</strong> Memorising and recalling colour sequences. Measures short-term storage capacity and attention to detail.</li>
-        <li><strong style={{ color: "#E8E8F0" }}>Processing Speed:</strong> Symbol matching and rapid mental arithmetic under tight time limits. Measures cognitive efficiency.</li>
+        <li><strong style={{ color: "#D6E4FF" }}>Logical Reasoning:</strong> Abstract pattern recognition using Raven-style progressive matrices. Measures fluid intelligence — the ability to solve novel problems without prior knowledge.</li>
+        <li><strong style={{ color: "#D6E4FF" }}>Verbal Intelligence:</strong> Vocabulary depth, analogy completion, and linguistic categorisation. Reflects crystallised intelligence and educational experience.</li>
+        <li><strong style={{ color: "#D6E4FF" }}>Spatial Reasoning:</strong> Mental rotation of 2D asymmetric shapes. Measures visual-spatial processing ability.</li>
+        <li><strong style={{ color: "#D6E4FF" }}>Numerical Ability:</strong> Pattern recognition in number series (arithmetic, geometric, Fibonacci, alternating). Measures quantitative reasoning.</li>
+        <li><strong style={{ color: "#D6E4FF" }}>Working Memory:</strong> Memorising and recalling colour sequences. Measures short-term storage capacity and attention to detail.</li>
+        <li><strong style={{ color: "#D6E4FF" }}>Processing Speed:</strong> Symbol matching and rapid mental arithmetic under tight time limits. Measures cognitive efficiency.</li>
       </ul>
     ),
   },
@@ -58,8 +58,8 @@ const FAQS: { q: string; a: string | ReactNode }[] = [
     q: "What is the difference between the Free result and the Premium Report?",
     a: (
       <div>
-        <p style={{ marginBottom: 10 }}>The <strong style={{ color: "#E8E8F0" }}>Free result</strong> includes: your overall IQ score, your population percentile, and the bell curve showing where you fall in the distribution.</p>
-        <p>The <strong style={{ color: "#E8E8F0" }}>Premium Report (€1.99)</strong> additionally includes: full per-dimension score breakdown, cognitive radar chart (spider diagram), detailed written analysis of your strengths and weaknesses, career matches aligned to your cognitive profile, personalised neuroscience-backed improvement tips for each weak dimension, famous IQ comparisons, and a downloadable PDF certificate.</p>
+        <p style={{ marginBottom: 10 }}>The <strong style={{ color: "#D6E4FF" }}>Free result</strong> includes: your overall IQ score, your population percentile, and the bell curve showing where you fall in the distribution.</p>
+        <p>The <strong style={{ color: "#D6E4FF" }}>Premium Report (€1.99)</strong> additionally includes: full per-dimension score breakdown, cognitive radar chart (spider diagram), detailed written analysis of your strengths and weaknesses, career matches aligned to your cognitive profile, personalised neuroscience-backed improvement tips for each weak dimension, famous IQ comparisons, and a downloadable PDF certificate.</p>
       </div>
     ),
   },
@@ -94,11 +94,11 @@ const FAQS: { q: string; a: string | ReactNode }[] = [
 function FAQItem({ q, a, open, onClick }: { q: string; a: string | ReactNode; open: boolean; onClick: () => void }) {
   return (
     <div style={{
-      border: `1px solid ${open ? "rgba(0,245,212,0.35)" : blue2}`,
+      border: `1px solid ${open ? "rgba(0,170,255,0.35)" : blue2}`,
       borderRadius: 6,
       overflow: "hidden",
       transition: "border-color 0.2s",
-      background: open ? "rgba(91,79,255,0.05)" : "rgba(3,10,30,0.70)",
+      background: open ? "rgba(0,85,255,0.05)" : "rgba(3,10,30,0.70)",
     }}>
       <button
         onClick={onClick}
@@ -106,7 +106,7 @@ function FAQItem({ q, a, open, onClick }: { q: string; a: string | ReactNode; op
           width: "100%", textAlign: "left", padding: "18px 24px",
           background: "none", border: "none", cursor: "pointer",
           display: "flex", justifyContent: "space-between", alignItems: "center",
-          gap: 16, color: "#E8E8F0", fontFamily: "inherit",
+          gap: 16, color: "#D6E4FF", fontFamily: "inherit",
         }}
         aria-expanded={open}
       >
@@ -161,14 +161,14 @@ export default function FAQPage() {
       <div style={{
         display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 40,
         padding: "16px 20px",
-        background: "rgba(91,79,255,0.05)", borderRadius: 6,
+        background: "rgba(0,85,255,0.05)", borderRadius: 6,
         border: `1px solid ${blue2}`,
       }}>
         <span style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: cyan, marginRight: 8 }}>Jump to:</span>
         {["How it works", "Scoring", "Results", "Privacy", "Technical"].map((t, i) => (
           <button key={i} onClick={() => setOpenIdx(i * 3)}
             style={{
-              fontSize: 12, color: dim, background: "rgba(91,79,255,0.10)",
+              fontSize: 12, color: dim, background: "rgba(0,85,255,0.10)",
               border: `1px solid ${blue2}`, borderRadius: 2, padding: "4px 12px",
               cursor: "pointer", fontFamily: "inherit",
             }}
@@ -191,10 +191,10 @@ export default function FAQPage() {
       {/* Still have questions */}
       <div style={{
         marginTop: 48, padding: "24px 28px",
-        background: "rgba(91,79,255,0.06)", border: `1px solid ${blue2}`,
+        background: "rgba(0,85,255,0.06)", border: `1px solid ${blue2}`,
         borderRadius: 6, textAlign: "center",
       }}>
-        <p style={{ fontSize: 15, color: "#E8E8F0", marginBottom: 8, fontWeight: 400 }}>
+        <p style={{ fontSize: 15, color: "#D6E4FF", marginBottom: 8, fontWeight: 400 }}>
           Still have a question?
         </p>
         <p style={{ fontSize: 14, color: dim, marginBottom: 20, lineHeight: 1.7 }}>
@@ -207,7 +207,7 @@ export default function FAQPage() {
           background: blue, color: "#fff", textDecoration: "none",
           fontSize: 11, fontWeight: 600, letterSpacing: "0.12em",
           textTransform: "uppercase", borderRadius: 2,
-          boxShadow: `0 0 16px rgba(91,79,255,0.4)`,
+          boxShadow: `0 0 16px rgba(0,85,255,0.4)`,
         }}>Contact Us</a>
       </div>
     </ContentShell>

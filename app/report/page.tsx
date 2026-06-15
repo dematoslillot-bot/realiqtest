@@ -6,15 +6,15 @@ import NavLogo from "@/app/components/NavLogo";
 import { calculateIQ, getIQLabel, getPercentile, getCategoryResults } from "@/lib/iq-calculator";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────────── */
-const B    = "#5B4FFF";
-const CYAN = "#00F5D4";
-const PURP = "#A78BFA";
+const B    = "#0055FF";
+const CYAN = "#06B6D4";
+const PURP = "#8B5CF6";
 const GOLD = "#F59E0B";
 const GRN  = "#10B981";
 const ROSE = "#FB7185";
-const BG   = "#03050F";
+const BG   = "#020617";
 const GLASS = "rgba(6,14,40,0.78)";
-const BORD  = "rgba(91,79,255,0.22)";
+const BORD  = "rgba(0,85,255,0.22)";
 const DIM_C = "#8AABCC";
 const TEXT  = "#E2EEFF";
 
@@ -23,15 +23,15 @@ const RADAR_CATS  = ["Logic","Verbal","Spatial","Numerical","Memory","Speed"];
 
 function iqGradient(v: number) {
   if (v >= 130) return "linear-gradient(135deg,#FFD700 0%,#FFA500 55%,#FF6B00 100%)";
-  if (v >= 120) return "linear-gradient(135deg,#A78BFA 0%,#6366F1 45%,#5B4FFF 100%)";
-  if (v >= 110) return "linear-gradient(135deg,#5B4FFF 0%,#00F5D4 100%)";
-  if (v >= 100) return "linear-gradient(135deg,#00F5D4 0%,#5B4FFF 100%)";
+  if (v >= 120) return "linear-gradient(135deg,#A78BFA 0%,#6366F1 45%,#0055FF 100%)";
+  if (v >= 110) return "linear-gradient(135deg,#0055FF 0%,#06B6D4 100%)";
+  if (v >= 100) return "linear-gradient(135deg,#06B6D4 0%,#0055FF 100%)";
   return              "linear-gradient(135deg,#3B82F6 0%,#64748B 100%)";
 }
 function iqGlow(v: number) {
   if (v >= 130) return "0 0 80px rgba(255,180,0,0.35), 0 0 160px rgba(255,120,0,0.15)";
-  if (v >= 120) return "0 0 80px rgba(167,139,250,0.35), 0 0 160px rgba(99,102,241,0.15)";
-  return              "0 0 80px rgba(91,79,255,0.35), 0 0 160px rgba(0,245,212,0.15)";
+  if (v >= 120) return "0 0 80px rgba(139,92,246,0.35), 0 0 160px rgba(99,102,241,0.15)";
+  return              "0 0 80px rgba(0,85,255,0.35), 0 0 160px rgba(6,182,212,0.15)";
 }
 
 /* ─── Neural network background ─────────────────────────────────────────────── */
@@ -60,21 +60,21 @@ function NeuralBg() {
           .nc{animation:nl 4.5s ease-in-out infinite}
         `}</style>
         <radialGradient id="nbg" cx="40%" cy="35%" r="60%">
-          <stop offset="0%" stopColor="#5B4FFF" stopOpacity="0.25"/>
-          <stop offset="60%" stopColor="#A78BFA" stopOpacity="0.06"/>
-          <stop offset="100%" stopColor="#03050F" stopOpacity="0"/>
+          <stop offset="0%" stopColor="#0055FF" stopOpacity="0.25"/>
+          <stop offset="60%" stopColor="#8B5CF6" stopOpacity="0.06"/>
+          <stop offset="100%" stopColor="#020617" stopOpacity="0"/>
         </radialGradient>
       </defs>
       <rect width="100" height="100" fill="url(#nbg)"/>
       {conns.map(([a,b],i)=>(
         <line key={i} className="nc"
           x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y}
-          stroke={i%3===0?"#00F5D4":i%3===1?"#5B4FFF":"#A78BFA"} strokeWidth="0.12"
+          stroke={i%3===0?"#06B6D4":i%3===1?"#0055FF":"#8B5CF6"} strokeWidth="0.12"
           style={{animationDelay:`${(i*0.19)%4.5}s`}}/>
       ))}
       {nodes.map((n,i)=>(
         <circle key={i} className="nn" cx={n.x} cy={n.y} r="0.45"
-          fill={i%3===0?"#7C6FFF":i%3===1?"#A78BFA":"#22D3EE"}
+          fill={i%3===0?"#4F8EFF":i%3===1?"#A78BFA":"#22D3EE"}
           style={{animationDelay:`${(i*0.25)%3.5}s`}}/>
       ))}
     </svg>
@@ -263,7 +263,7 @@ function ReportInner() {
   };
   const inputSt: React.CSSProperties = {
     background:"rgba(5,18,45,0.9)",border:`1px solid ${BORD}`,
-    borderRadius:4,padding:"10px 14px",fontSize:13,color:"#E8E8F0",
+    borderRadius:4,padding:"10px 14px",fontSize:13,color:"#D6E4FF",
     outline:"none",width:"100%",fontFamily:"inherit",
   };
 
@@ -271,7 +271,7 @@ function ReportInner() {
   if(screen==="verifying") return (
     <div style={{minHeight:"100dvh",background:BG,color:TEXT,display:"flex",flexDirection:"column"}}>
       <NeuralBg/>
-      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:`1px solid ${BORD}`,background:"rgba(3,5,15,0.9)",zIndex:10,position:"relative"}}>
+      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:`1px solid ${BORD}`,background:"rgba(2,6,23,0.9)",zIndex:10,position:"relative"}}>
         <NavLogo />
         <span style={{fontSize:11,color:DIM_C}}>Verifying payment...</span>
       </nav>
@@ -289,7 +289,7 @@ function ReportInner() {
   if(screen==="processing") return (
     <div style={{minHeight:"100dvh",background:BG,color:TEXT,display:"flex",flexDirection:"column"}}>
       <NeuralBg/>
-      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:`1px solid ${BORD}`,background:"rgba(3,5,15,0.9)",zIndex:10,position:"relative"}}>
+      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:`1px solid ${BORD}`,background:"rgba(2,6,23,0.9)",zIndex:10,position:"relative"}}>
         <NavLogo />
         <span style={{fontSize:11,color:DIM_C}}>Redirecting to secure payment...</span>
       </nav>
@@ -354,23 +354,23 @@ function ReportInner() {
       <div style={{minHeight:"100dvh",background:BG,color:TEXT,overflowX:"hidden"}}>
         <NeuralBg/>
         <style>{`
-          @keyframes scoreGlow{0%,100%{filter:drop-shadow(0 0 20px rgba(91,79,255,0.4))}50%{filter:drop-shadow(0 0 40px rgba(0,245,212,0.6))}}
-          @keyframes borderPulse{0%,100%{border-color:rgba(91,79,255,0.22)}50%{border-color:rgba(91,79,255,0.55)}}
+          @keyframes scoreGlow{0%,100%{filter:drop-shadow(0 0 20px rgba(0,85,255,0.4))}50%{filter:drop-shadow(0 0 40px rgba(6,182,212,0.6))}}
+          @keyframes borderPulse{0%,100%{border-color:rgba(0,85,255,0.22)}50%{border-color:rgba(0,85,255,0.55)}}
           @keyframes radarDraw{from{opacity:0;transform:scale(0.05);transform-origin:160px 160px}to{opacity:1;transform:scale(1);transform-origin:160px 160px}}
           @keyframes dotPop{from{r:0;opacity:0}to{opacity:1}}
           .radar-poly{animation:radarDraw 1s cubic-bezier(0.34,1.56,0.64,1) 0.2s both}
           .radar-dot{animation:dotPop 0.4s ease-out both}
           .score-num{animation:scoreGlow 3s ease-in-out infinite}
           .lb-card{transition:transform 200ms,box-shadow 200ms}
-          .lb-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(91,79,255,0.2)!important}
+          .lb-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,85,255,0.2)!important}
           .career-item{transition:background 200ms,border-color 200ms,transform 150ms}
-          .career-item:hover{background:rgba(91,79,255,0.12)!important;border-color:rgba(91,79,255,0.4)!important;transform:translateX(4px)}
+          .career-item:hover{background:rgba(0,85,255,0.12)!important;border-color:rgba(0,85,255,0.4)!important;transform:translateX(4px)}
         `}</style>
 
         {/* ── Nav ─────────────────────────────────────────────────────────── */}
         <nav style={{position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between",
           padding:"14px 28px",borderBottom:`1px solid ${BORD}`,
-          background:"rgba(3,5,15,0.92)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}}>
+          background:"rgba(2,6,23,0.92)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}}>
           <NavLogo size={17} />
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{width:8,height:8,borderRadius:"50%",background:GRN,boxShadow:`0 0 8px ${GRN}`}}/>
@@ -398,7 +398,7 @@ function ReportInner() {
               background:iqGradient(iq),
               WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
               textShadow:"none",
-              filter:"drop-shadow(0 0 40px rgba(91,79,255,0.4))",
+              filter:"drop-shadow(0 0 40px rgba(0,85,255,0.4))",
               letterSpacing:"-0.04em",
             }}>{displayIq}</div>
 
@@ -463,7 +463,7 @@ function ReportInner() {
                 {/* Grid rings */}
                 {[0.25,0.5,0.75,1].map((p,i)=>(
                   <polygon key={i} points={gridPts(p)} fill="none"
-                    stroke={`rgba(91,79,255,${i===3?0.18:0.08})`} strokeWidth={i===3?"0.8":"0.5"}
+                    stroke={`rgba(0,85,255,${i===3?0.18:0.08})`} strokeWidth={i===3?"0.8":"0.5"}
                     strokeDasharray={i===3?"none":"2 2"}/>
                 ))}
                 {/* Axis lines */}
@@ -532,7 +532,7 @@ function ReportInner() {
                         ...(cat.badge==="strong"
                           ?{background:"rgba(16,185,129,0.12)",color:GRN,border:`1px solid ${GRN}44`}
                           :cat.badge==="avg"
-                            ?{background:`rgba(91,79,255,0.1)`,color:B,border:`1px solid ${BORD}`}
+                            ?{background:`rgba(0,85,255,0.1)`,color:B,border:`1px solid ${BORD}`}
                             :{background:"rgba(251,113,133,0.1)",color:ROSE,border:"1px solid rgba(251,113,133,0.3)"}),
                       }}>
                         {cat.badge==="strong"?"Strength":cat.badge==="avg"?"Average":"Develop"}
@@ -601,7 +601,7 @@ function ReportInner() {
                 {careers.map((career,i)=>(
                   <div key={i} className="career-item" style={{
                     display:"flex",alignItems:"center",gap:10,padding:"10px 14px",
-                    background:"rgba(91,79,255,0.06)",border:`1px solid ${BORD}`,
+                    background:"rgba(0,85,255,0.06)",border:`1px solid ${BORD}`,
                     borderRadius:8,cursor:"default",
                   }}>
                     <div style={{color:DIM_COLORS[i%6],flexShrink:0}}><CIcon i={i}/></div>
@@ -680,7 +680,7 @@ function ReportInner() {
               background:`linear-gradient(135deg,rgba(6,14,40,0.9),rgba(10,20,55,0.9))`,
               border:`1px solid rgba(245,158,11,0.35)`,borderRadius:16,
               padding:"52px 40px",textAlign:"center",position:"relative",overflow:"hidden",
-              boxShadow:`0 0 60px rgba(245,158,11,0.08),0 0 120px rgba(91,79,255,0.06)`,
+              boxShadow:`0 0 60px rgba(245,158,11,0.08),0 0 120px rgba(0,85,255,0.06)`,
             }}>
               {/* Corner ornaments */}
               {[["top","left"],["top","right"],["bottom","left"],["bottom","right"]].map(([v,h],i)=>(
@@ -744,7 +744,7 @@ function ReportInner() {
       <NeuralBg/>
       <nav style={{position:"relative",zIndex:10,display:"flex",alignItems:"center",justifyContent:"space-between",
         padding:"16px 24px",borderBottom:`1px solid ${BORD}`,
-        background:"rgba(3,5,15,0.95)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}}>
+        background:"rgba(2,6,23,0.95)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}}>
         <span style={{fontSize:16,fontWeight:800}}>Real<span style={{color:B}}>IQ</span>Test</span>
         <span style={{fontSize:10,letterSpacing:"0.18em",textTransform:"uppercase",color:DIM_C}}>Secure Checkout</span>
       </nav>
@@ -821,7 +821,7 @@ function ReportInner() {
             </div>
             <div style={{display:"flex",gap:6}}>
               {["VISA","MC","AMEX"].map(c=>(
-                <span key={c} style={{fontSize:9,padding:"4px 8px",background:"rgba(91,79,255,0.08)",
+                <span key={c} style={{fontSize:9,padding:"4px 8px",background:"rgba(0,85,255,0.08)",
                   border:`1px solid ${BORD}`,borderRadius:4,color:DIM_C}}>{c}</span>
               ))}
             </div>
@@ -853,7 +853,7 @@ function ReportInner() {
             </div>
             <label style={{display:"flex",alignItems:"flex-start",gap:10,padding:12,borderRadius:8,cursor:"pointer",
               border:`1px solid ${errors.consent?"#FB7185":BORD}`,
-              background:errors.consent?"rgba(251,113,133,0.05)":"rgba(91,79,255,0.05)"}}>
+              background:errors.consent?"rgba(251,113,133,0.05)":"rgba(0,85,255,0.05)"}}>
               <input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)} style={{marginTop:2,accentColor:B}}/>
               <span style={{fontSize:11,color:DIM_C,lineHeight:1.5}}>
                 <strong style={{color:TEXT}}>I understand this is a digital product with immediate access.</strong>{" "}
@@ -874,18 +874,18 @@ function ReportInner() {
               style={{
                 width:"100%",padding:"20px 24px",
                 background: consent
-                  ? "linear-gradient(135deg,#5B4FFF 0%,#00C9AE 50%,#00F5D4 100%)"
-                  : "rgba(91,79,255,0.25)",
+                  ? "linear-gradient(135deg,#0055FF 0%,#0099CC 50%,#06B6D4 100%)"
+                  : "rgba(0,85,255,0.25)",
                 border:"none",borderRadius:10,
                 fontSize:17,fontWeight:800,color:"#fff",
                 cursor:consent?"pointer":"not-allowed",
                 opacity:consent?1:0.45,
-                boxShadow:consent?"0 6px 32px rgba(91,79,255,0.55),0 0 80px rgba(91,79,255,0.2),inset 0 1px 0 rgba(255,255,255,0.15)":"none",
+                boxShadow:consent?"0 6px 32px rgba(0,85,255,0.55),0 0 80px rgba(0,85,255,0.2),inset 0 1px 0 rgba(255,255,255,0.15)":"none",
                 letterSpacing:"-0.02em",
                 transition:"transform 150ms,box-shadow 150ms",
               }}
-              onMouseEnter={e=>{ if(consent){ (e.target as HTMLButtonElement).style.transform="translateY(-2px)"; (e.target as HTMLButtonElement).style.boxShadow="0 10px 40px rgba(91,79,255,0.65),0 0 100px rgba(0,245,212,0.25)"; } }}
-              onMouseLeave={e=>{ (e.target as HTMLButtonElement).style.transform="translateY(0)"; (e.target as HTMLButtonElement).style.boxShadow="0 6px 32px rgba(91,79,255,0.55),0 0 80px rgba(91,79,255,0.2)"; }}
+              onMouseEnter={e=>{ if(consent){ (e.target as HTMLButtonElement).style.transform="translateY(-2px)"; (e.target as HTMLButtonElement).style.boxShadow="0 10px 40px rgba(0,85,255,0.65),0 0 100px rgba(6,182,212,0.25)"; } }}
+              onMouseLeave={e=>{ (e.target as HTMLButtonElement).style.transform="translateY(0)"; (e.target as HTMLButtonElement).style.boxShadow="0 6px 32px rgba(0,85,255,0.55),0 0 80px rgba(0,85,255,0.2)"; }}
             >
               Unlock My Premium Report — €1.99
             </button>
@@ -917,7 +917,7 @@ export default function ReportPage() {
   return (
     <Suspense fallback={
       <div style={{minHeight:"100dvh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div className="animate-spin" style={{width:44,height:44,border:"2px solid rgba(91,79,255,0.18)",borderTopColor:"#5B4FFF",borderRadius:"50%"}}/>
+        <div className="animate-spin" style={{width:44,height:44,border:"2px solid rgba(0,85,255,0.18)",borderTopColor:"#0055FF",borderRadius:"50%"}}/>
       </div>
     }>
       <ReportInner/>

@@ -1370,6 +1370,7 @@ function QuizScreen() {
     @keyframes nodeGlow { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
     @keyframes lineGlow { 0%,100%{opacity:0.06} 50%{opacity:0.18} }
     @keyframes neuronRing { 0%{transform:scale(0.8);opacity:0.8} 100%{transform:scale(2.8);opacity:0} }
+    @keyframes node-current { 0%,100%{box-shadow:0 0 0 0 rgba(91,79,255,0.7)} 50%{box-shadow:0 0 0 5px rgba(91,79,255,0)} }
     @keyframes streakSlide { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes qFadeIn { from{opacity:0} to{opacity:1} }
     @keyframes slideOutUp { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-30px)} }

@@ -65,7 +65,7 @@ export default function CookieBanner() {
         right: 0,
         zIndex: 9999,
         background: "rgba(3,10,30,0.97)",
-        borderTop: "1px solid rgba(91,79,255,0.30)",
+        borderTop: "1px solid rgba(0,85,255,0.30)",
         backdropFilter: "blur(12px)",
         padding: "20px 24px",
         display: "flex",
@@ -73,18 +73,18 @@ export default function CookieBanner() {
         justifyContent: "space-between",
         gap: 20,
         flexWrap: "wrap",
-        boxShadow: "0 -4px 40px rgba(91,79,255,0.12)",
+        boxShadow: "0 -4px 40px rgba(0,85,255,0.12)",
       }}
     >
       {/* Text */}
       <div style={{ flex: "1 1 360px", maxWidth: 680 }}>
         <p style={{ fontSize: 13, color: "#C0C8D8", lineHeight: 1.65, margin: 0 }}>
-          <span style={{ color: "#E8E8F0", fontWeight: 500 }}>We use cookies</span>{" "}
+          <span style={{ color: "#D6E4FF", fontWeight: 500 }}>We use cookies</span>{" "}
           to analyse site traffic (Google Analytics) and improve your experience.
-          By clicking <strong style={{ color: "#E8E8F0" }}>Accept</strong>, you consent to the use of cookies for these purposes.
-          You may <strong style={{ color: "#E8E8F0" }}>Reject</strong> non-essential cookies — the test will still work normally.
+          By clicking <strong style={{ color: "#D6E4FF" }}>Accept</strong>, you consent to the use of cookies for these purposes.
+          You may <strong style={{ color: "#D6E4FF" }}>Reject</strong> non-essential cookies — the test will still work normally.
           See our{" "}
-          <a href="/privacy" style={{ color: "#00F5D4", textDecoration: "underline" }}>Privacy Policy</a>{" "}
+          <a href="/privacy" style={{ color: "#00AAFF", textDecoration: "underline" }}>Privacy Policy</a>{" "}
           for full details.
         </p>
       </div>
@@ -96,7 +96,7 @@ export default function CookieBanner() {
           style={{
             padding: "10px 20px",
             background: "transparent",
-            border: "1px solid rgba(91,79,255,0.35)",
+            border: "1px solid rgba(0,85,255,0.35)",
             color: "#C0C8D8",
             borderRadius: 3,
             fontSize: 12,
@@ -106,11 +106,11 @@ export default function CookieBanner() {
             transition: "border-color 0.2s, color 0.2s",
           }}
           onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(91,79,255,0.65)";
-            (e.currentTarget as HTMLButtonElement).style.color = "#E8E8F0";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,85,255,0.65)";
+            (e.currentTarget as HTMLButtonElement).style.color = "#D6E4FF";
           }}
           onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(91,79,255,0.35)";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,85,255,0.35)";
             (e.currentTarget as HTMLButtonElement).style.color = "#C0C8D8";
           }}
         >
@@ -120,22 +120,22 @@ export default function CookieBanner() {
           onClick={accept}
           style={{
             padding: "10px 24px",
-            background: "#5B4FFF",
-            border: "1px solid #5B4FFF",
+            background: "#0055FF",
+            border: "1px solid #0055FF",
             color: "#fff",
             borderRadius: 3,
             fontSize: 12,
             fontWeight: 600,
             letterSpacing: "0.08em",
             cursor: "pointer",
-            boxShadow: "0 0 16px rgba(91,79,255,0.45)",
+            boxShadow: "0 0 16px rgba(0,85,255,0.45)",
             transition: "box-shadow 0.2s",
           }}
           onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 24px rgba(91,79,255,0.7)";
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 24px rgba(0,85,255,0.7)";
           }}
           onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 16px rgba(91,79,255,0.45)";
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 16px rgba(0,85,255,0.45)";
           }}
         >
           Accept All

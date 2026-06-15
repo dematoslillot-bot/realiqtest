@@ -22,8 +22,8 @@ const schemaOrg = {
 };
 
 export default function HowToImproveIQPage() {
-  const blue = "#5B4FFF";
-  const cyan = "#00F5D4";
+  const blue = "#0055FF";
+  const cyan = "#00AAFF";
 
   return (
     <ContentShell
@@ -38,16 +38,16 @@ export default function HowToImproveIQPage() {
       />
       <Section title="Can You Actually Improve Your IQ?">
         <p style={{ marginBottom: 14 }}>
-          This is one of the most debated questions in cognitive psychology. The honest answer is: <strong style={{ color: "#E8E8F0" }}>it depends on what you mean by &quot;improve&quot;</strong>.
+          This is one of the most debated questions in cognitive psychology. The honest answer is: <strong style={{ color: "#D6E4FF" }}>it depends on what you mean by &quot;improve&quot;</strong>.
         </p>
         <p style={{ marginBottom: 14 }}>
-          Your <strong style={{ color: "#E8E8F0" }}>general cognitive ability (g)</strong> — the underlying factor that IQ tests measure — is substantially heritable and relatively stable in adults. Large-scale studies have not found strong evidence that any specific training programme produces lasting improvements in g itself.
+          Your <strong style={{ color: "#D6E4FF" }}>general cognitive ability (g)</strong> — the underlying factor that IQ tests measure — is substantially heritable and relatively stable in adults. Large-scale studies have not found strong evidence that any specific training programme produces lasting improvements in g itself.
         </p>
         <p style={{ marginBottom: 14 }}>
-          However, <strong style={{ color: "#E8E8F0" }}>individual cognitive dimensions can absolutely be trained</strong>. Working memory capacity, processing speed, spatial reasoning, and numerical skill all respond to targeted practice. And while trained improvements don&apos;t always &quot;transfer&quot; to general IQ, they improve performance on the specific tasks that matter in education and work.
+          However, <strong style={{ color: "#D6E4FF" }}>individual cognitive dimensions can absolutely be trained</strong>. Working memory capacity, processing speed, spatial reasoning, and numerical skill all respond to targeted practice. And while trained improvements don&apos;t always &quot;transfer&quot; to general IQ, they improve performance on the specific tasks that matter in education and work.
         </p>
         <p>
-          Additionally, <strong style={{ color: "#E8E8F0" }}>lifestyle factors</strong> — sleep quality, aerobic exercise, stress management, nutrition — have robust scientific evidence for influencing cognitive performance, sometimes dramatically. Optimising these foundations may be the highest-leverage cognitive investment available.
+          Additionally, <strong style={{ color: "#D6E4FF" }}>lifestyle factors</strong> — sleep quality, aerobic exercise, stress management, nutrition — have robust scientific evidence for influencing cognitive performance, sometimes dramatically. Optimising these foundations may be the highest-leverage cognitive investment available.
         </p>
       </Section>
 
@@ -61,27 +61,27 @@ export default function HowToImproveIQPage() {
             <li>Glymphatic cleaning — the brain&apos;s waste-removal system operates during sleep, clearing metabolic by-products including amyloid-beta proteins linked to Alzheimer&apos;s disease</li>
             <li>Neural pruning — selectively strengthening important synaptic connections while eliminating redundant ones</li>
           </ul>
-          <p style={{ marginTop: 10 }}><strong style={{ color: "#E8E8F0" }}>Practical target:</strong> 7–9 hours of sleep per night for adults, with consistent sleep and wake times. Even a single night of full sleep after a period of restriction can restore most cognitive performance.</p>
+          <p style={{ marginTop: 10 }}><strong style={{ color: "#D6E4FF" }}>Practical target:</strong> 7–9 hours of sleep per night for adults, with consistent sleep and wake times. Even a single night of full sleep after a period of restriction can restore most cognitive performance.</p>
         </InfoCard>
 
         <InfoCard icon="🏃" title="Aerobic Exercise — Brain Volume & BDNF">
           <p style={{ marginBottom: 10 }}>Aerobic exercise is one of the most robustly proven cognitive enhancers available without a prescription. A meta-analysis of 29 randomised controlled trials found that regular aerobic exercise produces a mean improvement of 0.52 standard deviations in cognitive function — equivalent to raising IQ by approximately 8 points from a baseline of 100.</p>
           <p>Mechanisms include: increased secretion of BDNF (brain-derived neurotrophic factor), which promotes neurogenesis in the hippocampus; improved cerebrovascular health and cerebral blood flow; and reduced cortisol levels, which improve prefrontal cortex function.</p>
-          <p style={{ marginTop: 10 }}><strong style={{ color: "#E8E8F0" }}>Practical target:</strong> 150+ minutes of moderate-intensity aerobic exercise per week (brisk walking, cycling, swimming) or 75+ minutes of vigorous exercise. Even a single 20-minute session produces acute cognitive improvements lasting several hours.</p>
+          <p style={{ marginTop: 10 }}><strong style={{ color: "#D6E4FF" }}>Practical target:</strong> 150+ minutes of moderate-intensity aerobic exercise per week (brisk walking, cycling, swimming) or 75+ minutes of vigorous exercise. Even a single 20-minute session produces acute cognitive improvements lasting several hours.</p>
         </InfoCard>
 
         <InfoCard icon="🧘" title="Stress Management — Cortisol & the Prefrontal Cortex">
           <p>Chronic stress dramatically impairs prefrontal cortex function — the brain region responsible for planning, working memory, and cognitive control. Stress reduces dendritic branching in the prefrontal cortex and shifts neural processing towards the more automatic, reactive limbic system. Mindfulness meditation (8-week MBSR programmes) has been shown in RCTs to reduce cortisol, increase grey matter density in the hippocampus, and improve sustained attention and working memory.</p>
-          <p style={{ marginTop: 10 }}><strong style={{ color: "#E8E8F0" }}>Practical target:</strong> Daily 10-20 minutes of mindfulness meditation, combined with regular sleep, exercise, and social connection — the most effective long-term stress reduction protocol.</p>
+          <p style={{ marginTop: 10 }}><strong style={{ color: "#D6E4FF" }}>Practical target:</strong> Daily 10-20 minutes of mindfulness meditation, combined with regular sleep, exercise, and social connection — the most effective long-term stress reduction protocol.</p>
         </InfoCard>
 
         <InfoCard icon="🥗" title="Nutrition — What Feeds the Brain">
           <p>Key dietary factors with strong cognitive evidence:</p>
           <ul style={{ paddingLeft: 16, marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
-            <li><strong style={{ color: "#E8E8F0" }}>Omega-3 fatty acids</strong> (DHA/EPA) — essential for synaptic plasticity; found in fatty fish, walnuts, flaxseed</li>
-            <li><strong style={{ color: "#E8E8F0" }}>Hydration</strong> — even 2% dehydration measurably impairs short-term memory and attention</li>
-            <li><strong style={{ color: "#E8E8F0" }}>Glucose regulation</strong> — stable blood sugar (avoid sugar spikes) sustains cognitive performance across the day</li>
-            <li><strong style={{ color: "#E8E8F0" }}>Mediterranean diet</strong> — the dietary pattern with the strongest evidence for cognitive preservation with age</li>
+            <li><strong style={{ color: "#D6E4FF" }}>Omega-3 fatty acids</strong> (DHA/EPA) — essential for synaptic plasticity; found in fatty fish, walnuts, flaxseed</li>
+            <li><strong style={{ color: "#D6E4FF" }}>Hydration</strong> — even 2% dehydration measurably impairs short-term memory and attention</li>
+            <li><strong style={{ color: "#D6E4FF" }}>Glucose regulation</strong> — stable blood sugar (avoid sugar spikes) sustains cognitive performance across the day</li>
+            <li><strong style={{ color: "#D6E4FF" }}>Mediterranean diet</strong> — the dietary pattern with the strongest evidence for cognitive preservation with age</li>
           </ul>
         </InfoCard>
       </Section>
@@ -152,16 +152,16 @@ export default function HowToImproveIQPage() {
           <div key={i} style={{ marginBottom: 40 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <span style={{ fontSize: 20 }}>{dim.icon}</span>
-              <h3 style={{ fontSize: 18, fontWeight: 400, color: "#E8E8F0" }}>{dim.name}</h3>
+              <h3 style={{ fontSize: 18, fontWeight: 400, color: "#D6E4FF" }}>{dim.name}</h3>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {dim.strategies.map((s, j) => (
                 <div key={j} style={{
                   padding: "14px 18px",
-                  background: "rgba(3,10,30,0.80)", border: "1px solid rgba(91,79,255,0.14)",
+                  background: "rgba(3,10,30,0.80)", border: "1px solid rgba(0,85,255,0.14)",
                   borderRadius: 4,
                 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: i % 2 === 0 ? "#7AC0FF" : "#33F0DA", marginBottom: 5 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: i % 2 === 0 ? "#7AC0FF" : "#00CCFF", marginBottom: 5 }}>
                     {j + 1}. {s.title}
                   </div>
                   <div style={{ fontSize: 13, color: "#C0C8D8", lineHeight: 1.7 }}>{s.desc}</div>
@@ -177,27 +177,27 @@ export default function HowToImproveIQPage() {
           Based on the research evidence, here is what you can realistically expect from a dedicated 8-12 week cognitive training programme:
         </p>
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-          <li><strong style={{ color: "#E8E8F0" }}>Working memory:</strong> 10-20% improvement on trained tasks; some evidence of transfer to fluid intelligence</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Processing speed:</strong> 15-30% improvement in reaction time and discrimination speed with targeted practice</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Spatial reasoning:</strong> 15-25% improvement with mental rotation practice — one of the largest trainable effects</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Verbal ability:</strong> Ongoing vocabulary growth with consistent reading; 5-15 new words per week is achievable</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Lifestyle interventions:</strong> Sleep, exercise, and stress management can produce 5-15% performance improvements even without any cognitive training</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Working memory:</strong> 10-20% improvement on trained tasks; some evidence of transfer to fluid intelligence</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Processing speed:</strong> 15-30% improvement in reaction time and discrimination speed with targeted practice</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Spatial reasoning:</strong> 15-25% improvement with mental rotation practice — one of the largest trainable effects</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Verbal ability:</strong> Ongoing vocabulary growth with consistent reading; 5-15 new words per week is achievable</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Lifestyle interventions:</strong> Sleep, exercise, and stress management can produce 5-15% performance improvements even without any cognitive training</li>
         </ul>
         <p style={{ marginTop: 14 }}>
-          The most important principle: <strong style={{ color: "#E8E8F0" }}>specificity of training</strong>. You improve most on tasks similar to what you practise. Broad lifestyle improvements (sleep, exercise, nutrition) produce the most general cognitive benefits; specific cognitive exercises improve performance on similar tasks.
+          The most important principle: <strong style={{ color: "#D6E4FF" }}>specificity of training</strong>. You improve most on tasks similar to what you practise. Broad lifestyle improvements (sleep, exercise, nutrition) produce the most general cognitive benefits; specific cognitive exercises improve performance on similar tasks.
         </p>
       </Section>
 
       <div style={{ marginTop: 40, display: "flex", gap: 16, flexWrap: "wrap" }}>
         <a href="/cognitive-dimensions" style={{
-          padding: "12px 24px", background: "rgba(91,79,255,0.12)",
-          border: "1px solid rgba(91,79,255,0.30)", color: cyan,
+          padding: "12px 24px", background: "rgba(0,85,255,0.12)",
+          border: "1px solid rgba(0,85,255,0.30)", color: cyan,
           textDecoration: "none", borderRadius: 4, fontSize: 13,
         }}>The 6 Dimensions Explained →</a>
         <a href="/test" style={{
           padding: "12px 24px", background: blue, color: "#fff",
           textDecoration: "none", borderRadius: 4, fontSize: 13,
-          boxShadow: "0 0 16px rgba(91,79,255,0.45)",
+          boxShadow: "0 0 16px rgba(0,85,255,0.45)",
         }}>Test Your Baseline Now →</a>
       </div>
     </ContentShell>

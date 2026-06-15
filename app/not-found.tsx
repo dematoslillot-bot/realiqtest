@@ -5,9 +5,9 @@ export const metadata = {
   description: "The page you were looking for doesn't exist. Return to the RealIQTest homepage.",
 };
 
-const blue  = "#5B4FFF";
-const cyan  = "#00F5D4";
-const blue2 = "rgba(91,79,255,0.18)";
+const blue  = "#0055FF";
+const cyan  = "#00AAFF";
+const blue2 = "rgba(0,85,255,0.18)";
 const dim   = "#8AABCC";
 const bg    = "#03050F";
 
@@ -26,7 +26,7 @@ export default function NotFound() {
   return (
     <div style={{
       background: bg,
-      color: "#E8E8F0",
+      color: "#D6E4FF",
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
@@ -42,7 +42,7 @@ export default function NotFound() {
         borderBottom: `1px solid ${blue2}`,
         flexShrink: 0,
       }}>
-        <Link href="/" style={{ textDecoration: "none", color: "#E8E8F0", fontWeight: 500, letterSpacing: "0.05em", fontSize: 15 }}>
+        <Link href="/" style={{ textDecoration: "none", color: "#D6E4FF", fontWeight: 500, letterSpacing: "0.05em", fontSize: 15 }}>
           RealIQTest
         </Link>
         <Link href="/test" style={{
@@ -55,7 +55,7 @@ export default function NotFound() {
           letterSpacing: "0.10em",
           textTransform: "uppercase",
           borderRadius: 2,
-          boxShadow: "0 0 14px rgba(91,79,255,0.45)",
+          boxShadow: "0 0 14px rgba(0,85,255,0.45)",
         }}>
           Take Test — Free
         </Link>
@@ -82,7 +82,7 @@ export default function NotFound() {
           WebkitBackgroundClip: "text",
           backgroundClip: "text",
           marginBottom: 24,
-          filter: "drop-shadow(0 0 40px rgba(91,79,255,0.3))",
+          filter: "drop-shadow(0 0 40px rgba(0,85,255,0.3))",
         }}>
           404
         </div>
@@ -91,7 +91,7 @@ export default function NotFound() {
           Page Not Found
         </p>
 
-        <h1 style={{ fontSize: "clamp(18px, 3vw, 28px)", fontWeight: 300, color: "#E8E8F0", marginBottom: 14, maxWidth: 480 }}>
+        <h1 style={{ fontSize: "clamp(18px, 3vw, 28px)", fontWeight: 300, color: "#D6E4FF", marginBottom: 14, maxWidth: 480 }}>
           This page doesn&apos;t exist — but your cognitive potential does.
         </h1>
 
@@ -111,7 +111,7 @@ export default function NotFound() {
           letterSpacing: "0.12em",
           textTransform: "uppercase",
           borderRadius: 2,
-          boxShadow: "0 0 24px rgba(91,79,255,0.5)",
+          boxShadow: "0 0 24px rgba(0,85,255,0.5)",
           marginBottom: 48,
         }}>
           Take the Free IQ Test
@@ -128,7 +128,7 @@ export default function NotFound() {
           {LINKS.map(l => (
             <Link key={l.href} href={l.href} style={{
               padding: "11px 16px",
-              background: "rgba(91,79,255,0.06)",
+              background: "rgba(0,85,255,0.06)",
               border: `1px solid ${blue2}`,
               color: "#C0C8D8",
               textDecoration: "none",

@@ -6,9 +6,9 @@ import Link from "next/link";
 import { supabase, type ScoreRow } from "@/lib/supabase";
 import NavLogo from "@/app/components/NavLogo";
 
-const BLUE = "#5B4FFF"; const CYAN = "#00F5D4";
-const DIM = "#8AABCC"; const BG = "#03050F";
-const BORD = "rgba(91,79,255,0.16)"; const TEXT = "#EFEFF7";
+const BLUE = "#0055FF"; const CYAN = "#06B6D4";
+const DIM = "#8AABCC"; const BG = "#050A14";
+const BORD = "rgba(0,85,255,0.16)"; const TEXT = "#E8F0FF";
 
 /* Country code → flag emoji */
 function flag(code: string) {
@@ -19,7 +19,7 @@ function flag(code: string) {
 function ScoreBar({ score }: { score: number }) {
   const pct = Math.max(5, Math.min(98, ((score - 70) / 80) * 100));
   return (
-    <div style={{ height: 4, background: "rgba(91,79,255,0.12)", borderRadius: 2, overflow: "hidden", flex: 1 }}>
+    <div style={{ height: 4, background: "rgba(0,85,255,0.12)", borderRadius: 2, overflow: "hidden", flex: 1 }}>
       <div style={{
         height: "100%", width: `${pct}%`,
         background: `linear-gradient(90deg, ${BLUE}, ${CYAN})`,
@@ -35,7 +35,7 @@ function Skeleton() {
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} style={{
           height: 52, borderRadius: 10,
-          background: "rgba(91,79,255,0.05)",
+          background: "rgba(0,85,255,0.05)",
           border: `1px solid ${BORD}`,
           animation: "pulse 1.6s ease-in-out infinite",
           animationDelay: `${i * 80}ms`,
@@ -96,7 +96,7 @@ export default function LeaderboardPage() {
           fontSize: 11, padding: "8px 18px", background: BLUE, color: "#fff",
           border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600,
           letterSpacing: "0.08em", textTransform: "uppercase",
-          boxShadow: "0 0 14px rgba(91,79,255,0.4)",
+          boxShadow: "0 0 14px rgba(0,85,255,0.4)",
         }}>Take Test</button>
       </nav>
 
@@ -132,7 +132,7 @@ export default function LeaderboardPage() {
         {/* Empty state */}
         {!loading && !error && rows.length === 0 && (
           <div style={{ background: "rgba(6,14,40,0.78)", border: `1px solid ${BORD}`, backdropFilter: "blur(20px)", borderRadius: 16, padding: "56px 32px", textAlign: "center" }}>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", margin: "0 auto 24px", background: "rgba(91,79,255,0.08)", border: `1px solid rgba(91,79,255,0.25)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 72, height: 72, borderRadius: "50%", margin: "0 auto 24px", background: "rgba(0,85,255,0.08)", border: `1px solid rgba(0,85,255,0.25)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={CYAN} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -147,7 +147,7 @@ export default function LeaderboardPage() {
               fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
               padding: "14px 36px", background: `linear-gradient(135deg,${BLUE},${CYAN})`,
               color: "#fff", border: "none", borderRadius: 8, cursor: "pointer",
-              boxShadow: "0 0 24px rgba(91,79,255,0.5)",
+              boxShadow: "0 0 24px rgba(0,85,255,0.5)",
             }}>Take the Free IQ Test →</button>
           </div>
         )}
@@ -163,15 +163,15 @@ export default function LeaderboardPage() {
             </div>
 
             {rows.map((row, i) => {
-              const iqColor = row.score >= 130 ? "#A78BFA" : row.score >= 120 ? CYAN : row.score >= 110 ? BLUE : DIM;
+              const iqColor = row.score >= 130 ? "#8B5CF6" : row.score >= 120 ? CYAN : row.score >= 110 ? BLUE : DIM;
               const dateStr = new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
               const isTop3  = i < 3;
               return (
                 <div key={row.id} style={{
                   display: "grid", gridTemplateColumns: "40px 1fr 60px 80px",
                   gap: 12, padding: "14px 16px",
-                  background: isTop3 ? "rgba(91,79,255,0.07)" : "rgba(6,14,40,0.5)",
-                  border: `1px solid ${isTop3 ? "rgba(91,79,255,0.28)" : BORD}`,
+                  background: isTop3 ? "rgba(0,85,255,0.07)" : "rgba(6,14,40,0.5)",
+                  border: `1px solid ${isTop3 ? "rgba(0,85,255,0.28)" : BORD}`,
                   borderRadius: 10, alignItems: "center",
                   animation: `fadeUp 0.4s ease forwards`,
                   animationDelay: `${Math.min(i * 40, 600)}ms`,
@@ -202,7 +202,7 @@ export default function LeaderboardPage() {
               { label: "Avg score", value: rows.length ? Math.round(rows.reduce((s, r) => s + r.score, 0) / rows.length) : "—" },
               { label: "Total tests", value: total !== null ? total.toLocaleString() : "—" },
             ].map(({ label, value }) => (
-              <div key={label} style={{ background: "rgba(91,79,255,0.05)", border: `1px solid ${BORD}`, borderRadius: 10, padding: "16px 12px", textAlign: "center" }}>
+              <div key={label} style={{ background: "rgba(0,85,255,0.05)", border: `1px solid ${BORD}`, borderRadius: 10, padding: "16px 12px", textAlign: "center" }}>
                 <p style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: DIM, marginBottom: 6 }}>{label}</p>
                 <p style={{ fontSize: 26, fontWeight: 700, color: CYAN }}>{value}</p>
               </div>

@@ -22,8 +22,8 @@ const schemaOrg = {
 };
 
 export default function WhatIsIQPage() {
-  const cyan = "#00F5D4";
-  const blue = "#5B4FFF";
+  const cyan = "#00AAFF";
+  const blue = "#0055FF";
 
   return (
     <ContentShell
@@ -39,16 +39,16 @@ export default function WhatIsIQPage() {
 
       <Section title="The Definition of IQ">
         <p style={{ marginBottom: 14 }}>
-          IQ stands for <strong style={{ color: "#E8E8F0" }}>Intelligence Quotient</strong>. It is a numerical score derived from a standardised test designed to assess human intelligence. The term &quot;quotient&quot; comes from the original calculation method: a child&apos;s mental age (determined by test performance) divided by their chronological age, multiplied by 100. This ratio produced the original IQ score. A 10-year-old performing at the level of a typical 12-year-old would have an IQ of 120 (12 ÷ 10 × 100).
+          IQ stands for <strong style={{ color: "#D6E4FF" }}>Intelligence Quotient</strong>. It is a numerical score derived from a standardised test designed to assess human intelligence. The term &quot;quotient&quot; comes from the original calculation method: a child&apos;s mental age (determined by test performance) divided by their chronological age, multiplied by 100. This ratio produced the original IQ score. A 10-year-old performing at the level of a typical 12-year-old would have an IQ of 120 (12 ÷ 10 × 100).
         </p>
         <p style={{ marginBottom: 14 }}>
-          Today, modern IQ tests use a different method called <strong style={{ color: "#E8E8F0" }}>deviation IQ</strong>, introduced by David Wechsler in 1939. Rather than the mental age ratio, deviation IQ compares an individual&apos;s performance to a large normative sample of the same age group. The score is expressed on a scale where 100 represents exactly average performance for that age group, and 15 points equals one standard deviation. This is the system used by all major intelligence batteries today — WAIS-IV, Stanford-Binet 5, and Cattell Culture Fair.
+          Today, modern IQ tests use a different method called <strong style={{ color: "#D6E4FF" }}>deviation IQ</strong>, introduced by David Wechsler in 1939. Rather than the mental age ratio, deviation IQ compares an individual&apos;s performance to a large normative sample of the same age group. The score is expressed on a scale where 100 represents exactly average performance for that age group, and 15 points equals one standard deviation. This is the system used by all major intelligence batteries today — WAIS-IV, Stanford-Binet 5, and Cattell Culture Fair.
         </p>
         <p style={{ marginBottom: 14 }}>
           IQ tests measure a variety of cognitive abilities, including abstract reasoning, verbal comprehension, working memory, processing speed, and spatial visualisation. Most major IQ batteries — including the Wechsler Adult Intelligence Scale (WAIS-IV) and the Stanford-Binet 5 — produce both a composite (full-scale) IQ and subscale scores for individual cognitive domains.
         </p>
         <p>
-          The concept underlying all IQ tests is the <strong style={{ color: "#E8E8F0" }}>general factor (g)</strong>, first identified by British psychologist Charles Spearman in 1904. Spearman observed that people who performed well on one cognitive test tended to perform well on all cognitive tests — suggesting a common underlying ability. This general intelligence factor, g, is the most replicated finding in all of cognitive psychology and forms the theoretical foundation of modern IQ testing.
+          The concept underlying all IQ tests is the <strong style={{ color: "#D6E4FF" }}>general factor (g)</strong>, first identified by British psychologist Charles Spearman in 1904. Spearman observed that people who performed well on one cognitive test tended to perform well on all cognitive tests — suggesting a common underlying ability. This general intelligence factor, g, is the most replicated finding in all of cognitive psychology and forms the theoretical foundation of modern IQ testing.
         </p>
       </Section>
 
@@ -78,20 +78,20 @@ export default function WhatIsIQPage() {
 
       <Section title="The Normal Distribution of IQ">
         <p style={{ marginBottom: 14 }}>
-          IQ scores in the population follow a <strong style={{ color: "#E8E8F0" }}>normal distribution</strong> (the famous &quot;bell curve&quot;): most people cluster around the average of 100, with progressively fewer people at the extremes. This distribution has specific mathematical properties:
+          IQ scores in the population follow a <strong style={{ color: "#D6E4FF" }}>normal distribution</strong> (the famous &quot;bell curve&quot;): most people cluster around the average of 100, with progressively fewer people at the extremes. This distribution has specific mathematical properties:
         </p>
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
-          <li><strong style={{ color: "#E8E8F0" }}>68%</strong> of people score between 85 and 115 (one standard deviation either side of 100)</li>
-          <li><strong style={{ color: "#E8E8F0" }}>95%</strong> of people score between 70 and 130 (two standard deviations)</li>
-          <li><strong style={{ color: "#E8E8F0" }}>99.7%</strong> of people score between 55 and 145 (three standard deviations)</li>
-          <li>Only about <strong style={{ color: "#E8E8F0" }}>2.3%</strong> of people score above 130 (commonly cited as the threshold for &quot;gifted&quot; classification)</li>
-          <li>Only about <strong style={{ color: "#E8E8F0" }}>0.13%</strong> of people score above 145</li>
+          <li><strong style={{ color: "#D6E4FF" }}>68%</strong> of people score between 85 and 115 (one standard deviation either side of 100)</li>
+          <li><strong style={{ color: "#D6E4FF" }}>95%</strong> of people score between 70 and 130 (two standard deviations)</li>
+          <li><strong style={{ color: "#D6E4FF" }}>99.7%</strong> of people score between 55 and 145 (three standard deviations)</li>
+          <li>Only about <strong style={{ color: "#D6E4FF" }}>2.3%</strong> of people score above 130 (commonly cited as the threshold for &quot;gifted&quot; classification)</li>
+          <li>Only about <strong style={{ color: "#D6E4FF" }}>0.13%</strong> of people score above 145</li>
         </ul>
         <p style={{ marginBottom: 14 }}>
           This symmetrical distribution means IQ scores above and below the mean are equally common. A score of 115 (one standard deviation above average) is just as unusual as a score of 85 (one standard deviation below average) — each occurs in approximately 16% of the population.
         </p>
         <p>
-          The normal distribution of IQ is the result of IQ test <strong style={{ color: "#E8E8F0" }}>norming</strong>: each new edition of an IQ test is administered to a large representative sample of the population, and the scoring is adjusted so that the population average equals exactly 100. This renorming process is necessary because average IQ scores have been rising over time (the Flynn Effect), and without renorming, old tests would produce inflated scores for modern test-takers.
+          The normal distribution of IQ is the result of IQ test <strong style={{ color: "#D6E4FF" }}>norming</strong>: each new edition of an IQ test is administered to a large representative sample of the population, and the scoring is adjusted so that the population average equals exactly 100. This renorming process is necessary because average IQ scores have been rising over time (the Flynn Effect), and without renorming, old tests would produce inflated scores for modern test-takers.
         </p>
       </Section>
 
@@ -116,7 +116,7 @@ export default function WhatIsIQPage() {
 
       <Section title="What IQ Measures — and What It Doesn't">
         <p style={{ marginBottom: 14 }}>
-          IQ tests primarily measure <strong style={{ color: "#E8E8F0" }}>g</strong> — the general factor of cognitive ability identified by Charles Spearman in 1904. This general factor underlies performance across diverse cognitive tasks and is the most stable, heritable, and predictive cognitive construct known to psychology. IQ scores correlate meaningfully with:
+          IQ tests primarily measure <strong style={{ color: "#D6E4FF" }}>g</strong> — the general factor of cognitive ability identified by Charles Spearman in 1904. This general factor underlies performance across diverse cognitive tasks and is the most stable, heritable, and predictive cognitive construct known to psychology. IQ scores correlate meaningfully with:
         </p>
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
           <li>Academic achievement (r ≈ 0.50 — a strong and well-replicated correlation)</li>
@@ -127,7 +127,7 @@ export default function WhatIsIQPage() {
           <li>Learning rate for complex skills (r ≈ 0.40–0.60)</li>
         </ul>
         <p style={{ marginBottom: 14 }}>
-          However, IQ does <strong style={{ color: "#E8E8F0" }}>not</strong> measure many important human capacities:
+          However, IQ does <strong style={{ color: "#D6E4FF" }}>not</strong> measure many important human capacities:
         </p>
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
           <li>Emotional intelligence (EQ) and interpersonal skills</li>
@@ -145,23 +145,23 @@ export default function WhatIsIQPage() {
 
       <Section title="Nature vs Nurture — What Determines IQ?">
         <p style={{ marginBottom: 14 }}>
-          IQ is influenced by both genetic and environmental factors. Twin and adoption studies consistently show that heritability of IQ in adults is approximately <strong style={{ color: "#E8E8F0" }}>50–80%</strong> — meaning genetics explains 50–80% of the variance in IQ scores between individuals in a given environment. This heritability estimate increases with age: the influence of genetics on IQ grows stronger from childhood to adulthood, while shared environmental influences (family, school) diminish.
+          IQ is influenced by both genetic and environmental factors. Twin and adoption studies consistently show that heritability of IQ in adults is approximately <strong style={{ color: "#D6E4FF" }}>50–80%</strong> — meaning genetics explains 50–80% of the variance in IQ scores between individuals in a given environment. This heritability estimate increases with age: the influence of genetics on IQ grows stronger from childhood to adulthood, while shared environmental influences (family, school) diminish.
         </p>
         <p style={{ marginBottom: 14 }}>
           The remaining variance comes from environmental factors including:
         </p>
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-          <li><strong style={{ color: "#E8E8F0" }}>Education:</strong> Access to quality schooling, especially in early childhood, strongly influences IQ scores. Years of education causally increases IQ by approximately 1–5 points per year of schooling.</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Nutrition:</strong> Iodine deficiency, malnutrition, and lead exposure all measurably reduce cognitive development. Adequate nutrition in the first 1,000 days of life is critical for cognitive development.</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Socioeconomic environment:</strong> Chronic stress and limited cognitive stimulation in childhood reduce IQ. The IQ gap between low and high-SES children narrows significantly when environmental quality is equalised.</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Physical health:</strong> Exercise, sleep quality, and cardiovascular health all influence cognitive performance. Aerobic fitness is associated with larger hippocampal volume and better executive function.</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Flynn Effect:</strong> Average IQ scores have risen by approximately 3 points per decade throughout the 20th century, likely due to improved education, nutrition, and environmental stimulation — direct evidence that IQ can be raised by environmental improvement.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Education:</strong> Access to quality schooling, especially in early childhood, strongly influences IQ scores. Years of education causally increases IQ by approximately 1–5 points per year of schooling.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Nutrition:</strong> Iodine deficiency, malnutrition, and lead exposure all measurably reduce cognitive development. Adequate nutrition in the first 1,000 days of life is critical for cognitive development.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Socioeconomic environment:</strong> Chronic stress and limited cognitive stimulation in childhood reduce IQ. The IQ gap between low and high-SES children narrows significantly when environmental quality is equalised.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Physical health:</strong> Exercise, sleep quality, and cardiovascular health all influence cognitive performance. Aerobic fitness is associated with larger hippocampal volume and better executive function.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Flynn Effect:</strong> Average IQ scores have risen by approximately 3 points per decade throughout the 20th century, likely due to improved education, nutrition, and environmental stimulation — direct evidence that IQ can be raised by environmental improvement.</li>
         </ul>
       </Section>
 
       <Section title="The Flynn Effect — Rising IQ Scores Over Time">
         <p style={{ marginBottom: 14 }}>
-          One of the most striking findings in intelligence research is the <strong style={{ color: "#E8E8F0" }}>Flynn Effect</strong>: average IQ scores have increased by approximately 3 points per decade in developed nations throughout the 20th century. Named after researcher James Flynn, who documented the phenomenon across 14 countries, the Flynn Effect implies that if today&apos;s children took a test normed in 1950, they would score approximately 30 points higher — a two standard deviation advantage.
+          One of the most striking findings in intelligence research is the <strong style={{ color: "#D6E4FF" }}>Flynn Effect</strong>: average IQ scores have increased by approximately 3 points per decade in developed nations throughout the 20th century. Named after researcher James Flynn, who documented the phenomenon across 14 countries, the Flynn Effect implies that if today&apos;s children took a test normed in 1950, they would score approximately 30 points higher — a two standard deviation advantage.
         </p>
         <p style={{ marginBottom: 14 }}>
           The Flynn Effect is too large and too fast to be explained by genetics, ruling out a purely hereditary explanation for the IQ increases. The most likely causes include better nutrition (especially in the first years of life), expansion of formal education, increased familiarity with abstract and hypothetical thinking, reduced exposure to environmental toxins such as lead, and a more cognitively stimulating environment through technology and media.
@@ -176,35 +176,35 @@ export default function WhatIsIQPage() {
           IQ is one of the most misunderstood concepts in popular culture. Here are some important clarifications:
         </p>
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-          <li><strong style={{ color: "#E8E8F0" }}>IQ is not fixed for life:</strong> While IQ is relatively stable in adults, it can change — especially during childhood and adolescence, and following major environmental changes such as severe illness, brain injury, or dramatic changes in education and cognitive stimulation.</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Higher isn&apos;t always better:</strong> Beyond a threshold of approximately IQ 120, additional IQ points contribute diminishing returns to most life outcomes. The difference between IQ 140 and IQ 160 is far less practically significant than the difference between 80 and 100.</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Online scores are estimates:</strong> Pop-psychology online tests often inflate scores to make users feel good — sometimes by 15–25 points. Our test is designed to be honest and calibrated. See our <a href="/about" style={{ color: cyan }}>About page</a> for details on our scoring methodology.</li>
-          <li><strong style={{ color: "#E8E8F0" }}>IQ doesn&apos;t define potential:</strong> Motivation, emotional regulation, social skills, and environment are equally if not more important than IQ in determining success, wellbeing, and life satisfaction.</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Group differences are not individual differences:</strong> Statistical averages between groups say nothing about any individual. IQ is always an individual measure, not a group label.</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Culture matters:</strong> IQ tests, including Raven matrices, are more culture-fair than verbal tests — but no test is fully culture-free. Familiarity with test-taking conventions, abstract thinking styles, and competitive performance settings all influence results.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>IQ is not fixed for life:</strong> While IQ is relatively stable in adults, it can change — especially during childhood and adolescence, and following major environmental changes such as severe illness, brain injury, or dramatic changes in education and cognitive stimulation.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Higher isn&apos;t always better:</strong> Beyond a threshold of approximately IQ 120, additional IQ points contribute diminishing returns to most life outcomes. The difference between IQ 140 and IQ 160 is far less practically significant than the difference between 80 and 100.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Online scores are estimates:</strong> Pop-psychology online tests often inflate scores to make users feel good — sometimes by 15–25 points. Our test is designed to be honest and calibrated. See our <a href="/about" style={{ color: cyan }}>About page</a> for details on our scoring methodology.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>IQ doesn&apos;t define potential:</strong> Motivation, emotional regulation, social skills, and environment are equally if not more important than IQ in determining success, wellbeing, and life satisfaction.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Group differences are not individual differences:</strong> Statistical averages between groups say nothing about any individual. IQ is always an individual measure, not a group label.</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Culture matters:</strong> IQ tests, including Raven matrices, are more culture-fair than verbal tests — but no test is fully culture-free. Familiarity with test-taking conventions, abstract thinking styles, and competitive performance settings all influence results.</li>
         </ul>
       </Section>
 
       <div style={{ marginTop: 48, display: "flex", gap: 16, flexWrap: "wrap" }}>
         <a href="/iq-score-ranges" style={{
-          padding: "12px 24px", background: "rgba(91,79,255,0.12)",
-          border: "1px solid rgba(91,79,255,0.30)", color: "#00F5D4",
+          padding: "12px 24px", background: "rgba(0,85,255,0.12)",
+          border: "1px solid rgba(0,85,255,0.30)", color: "#00AAFF",
           textDecoration: "none", borderRadius: 4, fontSize: 13,
         }}>IQ Score Ranges →</a>
         <a href="/cognitive-dimensions" style={{
-          padding: "12px 24px", background: "rgba(91,79,255,0.12)",
-          border: "1px solid rgba(91,79,255,0.30)", color: "#00F5D4",
+          padding: "12px 24px", background: "rgba(0,85,255,0.12)",
+          border: "1px solid rgba(0,85,255,0.30)", color: "#00AAFF",
           textDecoration: "none", borderRadius: 4, fontSize: 13,
         }}>6 Cognitive Dimensions →</a>
         <a href="/how-to-improve-iq" style={{
-          padding: "12px 24px", background: "rgba(91,79,255,0.12)",
-          border: "1px solid rgba(91,79,255,0.30)", color: "#00F5D4",
+          padding: "12px 24px", background: "rgba(0,85,255,0.12)",
+          border: "1px solid rgba(0,85,255,0.30)", color: "#00AAFF",
           textDecoration: "none", borderRadius: 4, fontSize: 13,
         }}>How to Improve Your IQ →</a>
         <a href="/test" style={{
           padding: "12px 24px", background: blue, color: "#fff",
           textDecoration: "none", borderRadius: 4, fontSize: 13,
-          boxShadow: "0 0 16px rgba(91,79,255,0.45)",
+          boxShadow: "0 0 16px rgba(0,85,255,0.45)",
         }}>Take the Free Test →</a>
       </div>
     </ContentShell>

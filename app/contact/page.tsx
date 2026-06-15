@@ -3,9 +3,9 @@
 import { useState } from "react";
 import ContentShell, { Section } from "../components/ContentShell";
 
-const blue = "#5B4FFF";
-const cyan = "#00F5D4";
-const blue2 = "rgba(91,79,255,0.18)";
+const blue = "#0055FF";
+const cyan = "#00AAFF";
+const blue2 = "rgba(0,85,255,0.18)";
 const dim  = "#8AABCC";
 
 function ContactForm() {
@@ -26,8 +26,8 @@ function ContactForm() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "12px 16px",
-    background: "rgba(3,10,30,0.85)", border: "1px solid rgba(91,79,255,0.22)",
-    borderRadius: 4, color: "#E8E8F0", fontSize: 14,
+    background: "rgba(3,10,30,0.85)", border: "1px solid rgba(0,85,255,0.22)",
+    borderRadius: 4, color: "#D6E4FF", fontSize: 14,
     fontFamily: "inherit", outline: "none",
     transition: "border-color 0.2s",
   };
@@ -41,11 +41,11 @@ function ContactForm() {
     return (
       <div style={{
         padding: "32px", textAlign: "center",
-        background: "rgba(91,79,255,0.06)", border: "1px solid rgba(91,79,255,0.25)",
+        background: "rgba(0,85,255,0.06)", border: "1px solid rgba(0,85,255,0.25)",
         borderRadius: 6,
       }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>✓</div>
-        <h3 style={{ fontSize: 20, fontWeight: 400, marginBottom: 8, color: "#E8E8F0" }}>Message sent!</h3>
+        <h3 style={{ fontSize: 20, fontWeight: 400, marginBottom: 8, color: "#D6E4FF" }}>Message sent!</h3>
         <p style={{ fontSize: 14, color: dim }}>
           Thank you for getting in touch. We aim to respond to all enquiries within 24–48 hours.
         </p>
@@ -112,7 +112,7 @@ function ContactForm() {
           border: "none", borderRadius: 2, cursor: status === "sending" ? "wait" : "pointer",
           fontSize: 11, fontWeight: 600, letterSpacing: "0.12em",
           textTransform: "uppercase",
-          boxShadow: `0 0 18px rgba(91,79,255,0.45)`,
+          boxShadow: `0 0 18px rgba(0,85,255,0.45)`,
           opacity: status === "sending" ? 0.7 : 1,
           transition: "opacity 0.2s",
           alignSelf: "flex-start",
@@ -143,15 +143,15 @@ export default function ContactPage() {
           ].map((card, i) => (
             <div key={i} style={{
               padding: "20px 24px",
-              background: "rgba(3,10,30,0.85)", border: "1px solid rgba(91,79,255,0.18)",
+              background: "rgba(3,10,30,0.85)", border: "1px solid rgba(0,85,255,0.18)",
               borderRadius: 6,
             }}>
               <div style={{ fontSize: 22, marginBottom: 10 }}>{card.icon}</div>
-              <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: "#00F5D4", marginBottom: 6 }}>{card.title}</div>
+              <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: "#00AAFF", marginBottom: 6 }}>{card.title}</div>
               {card.href ? (
-                <a href={card.href} style={{ fontSize: 14, color: "#E8E8F0", textDecoration: "underline", display: "block", marginBottom: 4 }}>{card.info}</a>
+                <a href={card.href} style={{ fontSize: 14, color: "#D6E4FF", textDecoration: "underline", display: "block", marginBottom: 4 }}>{card.info}</a>
               ) : (
-                <div style={{ fontSize: 14, color: "#E8E8F0", marginBottom: 4 }}>{card.info}</div>
+                <div style={{ fontSize: 14, color: "#D6E4FF", marginBottom: 4 }}>{card.info}</div>
               )}
               <div style={{ fontSize: 12, color: "#8AABCC" }}>{card.sub}</div>
             </div>
@@ -167,15 +167,15 @@ export default function ContactPage() {
 
         {/* FAQ link */}
         <div style={{
-          padding: "24px", background: "rgba(91,79,255,0.05)",
-          border: "1px solid rgba(91,79,255,0.15)", borderRadius: 6,
+          padding: "24px", background: "rgba(0,85,255,0.05)",
+          border: "1px solid rgba(0,85,255,0.15)", borderRadius: 6,
         }}>
           <p style={{ fontSize: 14, color: "#C0C8D8", marginBottom: 10 }}>
-            <strong style={{ color: "#E8E8F0" }}>Looking for a quick answer?</strong>
+            <strong style={{ color: "#D6E4FF" }}>Looking for a quick answer?</strong>
           </p>
           <p style={{ fontSize: 14, color: "#8AABCC", lineHeight: 1.7 }}>
             Many common questions are answered in our{" "}
-            <a href="/faq" style={{ color: "#00F5D4", textDecoration: "underline" }}>FAQ page</a>
+            <a href="/faq" style={{ color: "#00AAFF", textDecoration: "underline" }}>FAQ page</a>
             , including information about how scores are calculated, what the premium report includes,
             data privacy, and how to retake the test.
           </p>

@@ -8,7 +8,7 @@ export const metadata = {
 const LAST_UPDATED = "1 May 2026";
 
 export default function DisclaimerPage() {
-  const cyan = "#00F5D4";
+  const cyan = "#00AAFF";
 
   return (
     <ContentShell
@@ -21,19 +21,19 @@ export default function DisclaimerPage() {
           RealIQTest provides an online cognitive assessment tool (&quot;the test&quot;) designed to give users an approximate estimate of their cognitive abilities across six dimensions: Logical Reasoning, Verbal Intelligence, Spatial Reasoning, Numerical Ability, Working Memory, and Processing Speed.
         </p>
         <p style={{ marginBottom: 14 }}>
-          The test and all associated results, reports, scores, and percentile rankings are provided <strong style={{ color: "#E8E8F0" }}>for informational and educational purposes only</strong>. They are not a substitute for, and should not be interpreted as, a formal psychological assessment, psychometric evaluation, neuropsychological examination, or clinical diagnosis of any kind.
+          The test and all associated results, reports, scores, and percentile rankings are provided <strong style={{ color: "#D6E4FF" }}>for informational and educational purposes only</strong>. They are not a substitute for, and should not be interpreted as, a formal psychological assessment, psychometric evaluation, neuropsychological examination, or clinical diagnosis of any kind.
         </p>
         <p>
-          All scores produced by the RealIQTest algorithm are <strong style={{ color: "#E8E8F0" }}>estimates</strong>. They represent our best approximation of cognitive performance under unsupervised online conditions and have not been independently validated against a stratified normative sample using clinical administration procedures.
+          All scores produced by the RealIQTest algorithm are <strong style={{ color: "#D6E4FF" }}>estimates</strong>. They represent our best approximation of cognitive performance under unsupervised online conditions and have not been independently validated against a stratified normative sample using clinical administration procedures.
         </p>
       </Section>
 
       <Section title="2. Not a Clinical Tool">
         <p style={{ marginBottom: 14 }}>
-          RealIQTest is <strong style={{ color: "#E8E8F0" }}>not a clinically validated psychometric instrument</strong>. Our test has not been submitted to peer-reviewed validation studies, is not registered with any professional psychological association, and is not intended to replicate or replace any standardised intelligence battery such as the Wechsler Adult Intelligence Scale (WAIS-IV), Stanford-Binet Intelligence Scales (SB-5), or Raven&apos;s Standard Progressive Matrices.
+          RealIQTest is <strong style={{ color: "#D6E4FF" }}>not a clinically validated psychometric instrument</strong>. Our test has not been submitted to peer-reviewed validation studies, is not registered with any professional psychological association, and is not intended to replicate or replace any standardised intelligence battery such as the Wechsler Adult Intelligence Scale (WAIS-IV), Stanford-Binet Intelligence Scales (SB-5), or Raven&apos;s Standard Progressive Matrices.
         </p>
         <p>
-          Results should <strong style={{ color: "#E8E8F0" }}>not</strong> be used for:
+          Results should <strong style={{ color: "#D6E4FF" }}>not</strong> be used for:
         </p>
         <ul style={{ marginTop: 10, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
           <li>Diagnosing or screening for intellectual disability, learning difficulties, ADHD, or any other medical or psychological condition</li>
@@ -53,12 +53,12 @@ export default function DisclaimerPage() {
           Unlike supervised clinical assessments, online tests are subject to a range of factors that can substantially influence results, including but not limited to:
         </p>
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-          <li><strong style={{ color: "#E8E8F0" }}>Environmental distractions</strong> — noise, interruptions, or ambient stress</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Physical state</strong> — fatigue, illness, hunger, or the effect of medication</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Device and screen differences</strong> — varying screen sizes, resolutions, and rendering affect visual questions</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Practice effects</strong> — familiarity with IQ-style questions from prior exposure inflates scores</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Test anxiety</strong> — time pressure may disproportionately affect anxious individuals</li>
-          <li><strong style={{ color: "#E8E8F0" }}>Language factors</strong> — verbal questions assume proficiency in English</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Environmental distractions</strong> — noise, interruptions, or ambient stress</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Physical state</strong> — fatigue, illness, hunger, or the effect of medication</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Device and screen differences</strong> — varying screen sizes, resolutions, and rendering affect visual questions</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Practice effects</strong> — familiarity with IQ-style questions from prior exposure inflates scores</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Test anxiety</strong> — time pressure may disproportionately affect anxious individuals</li>
+          <li><strong style={{ color: "#D6E4FF" }}>Language factors</strong> — verbal questions assume proficiency in English</li>
         </ul>
         <p style={{ marginTop: 14 }}>
           For these reasons, a single sitting of our test should not be considered definitive. Scores can vary by ±10–15 IQ points across sittings even for the same individual.

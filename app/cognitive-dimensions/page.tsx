@@ -22,9 +22,9 @@ const schemaOrg = {
 };
 
 export default function CognitiveDimensionsPage() {
-  const blue = "#0055FF";
-  const cyan = "#00AAFF";
-  const blue2 = "rgba(0,85,255,0.18)";
+  const blue = "#5B4FFF";
+  const cyan = "#00F5D4";
+  const blue2 = "rgba(91,79,255,0.18)";
 
   const DIMS = [
     {
@@ -115,7 +115,7 @@ export default function CognitiveDimensionsPage() {
           <div key={i} style={{ background: "#03050F", padding: "20px 18px", textAlign: "center" }}>
             <div style={{ fontSize: 22, marginBottom: 8 }}>{d.icon}</div>
             <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: d.color, marginBottom: 4 }}>{d.n}</div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: "#D6E4FF" }}>{d.name}</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "#E8E8F0" }}>{d.name}</div>
             <div style={{ fontSize: 11, color: "#8AABCC", marginTop: 4 }}>{d.badge}</div>
           </div>
         ))}
@@ -127,13 +127,13 @@ export default function CognitiveDimensionsPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
             <div style={{
               width: 44, height: 44, borderRadius: "50%",
-              background: "rgba(0,85,255,0.12)", border: `1px solid ${d.color}40`,
+              background: "rgba(91,79,255,0.12)", border: `1px solid ${d.color}40`,
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 20, flexShrink: 0,
             }}>{d.icon}</div>
             <div>
               <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: d.color, marginBottom: 2 }}>Dimension {d.n} · {d.badge}</div>
-              <h2 style={{ fontSize: "clamp(18px,2.5vw,26px)", fontWeight: 400, color: "#D6E4FF", letterSpacing: "-0.01em" }}>{d.name}</h2>
+              <h2 style={{ fontSize: "clamp(18px,2.5vw,26px)", fontWeight: 400, color: "#E8E8F0", letterSpacing: "-0.01em" }}>{d.name}</h2>
             </div>
           </div>
 
@@ -151,7 +151,7 @@ export default function CognitiveDimensionsPage() {
                   <span key={j} style={{
                     fontSize: 11, padding: "3px 10px",
                     background: `${d.color}15`, border: `1px solid ${d.color}30`,
-                    borderRadius: 2, color: d.color === blue ? "#7AC0FF" : "#00CCFF",
+                    borderRadius: 2, color: d.color === blue ? "#7AC0FF" : "#33F0DA",
                   }}>{ex}</span>
                 ))}
               </div>
@@ -162,9 +162,9 @@ export default function CognitiveDimensionsPage() {
 
       <div style={{
         marginTop: 24, padding: "28px", textAlign: "center",
-        background: "rgba(0,85,255,0.06)", border: `1px solid ${blue2}`, borderRadius: 6,
+        background: "rgba(91,79,255,0.06)", border: `1px solid ${blue2}`, borderRadius: 6,
       }}>
-        <h3 style={{ fontSize: 20, fontWeight: 300, marginBottom: 10, color: "#D6E4FF" }}>
+        <h3 style={{ fontSize: 20, fontWeight: 300, marginBottom: 10, color: "#E8E8F0" }}>
           Find your cognitive strengths
         </h3>
         <p style={{ fontSize: 14, color: "#8AABCC", marginBottom: 20 }}>
@@ -175,7 +175,7 @@ export default function CognitiveDimensionsPage() {
           background: blue, color: "#fff", textDecoration: "none",
           fontSize: 11, fontWeight: 600, letterSpacing: "0.12em",
           textTransform: "uppercase", borderRadius: 2,
-          boxShadow: "0 0 18px rgba(0,85,255,0.5)",
+          boxShadow: "0 0 18px rgba(91,79,255,0.5)",
         }}>Take the Free Test</a>
       </div>
     </ContentShell>

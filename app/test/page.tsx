@@ -2,15 +2,19 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import NavLogo from "@/app/components/NavLogo";
+import NeuralScene from "@/app/components/NeuralScene";
 import { useRouter } from "next/navigation";
 import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell } from "@/lib/questions";
-import { DIFF_WEIGHTS } from "@/lib/iq-calculator";
+import { DIFF_WEIGHTS, type AnswerRecord } from "@/lib/iq-calculator";
 
 /* ── Design tokens ──────────────────────────────────────────────────────────── */
-const BLUE = "#0055FF"; const CYAN = "#06B6D4"; const GREEN = "#00D87A";
-const RED = "#FF3B3B"; const DIM = "#8AABCC"; const BG = "#020617";
-const BORD = "rgba(0,85,255,0.18)"; const GLASS = "rgba(6,14,40,0.82)";
-const TEXT = "#E8F0FF"; const ORANGE = "#FF8C00"; const PURP = "#8B5CF6";
+const BLUE = "#5B4FFF"; const CYAN = "#00F5D4"; const GREEN = "#00D87A";
+const RED = "#FF3B3B"; const DIM = "#8AABCC"; const BG = "#03050F";
+const BORD = "rgba(91,79,255,0.18)"; const GLASS = "rgba(6,14,40,0.82)";
+const TEXT = "#EFEFF7"; const ORANGE = "#FF9F1C"; const PURP = "#A78BFA";
+
+/* One accent color per cognitive dimension — the whole UI shifts with it */
+const DIM_ACCENTS = ["#5B4FFF", "#A78BFA", "#00F5D4", "#FFD700", "#FF6B6B", "#FF9F1C"];
 
 /* ── SVG shape renderer ─────────────────────────────────────────────────── */
 
@@ -36,20 +40,20 @@ function renderShape(sh: ShapeDef, color: string) {
 /* ── Raven cell SVG ─────────────────────────────────────────────────────── */
 
 function RavenCellSVG({ cell, isQuestion = false }: { cell: RavenCell | null; isQuestion?: boolean }) {
-  const color = "#6EB0FF";
+  const color = "#9D8FFF";
   if (isQuestion || cell === null) {
     return (
       <svg width="100%" height="100%" viewBox="0 0 60 60">
         <rect x={1} y={1} width={58} height={58} rx={2}
-          fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
-        <text x={30} y={38} textAnchor="middle" fontSize={22} fill="#0055FF" fontWeight="bold">?</text>
+          fill="rgba(91,79,255,0.06)" stroke="#5B4FFF" strokeWidth={1.5} strokeDasharray="5,3" />
+        <text x={30} y={38} textAnchor="middle" fontSize={22} fill="#5B4FFF" fontWeight="bold">?</text>
       </svg>
     );
   }
   return (
     <svg width="100%" height="100%" viewBox="0 0 60 60">
       <rect x={1} y={1} width={58} height={58} rx={2}
-        fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
+        fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
       {cell.map((sh, i) => <g key={i}>{renderShape(sh, color)}</g>)}
     </svg>
   );
@@ -61,7 +65,7 @@ function RavenDisplay({ cells }: { cells: (RavenCell | null)[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(320px, calc(92dvh - 410px), calc(50vw))", margin: "0 auto" }}>
       {cells.map((cell, i) => (
-        <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
+        <div key={i} style={{ border: "1px solid rgba(91,79,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
           <RavenCellSVG cell={cell} isQuestion={cell === null} />
         </div>
       ))}
@@ -78,9 +82,9 @@ function RotationSVG({ path, angle, mirror = false }: { path: string; angle: num
   return (
     <svg width="100%" height="100%" viewBox="0 0 60 60">
       <rect x={1} y={1} width={58} height={58} rx={2}
-        fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
+        fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
       <g transform={transform}>
-        <path d={path} fill="#6EB0FF" />
+        <path d={path} fill="#9D8FFF" />
       </g>
     </svg>
   );
@@ -108,7 +112,7 @@ function BarsDisplay({ values, max }: { values: (number | null)[]; max: number }
   return (
     <div style={{ overflowX: "auto", padding: "0 8px", width: "min(320px, calc(100vw - 48px))" }}>
       <svg width={W + 20} height={H + 28} viewBox={`0 0 ${W + 20} ${H + 28}`} style={{ display: "block", margin: "0 auto" }}>
-        <line x1={10} y1={H} x2={W + 10} y2={H} stroke="rgba(0,85,255,0.2)" strokeWidth={1} />
+        <line x1={10} y1={H} x2={W + 10} y2={H} stroke="rgba(91,79,255,0.2)" strokeWidth={1} />
         {values.map((v, i) => {
           const x = 10 + i * (bw + 5);
           const isNull = v === null;
@@ -118,14 +122,14 @@ function BarsDisplay({ values, max }: { values: (number | null)[]; max: number }
               {isNull ? (
                 <>
                   <rect x={x} y={16} width={bw} height={H - 16} rx={2}
-                    fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
-                  <text x={x + bw / 2} y={H / 2 + 6} textAnchor="middle" fontSize={18} fill="#0055FF" fontWeight="bold">?</text>
+                    fill="rgba(91,79,255,0.06)" stroke="#5B4FFF" strokeWidth={1.5} strokeDasharray="5,3" />
+                  <text x={x + bw / 2} y={H / 2 + 6} textAnchor="middle" fontSize={18} fill="#5B4FFF" fontWeight="bold">?</text>
                 </>
               ) : (
                 <>
                   <rect x={x} y={H - h} width={bw} height={h} rx={2}
-                    fill="rgba(0,85,255,0.55)" stroke="#0055FF" strokeWidth={1}
-                    style={{ filter: "drop-shadow(0 0 6px rgba(0,85,255,0.7))" }} />
+                    fill="rgba(91,79,255,0.55)" stroke="#5B4FFF" strokeWidth={1}
+                    style={{ filter: "drop-shadow(0 0 6px rgba(91,79,255,0.7))" }} />
                   <text x={x + bw / 2} y={H + 14} textAnchor="middle" fontSize={9} fill="#8AABCC">{v}</text>
                 </>
               )}
@@ -170,7 +174,7 @@ function MemoryDisplay({
           <div key={i} style={{
             width: "clamp(36px,8vw,52px)", height: "clamp(36px,8vw,52px)", borderRadius: "50%",
             background: phase === "showing" ? col : "transparent",
-            border: phase === "showing" ? "none" : "2px dashed rgba(0,85,255,0.25)",
+            border: phase === "showing" ? "none" : "2px dashed rgba(91,79,255,0.25)",
             transition: "all 0.5s ease",
             boxShadow: phase === "showing" ? `0 0 20px ${col}99, 0 0 8px ${col}66` : "none",
           }} />
@@ -198,8 +202,8 @@ function EmbeddedDisplay({ display }: { display: string }) {
       </p>
       <svg width="min(140px, 30vw)" height="min(140px, 30vw)" viewBox="0 0 60 60" style={{ width: "min(140px, 30vw)", height: "min(140px, 30vw)" }}>
         <rect x={1} y={1} width={58} height={58} rx={2}
-          fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
-        <path d={display} fill="#6EB0FF" fillRule="evenodd" />
+          fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
+        <path d={display} fill="#9D8FFF" fillRule="evenodd" />
       </svg>
     </div>
   );
@@ -222,7 +226,7 @@ function DiceNetDisplay({ faces }: { faces: number[] }) {
       6: [[-off, -off], [off, -off], [-off, 0], [off, 0], [-off, off], [off, off]],
     };
     return (pos[n] || []).map(([dx, dy], i) => (
-      <circle key={i} cx={cx + dx} cy={cy + dy} r={R} fill="#6EB0FF" />
+      <circle key={i} cx={cx + dx} cy={cy + dy} r={R} fill="#9D8FFF" />
     ));
   }
 
@@ -244,7 +248,7 @@ function DiceNetDisplay({ faces }: { faces: number[] }) {
         {layout.map(([x, y, fi]) => (
           <g key={fi}>
             <rect x={x + 1} y={y + 1} width={S - 2} height={S - 2} rx={3}
-              fill="rgba(5,18,45,0.92)" stroke="rgba(0,85,255,0.45)" strokeWidth={1.5} />
+              fill="rgba(5,18,45,0.92)" stroke="rgba(91,79,255,0.45)" strokeWidth={1.5} />
             {dots(faces[fi], x + S / 2, y + S / 2)}
           </g>
         ))}
@@ -259,7 +263,7 @@ function Raven2Display({ cells }: { cells: (RavenCell|null)[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 4, width: "min(220px, calc(92dvh - 410px), calc(40vw))", margin: "0 auto" }}>
       {cells.map((cell, i) => (
-        <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
+        <div key={i} style={{ border: "1px solid rgba(91,79,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
           <RavenCellSVG cell={cell} isQuestion={cell === null} />
         </div>
       ))}
@@ -273,12 +277,12 @@ function RavenRotDisplay({ path, angles }: { path: string; angles: (number|null)
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(320px, calc(92dvh - 410px), calc(50vw))", margin: "0 auto" }}>
       {angles.map((angle, i) => (
-        <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
+        <div key={i} style={{ border: "1px solid rgba(91,79,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
           {angle === null ? (
             <svg width="100%" height="100%" viewBox="0 0 60 60">
               <rect x={1} y={1} width={58} height={58} rx={2}
-                fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
-              <text x={30} y={38} textAnchor="middle" fontSize={22} fill="#0055FF" fontWeight="bold">?</text>
+                fill="rgba(91,79,255,0.06)" stroke="#5B4FFF" strokeWidth={1.5} strokeDasharray="5,3" />
+              <text x={30} y={38} textAnchor="middle" fontSize={22} fill="#5B4FFF" fontWeight="bold">?</text>
             </svg>
           ) : (
             <RotationSVG path={path} angle={angle} />
@@ -294,13 +298,13 @@ function RavenRotDisplay({ path, angles }: { path: string; angles: (number|null)
 function PatternCellSVG({ cell, cellIdx = 0, isQ = false }: {
   cell: PCell | null; cellIdx?: number; isQ?: boolean;
 }) {
-  const COLOR = "#6EB0FF";
+  const COLOR = "#9D8FFF";
   if (cell === null || isQ) {
     return (
       <svg width="100%" height="100%" viewBox="0 0 60 60">
         <rect x={1} y={1} width={58} height={58} rx={2}
-          fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
-        <text x={30} y={38} textAnchor="middle" fontSize={22} fill="#0055FF" fontWeight="bold">?</text>
+          fill="rgba(91,79,255,0.06)" stroke="#5B4FFF" strokeWidth={1.5} strokeDasharray="5,3" />
+        <text x={30} y={38} textAnchor="middle" fontSize={22} fill="#5B4FFF" fontWeight="bold">?</text>
       </svg>
     );
   }
@@ -334,7 +338,7 @@ function PatternCellSVG({ cell, cellIdx = 0, isQ = false }: {
         </clipPath>
       </defs>
       <rect x={1} y={1} width={58} height={58} rx={2}
-        fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
+        fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
       <rect x={0} y={0} width={60} height={60} fill={`url(#${patId})`} clipPath={`url(#${clipId})`} />
       {cell.shape === "tri" && <polygon points={TRI} fill="none" stroke={COLOR} strokeWidth={1.8} />}
       {cell.shape === "sq"  && <rect x={8} y={8} width={44} height={44} fill="none" stroke={COLOR} strokeWidth={1.8} />}
@@ -347,7 +351,7 @@ function RavenPatternDisplay({ cells }: { cells: (PCell|null)[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(320px, calc(92dvh - 410px), calc(50vw))", margin: "0 auto" }}>
       {cells.map((cell, i) => (
-        <div key={i} style={{ border: "1px solid rgba(0,85,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
+        <div key={i} style={{ border: "1px solid rgba(91,79,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
           <PatternCellSVG cell={cell} cellIdx={i} isQ={cell === null} />
         </div>
       ))}
@@ -376,9 +380,9 @@ function TopViewDisplay() {
           const left  = `${bx-u},${by-u/2} ${bx},${by-u} ${bx},${by} ${bx-u},${by+u/2}`;
           return (
             <g key={`${c}${r}`}>
-              <polygon points={left}  fill="#6EB0FF" fillOpacity={0.28} stroke="#0055FF" strokeWidth={0.6} />
-              <polygon points={right} fill="#6EB0FF" fillOpacity={0.50} stroke="#0055FF" strokeWidth={0.6} />
-              <polygon points={top}   fill="#6EB0FF" fillOpacity={0.85} stroke="#0055FF" strokeWidth={0.6} />
+              <polygon points={left}  fill="#9D8FFF" fillOpacity={0.28} stroke="#5B4FFF" strokeWidth={0.6} />
+              <polygon points={right} fill="#9D8FFF" fillOpacity={0.50} stroke="#5B4FFF" strokeWidth={0.6} />
+              <polygon points={top}   fill="#9D8FFF" fillOpacity={0.85} stroke="#5B4FFF" strokeWidth={0.6} />
             </g>
           );
         })}
@@ -394,15 +398,15 @@ function SymbolsDisplay({ target, compare }: { target: string; compare?: string[
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, width: "100%", maxWidth: "min(400px, calc(100vw - 48px))" }}>
       <div style={{
         padding: "18px 32px",
-        background: "rgba(0,85,255,0.08)",
-        border: "1px solid rgba(0,85,255,0.25)",
+        background: "rgba(91,79,255,0.08)",
+        border: "1px solid rgba(91,79,255,0.25)",
         borderRadius: 4,
         fontSize: compare ? 22 : 28,
         fontWeight: 600,
-        color: "#D6E4FF",
+        color: "#E8E8F0",
         letterSpacing: "0.06em",
         fontFamily: "monospace",
-        textShadow: "0 0 16px rgba(0,85,255,0.4)",
+        textShadow: "0 0 16px rgba(91,79,255,0.4)",
         textAlign: "center",
         width: "100%",
       }}>
@@ -414,7 +418,7 @@ function SymbolsDisplay({ target, compare }: { target: string; compare?: string[
             <div key={i} style={{
               padding: "10px 12px",
               background: "rgba(5,18,45,0.8)",
-              border: "1px solid rgba(0,85,255,0.15)",
+              border: "1px solid rgba(91,79,255,0.15)",
               borderRadius: 3,
               textAlign: "center",
               fontSize: 14,
@@ -439,8 +443,8 @@ function ClockFaceSVG({ h, m, size = 72, isQ = false }: { h?: number; m?: number
   if (isQ) {
     return (
       <svg width={size} height={size} viewBox="0 0 72 72">
-        <circle cx={36} cy={36} r={33} fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
-        <text x={36} y={42} textAnchor="middle" fontSize={22} fill="#0055FF" fontWeight="bold">?</text>
+        <circle cx={36} cy={36} r={33} fill="rgba(91,79,255,0.06)" stroke="#5B4FFF" strokeWidth={1.5} strokeDasharray="5,3" />
+        <text x={36} y={42} textAnchor="middle" fontSize={22} fill="#5B4FFF" fontWeight="bold">?</text>
       </svg>
     );
   }
@@ -455,18 +459,18 @@ function ClockFaceSVG({ h, m, size = 72, isQ = false }: { h?: number; m?: number
   const ma = ((m ?? 0) / 60) * Math.PI * 2 - Math.PI / 2;
   return (
     <svg width={size} height={size} viewBox="0 0 72 72">
-      <circle cx={cx} cy={cy} r={r} fill="rgba(5,18,45,0.95)" stroke="#0055FF" strokeWidth={1.5} />
-      <circle cx={cx} cy={cy} r={r * 0.92} fill="none" stroke="rgba(0,85,255,0.1)" strokeWidth={0.5} />
+      <circle cx={cx} cy={cy} r={r} fill="rgba(5,18,45,0.95)" stroke="#5B4FFF" strokeWidth={1.5} />
+      <circle cx={cx} cy={cy} r={r * 0.92} fill="none" stroke="rgba(91,79,255,0.1)" strokeWidth={0.5} />
       {ticks.map((t, i) => (
-        <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={t.major ? "#6EB0FF" : "rgba(0,85,255,0.35)"} strokeWidth={t.major ? 2 : 1} />
+        <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={t.major ? "#9D8FFF" : "rgba(91,79,255,0.35)"} strokeWidth={t.major ? 2 : 1} />
       ))}
       {nums.map(({ n, i }) => {
         const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
-        return <text key={n} x={cx + Math.cos(a) * r * 0.62} y={cy + Math.sin(a) * r * 0.62 + 3.5} textAnchor="middle" fontSize={8} fill="#6EB0FF" fontWeight="700">{n}</text>;
+        return <text key={n} x={cx + Math.cos(a) * r * 0.62} y={cy + Math.sin(a) * r * 0.62 + 3.5} textAnchor="middle" fontSize={8} fill="#9D8FFF" fontWeight="700">{n}</text>;
       })}
-      <line x1={cx} y1={cy} x2={cx + Math.cos(ha) * r * 0.52} y2={cy + Math.sin(ha) * r * 0.52} stroke="#E8F0FF" strokeWidth={2.5} strokeLinecap="round" />
-      <line x1={cx} y1={cy} x2={cx + Math.cos(ma) * r * 0.73} y2={cy + Math.sin(ma) * r * 0.73} stroke="#06B6D4" strokeWidth={1.5} strokeLinecap="round" />
-      <circle cx={cx} cy={cy} r={3} fill="#0055FF" />
+      <line x1={cx} y1={cy} x2={cx + Math.cos(ha) * r * 0.52} y2={cy + Math.sin(ha) * r * 0.52} stroke="#EFEFF7" strokeWidth={2.5} strokeLinecap="round" />
+      <line x1={cx} y1={cy} x2={cx + Math.cos(ma) * r * 0.73} y2={cy + Math.sin(ma) * r * 0.73} stroke="#00F5D4" strokeWidth={1.5} strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r={3} fill="#5B4FFF" />
     </svg>
   );
 }
@@ -478,14 +482,14 @@ function ClockDisplay({ seqH, seqM }: { seqH: number[]; seqM: number[] }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         {seqH.map((h, i) => (
           <React.Fragment key={i}>
-            <div style={{ border: "1px solid rgba(0,85,255,0.22)", borderRadius: 8, overflow: "hidden", boxShadow: "0 0 12px rgba(0,85,255,0.12)" }}>
+            <div style={{ border: "1px solid rgba(91,79,255,0.22)", borderRadius: 8, overflow: "hidden", boxShadow: "0 0 12px rgba(91,79,255,0.12)" }}>
               <ClockFaceSVG h={h} m={seqM[i]} size={72} />
             </div>
             {i < seqH.length - 1 && <span style={{ color: DIM, fontSize: 14, flexShrink: 0 }}>→</span>}
           </React.Fragment>
         ))}
         <span style={{ color: DIM, fontSize: 14, flexShrink: 0 }}>→</span>
-        <div style={{ border: "1px dashed rgba(0,85,255,0.4)", borderRadius: 8, overflow: "hidden" }}>
+        <div style={{ border: "1px dashed rgba(91,79,255,0.4)", borderRadius: 8, overflow: "hidden" }}>
           <ClockFaceSVG isQ={true} size={72} />
         </div>
       </div>
@@ -510,14 +514,14 @@ function HeatmapDisplay({ grid }: { grid: (number | null)[][] }) {
             if (val === null) {
               return (
                 <g key={`${r}${c}`}>
-                  <rect x={x} y={y} width={S} height={S} rx={4} fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3" />
-                  <text x={x + S / 2} y={y + S / 2 + 8} textAnchor="middle" fontSize={22} fill="#0055FF" fontWeight="bold">?</text>
+                  <rect x={x} y={y} width={S} height={S} rx={4} fill="rgba(91,79,255,0.06)" stroke="#5B4FFF" strokeWidth={1.5} strokeDasharray="5,3" />
+                  <text x={x + S / 2} y={y + S / 2 + 8} textAnchor="middle" fontSize={22} fill="#5B4FFF" fontWeight="bold">?</text>
                 </g>
               );
             }
             return (
               <g key={`${r}${c}`}>
-                <rect x={x} y={y} width={S} height={S} rx={4} fill={HEAT_COLORS[val]} stroke="rgba(0,85,255,0.25)" strokeWidth={1}
+                <rect x={x} y={y} width={S} height={S} rx={4} fill={HEAT_COLORS[val]} stroke="rgba(91,79,255,0.25)" strokeWidth={1}
                   style={{ filter: val >= 3 ? "drop-shadow(0 0 8px rgba(0,196,255,0.45))" : "none" }} />
                 {Array.from({ length: val }).map((_, i) => (
                   <circle key={i} cx={x + 9 + i * 9} cy={y + S - 9} r={2.5} fill="rgba(255,255,255,0.45)" />
@@ -539,8 +543,8 @@ function MirrorDisplay({ path }: { path: string }) {
         Original shape — choose its exact horizontal mirror
       </p>
       <svg viewBox="0 0 60 60" style={{ width: "min(180px, 38vw)", height: "min(180px, 38vw)", display: "block" }}>
-        <rect x={1} y={1} width={58} height={58} rx={3} fill="rgba(5,18,45,0.92)" stroke="rgba(0,85,255,0.3)" strokeWidth={1.5} />
-        <path d={path} fill="#6EB0FF" style={{ filter: "drop-shadow(0 0 6px rgba(0,85,255,0.4))" }} />
+        <rect x={1} y={1} width={58} height={58} rx={3} fill="rgba(5,18,45,0.92)" stroke="rgba(91,79,255,0.3)" strokeWidth={1.5} />
+        <path d={path} fill="#9D8FFF" style={{ filter: "drop-shadow(0 0 6px rgba(91,79,255,0.4))" }} />
       </svg>
     </div>
   );
@@ -569,8 +573,8 @@ function MazeDisplay({ arrows }: { arrows: string[] }) {
           const idx=row*3+col, x=PAD+col*(CS+G), y=PAD+row*(CS+G), isS=idx===0;
           return (
             <g key={idx} transform={`translate(${x},${y})`}>
-              <rect width={CS} height={CS} rx={4} fill={isS?"rgba(0,85,255,0.18)":"rgba(5,18,45,0.92)"} stroke={isS?BLUE:"rgba(0,85,255,0.3)"} strokeWidth={isS?1.5:1}/>
-              <path d={ap(arrows[idx])} fill={isS?"#6EB0FF":"rgba(110,176,255,0.65)"}/>
+              <rect width={CS} height={CS} rx={4} fill={isS?"rgba(91,79,255,0.18)":"rgba(5,18,45,0.92)"} stroke={isS?BLUE:"rgba(91,79,255,0.3)"} strokeWidth={isS?1.5:1}/>
+              <path d={ap(arrows[idx])} fill={isS?"#9D8FFF":"rgba(110,176,255,0.65)"}/>
               {isS && <text x={CS/2} y={8} textAnchor="middle" fontSize={6} fill={CYAN} fontWeight="700">START</text>}
             </g>
           );
@@ -591,16 +595,16 @@ function BinaryDisplay({ rows }: { rows: (0|1|null)[][] }) {
           const cx=PAD+c*(CS+G)+CS/2, cy=PAD+r*(CS+G)+CS/2, bx=PAD+c*(CS+G), by=PAD+r*(CS+G);
           if (val===null) return (
             <g key={`${r}${c}`}>
-              <rect x={bx} y={by} width={CS} height={CS} rx={3} fill="rgba(0,85,255,0.06)" stroke="#0055FF" strokeWidth={1.5} strokeDasharray="5,3"/>
-              <text x={cx} y={cy+5} textAnchor="middle" fontSize={13} fill="#0055FF" fontWeight="bold">?</text>
+              <rect x={bx} y={by} width={CS} height={CS} rx={3} fill="rgba(91,79,255,0.06)" stroke="#5B4FFF" strokeWidth={1.5} strokeDasharray="5,3"/>
+              <text x={cx} y={cy+5} textAnchor="middle" fontSize={13} fill="#5B4FFF" fontWeight="bold">?</text>
             </g>
           );
           return (
             <g key={`${r}${c}`}>
-              <rect x={bx} y={by} width={CS} height={CS} rx={3} fill="rgba(5,18,45,0.85)" stroke="rgba(0,85,255,0.18)" strokeWidth={1}/>
+              <rect x={bx} y={by} width={CS} height={CS} rx={3} fill="rgba(5,18,45,0.85)" stroke="rgba(91,79,255,0.18)" strokeWidth={1}/>
               {val===1
-                ? <circle cx={cx} cy={cy} r={11} fill="#6EB0FF" style={{ filter:"drop-shadow(0 0 4px rgba(0,85,255,0.5))" }}/>
-                : <circle cx={cx} cy={cy} r={11} fill="none" stroke="rgba(0,85,255,0.28)" strokeWidth={1.5} strokeDasharray="4,3"/>}
+                ? <circle cx={cx} cy={cy} r={11} fill="#9D8FFF" style={{ filter:"drop-shadow(0 0 4px rgba(91,79,255,0.5))" }}/>
+                : <circle cx={cx} cy={cy} r={11} fill="none" stroke="rgba(91,79,255,0.28)" strokeWidth={1.5} strokeDasharray="4,3"/>}
             </g>
           );
         }))}
@@ -625,9 +629,9 @@ function Shadow3DDisplay() {
           const left =`${bx-u},${by-u/2} ${bx},${by-u} ${bx},${by} ${bx-u},${by+u/2}`;
           return (
             <g key={`${cx}${cz}`}>
-              <polygon points={left}  fill="#6EB0FF" fillOpacity={0.28} stroke="#0055FF" strokeWidth={0.5}/>
-              <polygon points={right} fill="#6EB0FF" fillOpacity={0.50} stroke="#0055FF" strokeWidth={0.5}/>
-              <polygon points={top}   fill="#6EB0FF" fillOpacity={0.85} stroke="#0055FF" strokeWidth={0.5}/>
+              <polygon points={left}  fill="#9D8FFF" fillOpacity={0.28} stroke="#5B4FFF" strokeWidth={0.5}/>
+              <polygon points={right} fill="#9D8FFF" fillOpacity={0.50} stroke="#5B4FFF" strokeWidth={0.5}/>
+              <polygon points={top}   fill="#9D8FFF" fillOpacity={0.85} stroke="#5B4FFF" strokeWidth={0.5}/>
             </g>
           );
         })}
@@ -644,14 +648,14 @@ function OrigamiDisplay() {
       <p style={{ fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase", color:DIM }}>Fold → cut → unfold: which hole pattern appears?</p>
       <div style={{ display:"flex", alignItems:"center", gap:6 }}>
         {[
-          { label:"Full square", jsx: <rect x={8} y={8} width={44} height={44} fill="rgba(0,85,255,0.18)" stroke="#6EB0FF" strokeWidth={1.5} rx={1}/> },
-          { label:"Fold bottom up", jsx: <><rect x={8} y={8} width={44} height={22} fill="rgba(0,85,255,0.22)" stroke="#6EB0FF" strokeWidth={1.5} rx={1}/><text x={30} y={41} textAnchor="middle" fontSize={6} fill={CYAN}>fold ↑</text></> },
-          { label:"Cut corner", jsx: <><rect x={8} y={8} width={44} height={22} fill="rgba(0,85,255,0.18)" stroke="#6EB0FF" strokeWidth={1.5} rx={1}/><circle cx={48} cy={12} r={7} fill="rgba(255,59,59,0.35)" stroke="#FF3B3B" strokeWidth={1}/><text x={48} y={14} textAnchor="middle" fontSize={8} fill="#FF3B3B">✂</text></> },
+          { label:"Full square", jsx: <rect x={8} y={8} width={44} height={44} fill="rgba(91,79,255,0.18)" stroke="#9D8FFF" strokeWidth={1.5} rx={1}/> },
+          { label:"Fold bottom up", jsx: <><rect x={8} y={8} width={44} height={22} fill="rgba(91,79,255,0.22)" stroke="#9D8FFF" strokeWidth={1.5} rx={1}/><text x={30} y={41} textAnchor="middle" fontSize={6} fill={CYAN}>fold ↑</text></> },
+          { label:"Cut corner", jsx: <><rect x={8} y={8} width={44} height={22} fill="rgba(91,79,255,0.18)" stroke="#9D8FFF" strokeWidth={1.5} rx={1}/><circle cx={48} cy={12} r={7} fill="rgba(255,59,59,0.35)" stroke="#FF3B3B" strokeWidth={1}/><text x={48} y={14} textAnchor="middle" fontSize={8} fill="#FF3B3B">✂</text></> },
         ].map((s, i) => (
           <React.Fragment key={i}>
             <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
               <svg width={60} height={60} viewBox="0 0 60 60">
-                <rect width={60} height={60} rx={3} fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1}/>
+                <rect width={60} height={60} rx={3} fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1}/>
                 {s.jsx}
               </svg>
               <span style={{ fontSize:6, color:DIM }}>{s.label}</span>
@@ -669,7 +673,7 @@ function ShapeSumDisplay({ exA, exB, exC, qA, qB }: {
   exA: RavenCell; exB: RavenCell; exC: RavenCell; qA: RavenCell; qB: RavenCell;
 }) {
   const SZ=44;
-  const box: React.CSSProperties = { width:SZ, height:SZ, flexShrink:0, border:"1px solid rgba(0,85,255,0.25)", borderRadius:4, overflow:"hidden" };
+  const box: React.CSSProperties = { width:SZ, height:SZ, flexShrink:0, border:"1px solid rgba(91,79,255,0.25)", borderRadius:4, overflow:"hidden" };
   const Op = ({ s }: { s: string }) => <span style={{ color:DIM, fontSize:20, fontWeight:300, flexShrink:0 }}>{s}</span>;
   return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10 }}>
@@ -697,12 +701,12 @@ function SymCodeDisplay({ equations }: { equations: string[] }) {
         return (
           <div key={i} style={{
             width:"100%", padding:"10px 20px",
-            background: isQ ? "rgba(0,85,255,0.12)" : "rgba(5,18,45,0.82)",
-            border:`1px solid ${isQ?"rgba(0,85,255,0.45)":"rgba(0,85,255,0.15)"}`,
+            background: isQ ? "rgba(91,79,255,0.12)" : "rgba(5,18,45,0.82)",
+            border:`1px solid ${isQ?"rgba(91,79,255,0.45)":"rgba(91,79,255,0.15)"}`,
             borderRadius:6, fontSize: isQ?20:17, fontWeight: isQ?700:500,
-            color: isQ?"#6EB0FF":"#C0D8FF", letterSpacing:"0.1em",
+            color: isQ?"#9D8FFF":"#C0D8FF", letterSpacing:"0.1em",
             fontFamily:"monospace", textAlign:"center",
-            boxShadow: isQ?"0 0 14px rgba(0,85,255,0.18)":"none",
+            boxShadow: isQ?"0 0 14px rgba(91,79,255,0.18)":"none",
           }}>{eq}</div>
         );
       })}
@@ -770,8 +774,8 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
     return (
       <svg width="100%" height="100%" viewBox="0 0 60 60">
         <rect x={1} y={1} width={58} height={58} rx={2}
-          fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
-        <path d={vis.optPaths[idx]} fill="#6EB0FF" />
+          fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
+        <path d={vis.optPaths[idx]} fill="#9D8FFF" />
       </svg>
     );
   }
@@ -788,8 +792,8 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
     return (
       <svg width="100%" height="100%" viewBox="0 0 60 60">
         <rect x={1} y={1} width={58} height={58} rx={2}
-          fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
-        <path d={vis.optGrids[idx]} fill="#6EB0FF" />
+          fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
+        <path d={vis.optGrids[idx]} fill="#9D8FFF" />
       </svg>
     );
   }
@@ -801,7 +805,7 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
     const val = vis.optVals[idx];
     return (
       <svg width="100%" height="100%" viewBox="0 0 60 60">
-        <rect x={2} y={2} width={56} height={56} rx={4} fill={HEAT_COLORS[val]} stroke="rgba(0,85,255,0.3)" strokeWidth={1} />
+        <rect x={2} y={2} width={56} height={56} rx={4} fill={HEAT_COLORS[val]} stroke="rgba(91,79,255,0.3)" strokeWidth={1} />
         {Array.from({ length: val }).map((_, i) => (
           <circle key={i} cx={10 + i * 10} cy={50} r={3} fill="rgba(255,255,255,0.45)" />
         ))}
@@ -811,8 +815,8 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
   if (vis?.kind === "mirror") {
     return (
       <svg width="100%" height="100%" viewBox="0 0 60 60">
-        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1} />
-        <path d={vis.optPaths[idx]} fill="#6EB0FF" />
+        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
+        <path d={vis.optPaths[idx]} fill="#9D8FFF" />
       </svg>
     );
   }
@@ -823,8 +827,8 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
         {row.map((val, c) => {
           const cx = 7 + c * 18;
           return val === 1
-            ? <circle key={c} cx={cx} cy={11} r={7} fill="#6EB0FF"/>
-            : <circle key={c} cx={cx} cy={11} r={7} fill="none" stroke="rgba(0,85,255,0.35)" strokeWidth={1.5} strokeDasharray="4,2"/>;
+            ? <circle key={c} cx={cx} cy={11} r={7} fill="#9D8FFF"/>
+            : <circle key={c} cx={cx} cy={11} r={7} fill="none" stroke="rgba(91,79,255,0.35)" strokeWidth={1.5} strokeDasharray="4,2"/>;
         })}
       </svg>
     );
@@ -832,20 +836,20 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
   if (vis?.kind === "shadow3d") {
     return (
       <svg width="100%" height="100%" viewBox="0 0 60 60">
-        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1}/>
-        <path d={vis.optGrids[idx]} fill="#6EB0FF"/>
+        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1}/>
+        <path d={vis.optGrids[idx]} fill="#9D8FFF"/>
       </svg>
     );
   }
   if (vis?.kind === "origami") {
     return (
       <svg width="100%" height="100%" viewBox="0 0 60 60">
-        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(0,85,255,0.22)" strokeWidth={1}/>
-        <rect x={8} y={8} width={44} height={44} fill="none" stroke="rgba(0,85,255,0.18)" strokeWidth={0.5}/>
-        {idx === 0 && <circle cx={44} cy={16} r={7} fill="#6EB0FF"/>}
-        {idx === 1 && <><circle cx={44} cy={16} r={7} fill="#6EB0FF"/><circle cx={44} cy={44} r={7} fill="#6EB0FF"/></>}
-        {idx === 2 && <><circle cx={14} cy={14} r={6} fill="#6EB0FF"/><circle cx={46} cy={14} r={6} fill="#6EB0FF"/><circle cx={14} cy={46} r={6} fill="#6EB0FF"/><circle cx={46} cy={46} r={6} fill="#6EB0FF"/></>}
-        {idx === 3 && <circle cx={30} cy={30} r={9} fill="#6EB0FF"/>}
+        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1}/>
+        <rect x={8} y={8} width={44} height={44} fill="none" stroke="rgba(91,79,255,0.18)" strokeWidth={0.5}/>
+        {idx === 0 && <circle cx={44} cy={16} r={7} fill="#9D8FFF"/>}
+        {idx === 1 && <><circle cx={44} cy={16} r={7} fill="#9D8FFF"/><circle cx={44} cy={44} r={7} fill="#9D8FFF"/></>}
+        {idx === 2 && <><circle cx={14} cy={14} r={6} fill="#9D8FFF"/><circle cx={46} cy={14} r={6} fill="#9D8FFF"/><circle cx={14} cy={46} r={6} fill="#9D8FFF"/><circle cx={46} cy={46} r={6} fill="#9D8FFF"/></>}
+        {idx === 3 && <circle cx={30} cy={30} r={9} fill="#9D8FFF"/>}
       </svg>
     );
   }
@@ -853,70 +857,18 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
     return <RavenCellSVG cell={vis.optCells[idx]} />;
   }
   if (vis?.kind === "symcode") {
-    return <span style={{ fontSize:"clamp(18px,4vw,26px)", fontWeight:800, fontFamily:"monospace", color:"#6EB0FF" }}>{vis.optVals[idx]}</span>;
+    return <span style={{ fontSize:"clamp(18px,4vw,26px)", fontWeight:800, fontFamily:"monospace", color:"#9D8FFF" }}>{vis.optVals[idx]}</span>;
   }
   return <span style={{ fontSize: "clamp(13px,3vw,16px)", lineHeight: 1.25, fontWeight: 500 }}>{opt}</span>;
 }
 
 /* ── Animated test background ───────────────────────────────────────────── */
 
-function AnimatedTestBg({ catIdx }: { catIdx: number }) {
-  const catColors: [string, string, string][] = [
-    ["rgba(0,85,255,0.70)", "rgba(139,92,246,0.45)", "rgba(6,182,212,0.30)"],   // 0 blue
-    ["rgba(139,92,246,0.70)", "rgba(0,85,255,0.45)", "rgba(255,59,59,0.20)"],   // 1 purple
-    ["rgba(6,182,212,0.65)", "rgba(0,85,255,0.45)", "rgba(139,92,246,0.25)"],   // 2 teal
-    ["rgba(99,60,220,0.70)", "rgba(6,182,212,0.40)", "rgba(0,85,255,0.30)"],    // 3 indigo
-    ["rgba(0,85,255,0.65)", "rgba(6,182,212,0.40)", "rgba(139,92,246,0.30)"],   // 4 blue+teal
-    ["rgba(6,182,212,0.65)", "rgba(0,85,255,0.45)", "rgba(99,60,220,0.30)"],    // 5 cyan
-  ];
-  const [c1, c2, c3] = catColors[catIdx] ?? catColors[0];
-
-  const nodes = [
-    {x:8,y:10},{x:22,y:5},{x:45,y:9},{x:72,y:6},{x:92,y:12},
-    {x:3,y:32},{x:18,y:38},{x:40,y:28},{x:65,y:35},{x:88,y:30},
-    {x:6,y:55},{x:28,y:60},{x:52,y:50},{x:75,y:62},{x:95,y:55},
-    {x:14,y:78},{x:38,y:82},{x:62,y:75},{x:84,y:85},{x:96,y:72},
-  ];
-  const conns: [number,number][] = [
-    [0,1],[1,2],[2,3],[3,4],[5,6],[6,7],[7,8],[8,9],[10,11],[11,12],[12,13],[13,14],[15,16],[16,17],[17,18],[18,19],
-    [0,5],[1,6],[2,7],[3,8],[4,9],[5,10],[6,11],[7,12],[8,13],[9,14],[10,15],[11,16],[12,17],[13,18],[14,19],
-  ];
-
+function AnimatedTestBg({ catIdx, flyKey }: { catIdx: number; flyKey?: number }) {
+  const accent = DIM_ACCENTS[catIdx] ?? DIM_ACCENTS[0];
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
-      {/* gradient blobs — 3 for richer color */}
-      <div style={{
-        position: "absolute", top: "-25%", left: "-15%", width: "65%", height: "65%",
-        background: `radial-gradient(ellipse, ${c1}, transparent 68%)`,
-        animation: "bgPulse1 7s ease-in-out infinite",
-      }} />
-      <div style={{
-        position: "absolute", bottom: "-25%", right: "-15%", width: "65%", height: "65%",
-        background: `radial-gradient(ellipse, ${c2}, transparent 68%)`,
-        animation: "bgPulse2 7s ease-in-out infinite",
-      }} />
-      <div style={{
-        position: "absolute", top: "30%", right: "5%", width: "45%", height: "45%",
-        background: `radial-gradient(ellipse, ${c3}, transparent 65%)`,
-        animation: "bgPulse1 10s ease-in-out infinite reverse",
-      }} />
-      {/* neural network SVG */}
-      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"
-        style={{ position: "absolute", inset: 0, opacity: 0.35 }}>
-        {conns.map(([a, b], i) => (
-          <line key={i}
-            x1={nodes[a].x} y1={nodes[a].y}
-            x2={nodes[b].x} y2={nodes[b].y}
-            stroke="#0055FF" strokeWidth={0.3}
-            style={{ animation: `lineGlow ${4 + (i % 3)}s ease-in-out infinite`, animationDelay: `${i * 0.15}s` }}
-          />
-        ))}
-        {nodes.map((n, i) => (
-          <circle key={i} cx={n.x} cy={n.y} r={0.8} fill="#06B6D4"
-            style={{ animation: `nodeGlow ${3 + (i % 4)}s ease-in-out infinite`, animationDelay: `${i * 0.2}s` }}
-          />
-        ))}
-      </svg>
+      <NeuralScene accent={accent} accent2={catIdx === 2 ? "#5B4FFF" : "#00F5D4"} opacity={0.72} density={0.85} flyKey={flyKey} fixed />
     </div>
   );
 }
@@ -936,7 +888,7 @@ function MilestoneOverlay({
     <div style={{
       position: "fixed", inset: 0, zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center",
-      background: "rgba(2,6,23,0.85)", backdropFilter: "blur(16px)",
+      background: "rgba(3,5,15,0.85)", backdropFilter: "blur(16px)",
       padding: "24px",
     }}>
       <div className="animate-scale-in" style={{
@@ -945,7 +897,7 @@ function MilestoneOverlay({
         borderRadius: 16, padding: "36px 28px",
         backdropFilter: "blur(20px)",
         textAlign: "center",
-        boxShadow: "0 24px 80px rgba(0,85,255,0.2)",
+        boxShadow: "0 24px 80px rgba(91,79,255,0.2)",
       }}>
         {/* Icon */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
@@ -967,7 +919,7 @@ function MilestoneOverlay({
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: DIM, marginBottom: 6 }}>
             <span>Progress</span><span>{progress}%</span>
           </div>
-          <div style={{ height: 4, background: "rgba(0,85,255,0.12)", borderRadius: 2, overflow: "hidden" }}>
+          <div style={{ height: 4, background: "rgba(91,79,255,0.12)", borderRadius: 2, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg, ${BLUE}, ${CYAN})`, borderRadius: 2, transition: "width 1s ease" }} />
           </div>
         </div>
@@ -978,7 +930,7 @@ function MilestoneOverlay({
           border: "none", borderRadius: 10,
           fontSize: 14, fontWeight: 700, color: "#fff",
           cursor: "pointer",
-          boxShadow: "0 4px 20px rgba(0,85,255,0.45)",
+          boxShadow: "0 4px 20px rgba(91,79,255,0.45)",
           transition: "transform 0.15s",
         }}
           onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
@@ -1040,12 +992,12 @@ export default function TestPage() {
       fontSize: 13, color: active ? "#fff" : "#C0C8D8",
       fontWeight: active ? 700 : 400,
       transition: "all 150ms",
-      boxShadow: active ? "0 0 14px rgba(0,85,255,0.4)" : "none",
+      boxShadow: active ? "0 0 14px rgba(91,79,255,0.4)" : "none",
     });
     return (
       <div style={{ minHeight: "100dvh", background: BG, color: TEXT, display: "flex", flexDirection: "column", position: "relative", fontFamily: "'Inter',system-ui,sans-serif" }}>
         <AnimatedTestBg catIdx={0} />
-        <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: `1px solid ${BORD}`, background: "rgba(2,6,23,0.9)", position: "relative", zIndex: 5 }}>
+        <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: `1px solid ${BORD}`, background: "rgba(3,5,15,0.9)", position: "relative", zIndex: 5 }}>
           <NavLogo />
           <button onClick={handleStartTest} style={{ fontSize: 11, color: DIM, background: "none", border: "none", cursor: "pointer" }}>Skip →</button>
         </nav>
@@ -1112,11 +1064,11 @@ export default function TestPage() {
               onClick={handleStartTest}
               style={{
                 width: "100%", padding: "15px 24px",
-                background: `linear-gradient(135deg,${BLUE},#0099CC)`,
+                background: `linear-gradient(135deg,${BLUE},#00C9AE)`,
                 border: "none", borderRadius: 10,
                 fontSize: 15, fontWeight: 700, color: "#fff",
                 cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(0,85,255,0.45)",
+                boxShadow: "0 4px 20px rgba(91,79,255,0.45)",
                 transition: "transform 150ms",
               }}
               onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
@@ -1157,6 +1109,7 @@ function QuizScreen() {
   const [streak, setStreak] = useState(0);
   const [streakFlash, setStreakFlash] = useState(false);
   const [milestoneData, setMilestoneData] = useState<{icon:"brain"|"target"|"fire";heading:string;sub:string}|null>(null);
+  const [answerRecords, setAnswerRecords] = useState<AnswerRecord[]>([]);
   const cardRef = useRef<HTMLDivElement>(null);
   const shownMilestonesRef = useRef(new Set<number>());
 
@@ -1180,14 +1133,29 @@ function QuizScreen() {
 
   const handleNext = useCallback(() => {
     const nextIdx = qIdx + 1;
+    const isSkip  = !answered;
+
+    // Synchronously build updated records/catTotals before possible navigation
+    let currentRecords    = answerRecords;
+    let currentCatTotals  = catTotals;
+    if (isSkip) {
+      const skipRec: AnswerRecord = { diff: q.diff, cat: q.cat, correct: false, timeFrac: 0, skipped: true };
+      currentRecords   = [...answerRecords, skipRec];
+      currentCatTotals = [...catTotals];
+      currentCatTotals[q.cat]++;
+      setAnswerRecords(currentRecords);
+      setCatTotals(currentCatTotals);
+    }
+
     if (nextIdx >= ALL_QUESTIONS.length) {
       localStorage.setItem("iq_score",        score.toString());
       localStorage.setItem("iq_total",        ALL_QUESTIONS.length.toString());
       localStorage.setItem("iq_catScores",    JSON.stringify(catScores));
-      localStorage.setItem("iq_catTotals",    JSON.stringify(catTotals));
+      localStorage.setItem("iq_catTotals",    JSON.stringify(currentCatTotals));
       localStorage.setItem("iq_weighted",     weightedScore.toString());
       localStorage.setItem("iq_maxPossible",  maxPossible.toString());
       localStorage.setItem("iq_minPossible",  minPossible.toString());
+      localStorage.setItem("iq_records",      JSON.stringify(currentRecords));
       router.push("/results");
       return;
     }
@@ -1204,7 +1172,7 @@ function QuizScreen() {
     } else {
       advanceTo(nextIdx);
     }
-  }, [qIdx, score, catScores, catTotals, weightedScore, maxPossible, minPossible, q, router, advanceTo, streak]);
+  }, [qIdx, score, catScores, catTotals, weightedScore, maxPossible, minPossible, q, router, advanceTo, answered, answerRecords, streak]);
 
   // Countdown timer (paused during memory reveal)
   useEffect(() => {
@@ -1218,6 +1186,7 @@ function QuizScreen() {
       setMaxPossible(v => v + w.correct);
       setMinPossible(v => v + w.wrong);
       setFeedback({ correct: false, text: `Time's up! ${q.exp}` });
+      setAnswerRecords(prev => [...prev, { diff: q.diff, cat: q.cat, correct: false, timeFrac: 1, skipped: false }]);
       return;
     }
     const t = setTimeout(() => setTimeLeft(v => v - 1), 1000);
@@ -1236,7 +1205,9 @@ function QuizScreen() {
     if (answered) return;
     setAnswered(true);
     setSelected(i);
-    const correct = i === q.ans;
+    const correct   = i === q.ans;
+    const timeFrac  = Math.max(0, Math.min(1, 1 - timeLeft / q.time));
+    setAnswerRecords(prev => [...prev, { diff: q.diff, cat: q.cat, correct, timeFrac, skipped: false }]);
     setResults(prev => [...prev, correct]);
     const ns = [...catScores], nt = [...catTotals];
     if (correct) { ns[q.cat]++; setScore(s => s + 1); }
@@ -1276,9 +1247,10 @@ function QuizScreen() {
   }
 
   // Derived display values
+  const accent      = DIM_ACCENTS[q.cat] ?? BLUE;
   const timerDanger = timeLeft <= Math.round(q.time * 0.25);
   const timerWarn   = timeLeft <= Math.round(q.time * 0.50);
-  const timerColor  = timerDanger ? RED : timerWarn ? ORANGE : BLUE;
+  const timerColor  = timerDanger ? RED : timerWarn ? ORANGE : CYAN;
   const timerPct    = (timeLeft / q.time) * 100;
   const progress    = ((qIdx + 1) / ALL_QUESTIONS.length) * 100;
 
@@ -1288,8 +1260,6 @@ function QuizScreen() {
     || q.vis?.kind === "binary" || q.vis?.kind === "shadow3d" || q.vis?.kind === "origami" || q.vis?.kind === "shapesum";
 
   const keyframes = `
-    @keyframes bgPulse1 { 0%,100%{opacity:0.7} 50%{opacity:0.3} }
-    @keyframes bgPulse2 { 0%,100%{opacity:0.3} 50%{opacity:0.7} }
     @keyframes nodeGlow { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
     @keyframes lineGlow { 0%,100%{opacity:0.06} 50%{opacity:0.18} }
     @keyframes streakSlide { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
@@ -1322,17 +1292,17 @@ function QuizScreen() {
             <div style={{
               background: GLASS, border: `1px solid ${BORD}`,
               backdropFilter: "blur(20px)", borderRadius: 16, padding: "32px 28px", marginBottom: 20,
-              boxShadow: "0 24px 60px rgba(0,85,255,0.15)",
+              boxShadow: "0 24px 60px rgba(91,79,255,0.15)",
             }}>
               <p style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: GREEN, marginBottom: 12, fontWeight: 700 }}>
                 ✓ Section complete
               </p>
               <p style={{ fontSize: 13, color: DIM, marginBottom: 8 }}>{prevCat.name}</p>
-              <div style={{ fontSize: 56, fontWeight: 300, color: BLUE, lineHeight: 1, margin: "12px 0", textShadow: "0 0 30px rgba(0,85,255,0.5)" }}>
+              <div style={{ fontSize: 56, fontWeight: 300, color: BLUE, lineHeight: 1, margin: "12px 0", textShadow: "0 0 30px rgba(91,79,255,0.5)" }}>
                 {catScore}<span style={{ fontSize: 22, color: DIM }}>/{catTotal}</span>
               </div>
               <p style={{ fontSize: 13, color: "#9ABCD4", marginBottom: 16, lineHeight: 1.5 }}>{motivational}</p>
-              <div style={{ height: 3, background: "rgba(0,85,255,0.12)", borderRadius: 2, overflow: "hidden" }}>
+              <div style={{ height: 3, background: "rgba(91,79,255,0.12)", borderRadius: 2, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${catTotal > 0 ? (catScore / catTotal) * 100 : 0}%`, background: `linear-gradient(90deg,${BLUE},${CYAN})`, transition: "width 0.9s ease", borderRadius: 2 }} />
               </div>
             </div>
@@ -1342,7 +1312,7 @@ function QuizScreen() {
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: DIM, marginBottom: 6 }}>
                 <span>Overall progress</span><span>{Math.round(progress)}%</span>
               </div>
-              <div style={{ height: 3, background: "rgba(0,85,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
+              <div style={{ height: 3, background: "rgba(91,79,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg,${BLUE},${CYAN})`, borderRadius: 2 }} />
               </div>
             </div>
@@ -1360,7 +1330,7 @@ function QuizScreen() {
                 border: "none", borderRadius: 10,
                 fontSize: 14, fontWeight: 700, color: "#fff",
                 cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(0,85,255,0.4)",
+                boxShadow: "0 4px 20px rgba(91,79,255,0.4)",
                 transition: "transform 0.15s",
               }}
               onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
@@ -1390,7 +1360,7 @@ function QuizScreen() {
     }}>
       <style>{keyframes}</style>
 
-      <AnimatedTestBg catIdx={q.cat} />
+      <AnimatedTestBg catIdx={q.cat} flyKey={qIdx} />
 
       {/* Milestone overlay */}
       {milestoneData && (
@@ -1409,8 +1379,8 @@ function QuizScreen() {
           position: "absolute", top: "8vh", left: 0, right: 0, zIndex: 40,
           display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           padding: "6px 16px",
-          background: "linear-gradient(90deg,rgba(255,140,0,0.18),rgba(255,60,0,0.10))",
-          borderBottom: "1px solid rgba(255,140,0,0.25)",
+          background: "linear-gradient(90deg,rgba(255,159,28,0.18),rgba(255,60,0,0.10))",
+          borderBottom: "1px solid rgba(255,159,28,0.25)",
           backdropFilter: "blur(10px)",
           animation: "streakSlide 0.3s ease",
           pointerEvents: "none",
@@ -1426,17 +1396,29 @@ function QuizScreen() {
       <div style={{
         height: "8vh", flexShrink: 0, zIndex: 10, position: "relative",
         display: "flex", flexDirection: "column",
-        background: "rgba(2,6,23,0.85)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(0,85,255,0.12)",
+        background: "rgba(3,5,15,0.85)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(91,79,255,0.12)",
       }}>
-        {/* Progress bar — 5px at very top */}
-        <div style={{ height: 5, background: "rgba(0,85,255,0.15)", flexShrink: 0 }}>
-          <div style={{
-            height: "100%", width: `${progress}%`,
-            background: `linear-gradient(90deg,${BLUE},${CYAN})`,
-            transition: "width 0.5s cubic-bezier(0.25,0.46,0.45,0.94)",
-            borderRadius: "0 3px 3px 0",
-          }} />
+        {/* Neural progress nodes — lit = answered, pulsing = current, dim = upcoming */}
+        <div style={{
+          height: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+          gap: "clamp(2px,0.6vw,4px)", padding: "2px 8px 0",
+        }}>
+          {ALL_QUESTIONS.map((qq, i) => {
+            const lit = i < qIdx;
+            const cur = i === qIdx;
+            const nodeCol = DIM_ACCENTS[qq.cat] ?? BLUE;
+            return (
+              <span key={i} style={{
+                width: cur ? 7 : 5, height: cur ? 7 : 5, borderRadius: "50%",
+                background: lit ? nodeCol : cur ? accent : "rgba(91,79,255,0.18)",
+                boxShadow: lit ? `0 0 5px ${nodeCol}` : cur ? `0 0 8px ${accent}` : "none",
+                animation: cur ? "node-current 1.6s ease-in-out infinite" : "none",
+                transition: "background 0.4s, box-shadow 0.4s, width 0.3s, height 0.3s",
+                flexShrink: 1, minWidth: 3,
+              }} />
+            );
+          })}
         </div>
         {/* Logo | Q counter | Timer */}
         <div style={{
@@ -1451,13 +1433,13 @@ function QuizScreen() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "clamp(12px,2.2vw,14px)", color: DIM }}>
               <span style={{ color: TEXT, fontWeight: 700 }}>{qIdx + 1}</span>
-              <span style={{ color: "rgba(0,85,255,0.4)", margin: "0 3px" }}>/</span>
+              <span style={{ color: "rgba(91,79,255,0.4)", margin: "0 3px" }}>/</span>
               {ALL_QUESTIONS.length}
             </span>
             {streak >= 3 && (
               <div style={{
                 display: "flex", alignItems: "center", gap: 3,
-                background: "rgba(255,140,0,0.12)", border: "1px solid rgba(255,140,0,0.3)",
+                background: "rgba(255,159,28,0.12)", border: "1px solid rgba(255,159,28,0.3)",
                 borderRadius: 99, padding: "1px 7px",
               }}>
                 <svg width="9" height="9" viewBox="0 0 24 24" fill={ORANGE}>
@@ -1471,7 +1453,7 @@ function QuizScreen() {
           {/* Timer circle */}
           <div style={{ position: "relative", width: "clamp(34px,6vw,42px)", height: "clamp(34px,6vw,42px)", flexShrink: 0 }}>
             <svg style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }} width="100%" height="100%" viewBox="0 0 44 44">
-              <circle cx={22} cy={22} r={18} fill="none" stroke="rgba(0,85,255,0.12)" strokeWidth={2.5} />
+              <circle cx={22} cy={22} r={18} fill="none" stroke="rgba(91,79,255,0.12)" strokeWidth={2.5} />
               <circle cx={22} cy={22} r={18} fill="none" stroke={timerColor} strokeWidth={2.5} strokeLinecap="round"
                 strokeDasharray={`${2 * Math.PI * 18}`}
                 strokeDashoffset={`${2 * Math.PI * 18 * (1 - (timerPaused ? 1 : timerPct) / 100)}`}
@@ -1494,19 +1476,19 @@ function QuizScreen() {
           height: 34, flexShrink: 0, zIndex: 5, position: "relative",
           display: "flex", alignItems: "center",
           padding: "0 clamp(12px,3vw,20px)",
-          borderBottom: "1px solid rgba(0,85,255,0.08)",
+          borderBottom: "1px solid rgba(91,79,255,0.08)",
           maxWidth: 760, width: "100%", margin: "0 auto", boxSizing: "border-box",
           gap: 8,
         }}>
           <span style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: DIM, fontWeight: 600 }}>
             {CATEGORIES[q.cat].name}
           </span>
-          <span style={{ color: "rgba(0,85,255,0.3)", fontSize: 10 }}>|</span>
+          <span style={{ color: "rgba(91,79,255,0.3)", fontSize: 10 }}>|</span>
           <span style={{
             fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700,
-            ...(q.diff === "easy" ? { color: GREEN } : q.diff === "medium" ? { color: "#6EB0FF" } : { color: RED }),
+            ...(q.diff === "easy" ? { color: GREEN } : q.diff === "medium" ? { color: "#9D8FFF" } : { color: RED }),
           }}>{q.diff}</span>
-          <span style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", padding: "1px 6px", borderRadius: 2, border: `1px solid rgba(0,85,255,0.22)`, color: BLUE }}>{q.badge}</span>
+          <span style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", padding: "1px 6px", borderRadius: 2, border: `1px solid ${accent}44`, color: accent, transition: "color 0.5s, border-color 0.5s" }}>{q.badge}</span>
         </div>
 
         {/* ── QUESTION TEXT (clamp 60–80px fixed) ───────────────────────── */}
@@ -1526,7 +1508,7 @@ function QuizScreen() {
               <span style={{ fontSize: "clamp(9px,1.5vw,11px)", color: DIM }}>as</span>
               <span style={{ fontSize: "clamp(12px,2vw,15px)", fontWeight: 600 }}>{q.w3}</span>
               <span style={{ fontSize: "clamp(9px,1.5vw,11px)", color: DIM }}>is to</span>
-              <span style={{ color: BLUE, borderBottom: "2px dashed rgba(0,85,255,0.5)", minWidth: 36, textAlign: "center", fontSize: "clamp(12px,2vw,15px)" }}>?</span>
+              <span style={{ color: BLUE, borderBottom: "2px dashed rgba(91,79,255,0.5)", minWidth: 36, textAlign: "center", fontSize: "clamp(12px,2vw,15px)" }}>?</span>
             </div>
           ) : q.type === "sequence" && q.seq ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", overflow: "hidden" }}>
@@ -1542,8 +1524,8 @@ function QuizScreen() {
                       display: "flex", alignItems: "center", justifyContent: "center",
                       borderRadius: 5, fontSize: "clamp(10px,2vw,14px)", fontWeight: 600, flexShrink: 0,
                       ...(s === "?"
-                        ? { background: "rgba(0,85,255,0.08)", border: "2px dashed rgba(0,85,255,0.5)", color: BLUE }
-                        : { background: "rgba(5,18,45,0.9)", border: "1px solid rgba(0,85,255,0.2)", color: TEXT }),
+                        ? { background: "rgba(91,79,255,0.08)", border: "2px dashed rgba(91,79,255,0.5)", color: BLUE }
+                        : { background: "rgba(5,18,45,0.9)", border: "1px solid rgba(91,79,255,0.2)", color: TEXT }),
                     }}>{s}</div>
                     {i < q.seq!.length - 1 && <span style={{ color: DIM, fontSize: 10 }}>→</span>}
                   </div>
@@ -1571,9 +1553,12 @@ function QuizScreen() {
             <div style={{
               width: "100%", height: "100%",
               display: "flex", alignItems: "center", justifyContent: "center",
-              background: "rgba(5,18,45,0.60)", border: `1px solid rgba(0,85,255,0.22)`,
-              borderRadius: 12, padding: "clamp(6px,1.2vh,12px)",
+              background: "rgba(5,10,30,0.55)", border: `1px solid ${accent}30`,
+              backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
+              borderRadius: 14, padding: "clamp(6px,1.2vh,12px)",
               overflow: "hidden", boxSizing: "border-box",
+              boxShadow: `0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 ${accent}14`,
+              transition: "border-color 0.5s, box-shadow 0.5s",
             }}>
               <VisualDisplay vis={q.vis} onMemReady={() => setMemReady(true)} />
             </div>
@@ -1614,8 +1599,8 @@ function QuizScreen() {
                     borderRadius: 8,
                     cursor: answered ? "default" : "pointer",
                     transition: "border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.1s",
-                    background: isCorrect ? "rgba(0,216,122,0.12)" : isWrong ? "rgba(255,59,59,0.12)" : isSel ? "rgba(0,85,255,0.12)" : GLASS,
-                    borderColor: isCorrect ? GREEN : isWrong ? RED : isSel ? BLUE : "rgba(0,85,255,0.20)",
+                    background: isCorrect ? "rgba(0,216,122,0.12)" : isWrong ? "rgba(255,59,59,0.12)" : isSel ? `${accent}1f` : GLASS,
+                    borderColor: isCorrect ? GREEN : isWrong ? RED : isSel ? accent : "rgba(91,79,255,0.20)",
                     boxShadow: isCorrect
                       ? `0 0 0 1px ${GREEN}, 0 0 18px rgba(0,216,122,0.28)`
                       : isWrong ? `0 0 0 1px ${RED}, 0 0 12px rgba(255,59,59,0.25)` : "none",
@@ -1623,13 +1608,13 @@ function QuizScreen() {
                     overflow: "hidden",
                     boxSizing: "border-box",
                   }}
-                  onMouseEnter={e => { if (!answered) { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; (e.currentTarget as HTMLButtonElement).style.borderColor = BLUE; } }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)"; if (!answered) (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,85,255,0.20)"; }}
+                  onMouseEnter={e => { if (!answered) { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; (e.currentTarget as HTMLButtonElement).style.borderColor = accent; } }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)"; if (!answered) (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(91,79,255,0.20)"; }}
                 >
                   <div style={{
                     minWidth: hasVisOpts ? "auto" : 20, height: hasVisOpts ? "auto" : 20,
                     border: "1px solid",
-                    borderColor: isCorrect ? GREEN : isWrong ? RED : "rgba(0,85,255,0.35)",
+                    borderColor: isCorrect ? GREEN : isWrong ? RED : "rgba(91,79,255,0.35)",
                     borderRadius: 4,
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: "clamp(8px,1.4vw,10px)", fontWeight: 700, letterSpacing: "0.06em",
@@ -1694,7 +1679,7 @@ function QuizScreen() {
               </span>
             </div>
           ) : (
-            <div style={{ width: "100%", height: "100%", borderRadius: 10, border: "1px dashed rgba(0,85,255,0.10)" }} />
+            <div style={{ width: "100%", height: "100%", borderRadius: 10, border: "1px dashed rgba(91,79,255,0.10)" }} />
           )}
         </div>
 
@@ -1705,7 +1690,7 @@ function QuizScreen() {
           padding: "0 clamp(12px,3vw,20px)",
           maxWidth: 760, width: "100%", margin: "0 auto", boxSizing: "border-box",
           gap: 12,
-          borderTop: "1px solid rgba(0,85,255,0.08)",
+          borderTop: "1px solid rgba(91,79,255,0.08)",
         }}>
           <button onClick={handleNext} style={{
             background: "none", border: "none", cursor: "pointer",
@@ -1721,9 +1706,9 @@ function QuizScreen() {
             height: 42,
             fontSize: "clamp(12px,1.8vw,14px)", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase",
             borderRadius: 8, border: "none", cursor: answered ? "pointer" : "not-allowed",
-            background: answered ? `linear-gradient(135deg,${BLUE},${CYAN})` : "rgba(0,85,255,0.18)",
+            background: answered ? `linear-gradient(135deg,${accent},${CYAN})` : "rgba(91,79,255,0.18)",
             color: "#fff", opacity: answered ? 1 : 0.35,
-            boxShadow: answered ? "0 4px 24px rgba(0,85,255,0.60), 0 0 48px rgba(0,85,255,0.18)" : "none",
+            boxShadow: answered ? "0 4px 24px rgba(91,79,255,0.60), 0 0 48px rgba(91,79,255,0.18)" : "none",
             transition: "opacity 0.2s, box-shadow 0.2s, transform 0.15s",
             flexShrink: 0,
           }}

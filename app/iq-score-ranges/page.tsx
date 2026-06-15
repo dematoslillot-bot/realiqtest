@@ -65,11 +65,11 @@ function BellCurveChart({ markerIQ = 100 }: { markerIQ?: number }) {
   const ticks = [70, 85, 100, 115, 130];
   const bands = [
     { from: 55, to: 70,  label: "<70",      color: "#FF3B3B" },
-    { from: 70, to: 85,  label: "70-84",    color: "#FF8C00" },
+    { from: 70, to: 85,  label: "70-84",    color: "#FF9F1C" },
     { from: 85, to: 100, label: "85-99",    color: "#FFD700" },
     { from: 100, to: 115, label: "100-114", color: "#00D87A" },
-    { from: 115, to: 130, label: "115-129", color: "#00AAFF" },
-    { from: 130, to: 145, label: "130+",    color: "#0055FF" },
+    { from: 115, to: 130, label: "115-129", color: "#00F5D4" },
+    { from: 130, to: 145, label: "130+",    color: "#5B4FFF" },
   ];
 
   return (
@@ -86,16 +86,16 @@ function BellCurveChart({ markerIQ = 100 }: { markerIQ?: number }) {
         ))}
 
         {/* Filled area below marker */}
-        {fillD && <path d={fillD} fill="rgba(0,85,255,0.18)" />}
+        {fillD && <path d={fillD} fill="rgba(91,79,255,0.18)" />}
 
         {/* Curve */}
-        <path d={pathD} fill="none" stroke="#0055FF" strokeWidth="2.5" />
-        <path d={`${pathD} L${xToPixel(xMax)},${H} L${xToPixel(xMin)},${H} Z`} fill="rgba(0,85,255,0.06)" />
+        <path d={pathD} fill="none" stroke="#5B4FFF" strokeWidth="2.5" />
+        <path d={`${pathD} L${xToPixel(xMax)},${H} L${xToPixel(xMin)},${H} Z`} fill="rgba(91,79,255,0.06)" />
 
         {/* Vertical tick lines */}
         {ticks.map(t => (
           <line key={t} x1={xToPixel(t)} y1={0} x2={xToPixel(t)} y2={H}
-            stroke="rgba(0,85,255,0.20)" strokeWidth="1" strokeDasharray="4,4" />
+            stroke="rgba(91,79,255,0.20)" strokeWidth="1" strokeDasharray="4,4" />
         ))}
 
         {/* Tick labels */}
@@ -108,11 +108,11 @@ function BellCurveChart({ markerIQ = 100 }: { markerIQ?: number }) {
         {markerIQ >= xMin && markerIQ <= xMax && (
           <>
             <line x1={markerX} y1={markerY} x2={markerX} y2={H}
-              stroke="#00AAFF" strokeWidth="1.5" strokeDasharray="5,3" />
-            <circle cx={markerX} cy={markerY} r="5" fill="#00AAFF"
-              style={{ filter: "drop-shadow(0 0 6px rgba(0,170,255,0.8))" }} />
+              stroke="#00F5D4" strokeWidth="1.5" strokeDasharray="5,3" />
+            <circle cx={markerX} cy={markerY} r="5" fill="#00F5D4"
+              style={{ filter: "drop-shadow(0 0 6px rgba(0,245,212,0.8))" }} />
             <text x={markerX} y={markerY - 12} textAnchor="middle"
-              fill="#00AAFF" fontSize="11" fontFamily="monospace" fontWeight="600">
+              fill="#00F5D4" fontSize="11" fontFamily="monospace" fontWeight="600">
               You
             </text>
           </>
@@ -123,13 +123,13 @@ function BellCurveChart({ markerIQ = 100 }: { markerIQ?: number }) {
 }
 
 export default function IQScoreRangesPage() {
-  const blue = "#0055FF";
-  const cyan = "#00AAFF";
+  const blue = "#5B4FFF";
+  const cyan = "#00F5D4";
 
   const RANGES = [
     {
       range: "130 +", label: "Very Superior", pct: "~2.3%", percentile: "Top 2%",
-      color: blue, glow: "rgba(0,85,255,0.5)",
+      color: blue, glow: "rgba(91,79,255,0.5)",
       desc: "Scores in this range indicate exceptional cognitive ability across multiple domains. Individuals in this range often excel in highly complex fields — theoretical physics, advanced mathematics, competitive law, medical research, and other domains requiring rapid synthesis of complex information.",
       famous: "Often associated with Nobel laureates, chess grandmasters, elite academics, and many successful entrepreneurs in technically demanding industries.",
       note: "Only 1 in 44 people score in this range. Tests become less precise at extremes due to ceiling effects — very high scorers are better assessed by specialised high-range tests.",
@@ -143,7 +143,7 @@ export default function IQScoreRangesPage() {
     },
     {
       range: "110 – 119", label: "High Average", pct: "~16.1%", percentile: "Top 25%",
-      color: "#00AAFF", glow: "rgba(0,170,255,0.4)",
+      color: "#00F5D4", glow: "rgba(0,245,212,0.4)",
       desc: "High average intelligence reflects above-average cognitive ability across the board. This range is associated with success in a wide range of professional and academic contexts, including most bachelor's-level degree programmes and many graduate programmes.",
       famous: "Broadly associated with university-educated professionals across many fields — teachers, managers, accountants, journalists, nurses, and skilled tradespeople.",
       note: "This range represents the top quarter of the population — a meaningful above-average score.",
@@ -164,7 +164,7 @@ export default function IQScoreRangesPage() {
     },
     {
       range: "70 – 79", label: "Borderline", pct: "~6.7%", percentile: "Bottom 9%",
-      color: "#FF8C00", glow: "rgba(255,140,0,0.4)",
+      color: "#FF9F1C", glow: "rgba(255,159,28,0.4)",
       desc: "Scores in this range fall between average and what is clinically classified as intellectual disability. A single online test score in this range is not diagnostic — it should be confirmed with formal, professionally administered assessment before drawing any conclusions.",
       famous: null,
       note: "If a professional assessment is needed, please consult a clinical psychologist. Online tests cannot diagnose intellectual disability.",
@@ -198,11 +198,11 @@ export default function IQScoreRangesPage() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
           {[
             { label: "Below 70", color: "#FF3B3B" },
-            { label: "70–84", color: "#FF8C00" },
+            { label: "70–84", color: "#FF9F1C" },
             { label: "85–99", color: "#FFD700" },
             { label: "100–114", color: "#00D87A" },
-            { label: "115–129", color: "#00AAFF" },
-            { label: "130+", color: "#0055FF" },
+            { label: "115–129", color: "#00F5D4" },
+            { label: "130+", color: "#5B4FFF" },
           ].map(b => (
             <div key={b.label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
               <div style={{ width: 10, height: 10, borderRadius: "50%", background: b.color }} />
@@ -243,7 +243,7 @@ export default function IQScoreRangesPage() {
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 11, padding: "3px 10px", background: `${r.color}15`, color: r.color, borderRadius: 2 }}>{r.pct} of population</span>
-                  <span style={{ fontSize: 11, padding: "3px 10px", background: "rgba(0,85,255,0.10)", color: "#8AABCC", borderRadius: 2 }}>{r.percentile}</span>
+                  <span style={{ fontSize: 11, padding: "3px 10px", background: "rgba(91,79,255,0.10)", color: "#8AABCC", borderRadius: 2 }}>{r.percentile}</span>
                 </div>
               </div>
               <p style={{ fontSize: 14, color: "#C0C8D8", lineHeight: 1.75, marginBottom: r.famous || r.note ? 10 : 0 }}>{r.desc}</p>
@@ -256,10 +256,10 @@ export default function IQScoreRangesPage() {
 
       <Section title="Important Caveats">
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-          <li>IQ score ranges are <strong style={{ color: "#D6E4FF" }}>descriptive, not prescriptive</strong>. They describe group averages, not individual destinies.</li>
-          <li>Online tests, including ours, have a <strong style={{ color: "#D6E4FF" }}>measurement error of ±8–15 points</strong>. Your true score likely falls within a range around your result — treat it as a range, not a single precise number.</li>
-          <li>IQ measures a subset of cognitive abilities. <strong style={{ color: "#D6E4FF" }}>Emotional intelligence, creativity, practical wisdom, and character</strong> are not captured.</li>
-          <li>IQ scores are <strong style={{ color: "#D6E4FF" }}>not fully fixed</strong>. Lifestyle, education, and cognitive training all influence cognitive performance over time.</li>
+          <li>IQ score ranges are <strong style={{ color: "#E8E8F0" }}>descriptive, not prescriptive</strong>. They describe group averages, not individual destinies.</li>
+          <li>Online tests, including ours, have a <strong style={{ color: "#E8E8F0" }}>measurement error of ±8–15 points</strong>. Your true score likely falls within a range around your result — treat it as a range, not a single precise number.</li>
+          <li>IQ measures a subset of cognitive abilities. <strong style={{ color: "#E8E8F0" }}>Emotional intelligence, creativity, practical wisdom, and character</strong> are not captured.</li>
+          <li>IQ scores are <strong style={{ color: "#E8E8F0" }}>not fully fixed</strong>. Lifestyle, education, and cognitive training all influence cognitive performance over time.</li>
           <li>Never make major life decisions solely based on an online IQ score. For clinical purposes, consult a qualified psychologist.</li>
           <li>Score inflation is common in online tests. Many popular IQ websites report scores 10–25 points higher than a user&apos;s true assessed level. Our calibration prioritises accuracy over flattery.</li>
         </ul>
@@ -281,9 +281,9 @@ export default function IQScoreRangesPage() {
       </Section>
 
       <div style={{ marginTop: 40, display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <a href="/what-is-iq" style={{ padding: "12px 24px", background: "rgba(0,85,255,0.12)", border: "1px solid rgba(0,85,255,0.30)", color: cyan, textDecoration: "none", borderRadius: 4, fontSize: 13 }}>What is IQ? →</a>
-        <a href="/how-to-improve-iq" style={{ padding: "12px 24px", background: "rgba(0,85,255,0.12)", border: "1px solid rgba(0,85,255,0.30)", color: cyan, textDecoration: "none", borderRadius: 4, fontSize: 13 }}>How to Improve →</a>
-        <a href="/test" style={{ padding: "12px 24px", background: blue, color: "#fff", textDecoration: "none", borderRadius: 4, fontSize: 13, boxShadow: "0 0 16px rgba(0,85,255,0.45)" }}>Take the Test →</a>
+        <a href="/what-is-iq" style={{ padding: "12px 24px", background: "rgba(91,79,255,0.12)", border: "1px solid rgba(91,79,255,0.30)", color: cyan, textDecoration: "none", borderRadius: 4, fontSize: 13 }}>What is IQ? →</a>
+        <a href="/how-to-improve-iq" style={{ padding: "12px 24px", background: "rgba(91,79,255,0.12)", border: "1px solid rgba(91,79,255,0.30)", color: cyan, textDecoration: "none", borderRadius: 4, fontSize: 13 }}>How to Improve →</a>
+        <a href="/test" style={{ padding: "12px 24px", background: blue, color: "#fff", textDecoration: "none", borderRadius: 4, fontSize: 13, boxShadow: "0 0 16px rgba(91,79,255,0.45)" }}>Take the Test →</a>
       </div>
     </ContentShell>
   );

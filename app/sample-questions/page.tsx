@@ -21,9 +21,9 @@ const schemaOrg = {
   "dateModified": "2026-05-03",
 };
 
-const blue  = "#0055FF";
-const cyan  = "#00AAFF";
-const blue2 = "rgba(0,85,255,0.18)";
+const blue  = "#5B4FFF";
+const cyan  = "#00F5D4";
+const blue2 = "rgba(91,79,255,0.18)";
 const dim   = "#8AABCC";
 
 function SampleQ({ n, badge, q, opts, ans, exp }: {
@@ -39,17 +39,17 @@ function SampleQ({ n, badge, q, opts, ans, exp }: {
         <span style={{ fontFamily: "monospace", fontSize: 11, color: "#6A88AA" }}>{n}</span>
         <span style={{
           fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase",
-          padding: "3px 10px", background: "rgba(0,85,255,0.12)", color: cyan,
-          border: `1px solid rgba(0,170,255,0.25)`, borderRadius: 2,
+          padding: "3px 10px", background: "rgba(91,79,255,0.12)", color: cyan,
+          border: `1px solid rgba(0,245,212,0.25)`, borderRadius: 2,
         }}>{badge}</span>
       </div>
-      <p style={{ fontSize: 15, color: "#D6E4FF", marginBottom: 16, lineHeight: 1.5 }}>{q}</p>
+      <p style={{ fontSize: 15, color: "#E8E8F0", marginBottom: 16, lineHeight: 1.5 }}>{q}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
         {opts.map((opt, i) => (
           <div key={i} style={{
             padding: "10px 14px", borderRadius: 4, fontSize: 13,
-            background: i === ans ? "rgba(0,216,122,0.12)" : "rgba(0,85,255,0.06)",
-            border: `1px solid ${i === ans ? "rgba(0,216,122,0.40)" : "rgba(0,85,255,0.15)"}`,
+            background: i === ans ? "rgba(0,216,122,0.12)" : "rgba(91,79,255,0.06)",
+            border: `1px solid ${i === ans ? "rgba(0,216,122,0.40)" : "rgba(91,79,255,0.15)"}`,
             color: i === ans ? "#00D87A" : "#C0C8D8",
           }}>
             <span style={{ marginRight: 8, fontWeight: 600 }}>{String.fromCharCode(65 + i)}.</span>
@@ -59,11 +59,11 @@ function SampleQ({ n, badge, q, opts, ans, exp }: {
         ))}
       </div>
       <div style={{
-        padding: "12px 16px", background: "rgba(0,85,255,0.05)",
-        border: "1px solid rgba(0,85,255,0.12)", borderRadius: 4,
+        padding: "12px 16px", background: "rgba(91,79,255,0.05)",
+        border: "1px solid rgba(91,79,255,0.12)", borderRadius: 4,
         fontSize: 13, color: dim, lineHeight: 1.7,
       }}>
-        <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "#00AAFF", marginRight: 10 }}>Explanation</span>
+        <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "#00F5D4", marginRight: 10 }}>Explanation</span>
         {exp}
       </div>
     </div>
@@ -75,12 +75,12 @@ function DimHeader({ icon, n, name, note }: { icon: string; n: string; name: str
     <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 24, marginTop: 40 }}>
       <div style={{
         width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
-        background: "rgba(0,85,255,0.12)", border: "1px solid rgba(0,85,255,0.25)",
+        background: "rgba(91,79,255,0.12)", border: "1px solid rgba(91,79,255,0.25)",
         display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22,
       }}>{icon}</div>
       <div>
         <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: cyan, marginBottom: 2 }}>Dimension {n}</div>
-        <h2 style={{ fontSize: 22, fontWeight: 400, color: "#D6E4FF", marginBottom: 6 }}>{name}</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 400, color: "#E8E8F0", marginBottom: 6 }}>{name}</h2>
         <p style={{ fontSize: 13, color: dim, lineHeight: 1.6 }}>{note}</p>
       </div>
     </div>
@@ -101,10 +101,10 @@ export default function SampleQuestionsPage() {
       />
       <div style={{
         padding: "16px 20px", marginBottom: 40,
-        background: "rgba(0,85,255,0.05)", border: `1px solid ${blue2}`, borderRadius: 6,
+        background: "rgba(91,79,255,0.05)", border: `1px solid ${blue2}`, borderRadius: 6,
         fontSize: 14, color: dim, lineHeight: 1.7,
       }}>
-        <strong style={{ color: "#D6E4FF" }}>Note:</strong> The actual test questions are different from these samples.
+        <strong style={{ color: "#E8E8F0" }}>Note:</strong> The actual test questions are different from these samples.
         Familiarising yourself with the question formats will help you perform better, but the patterns
         and sequences used in the live test are unique. The correct answers are shown here (highlighted in green)
         so you can understand the reasoning before you take the full assessment.
@@ -281,9 +281,9 @@ export default function SampleQuestionsPage() {
       {/* CTA */}
       <div style={{
         marginTop: 48, padding: "28px", textAlign: "center",
-        background: "rgba(0,85,255,0.06)", border: `1px solid ${blue2}`, borderRadius: 6,
+        background: "rgba(91,79,255,0.06)", border: `1px solid ${blue2}`, borderRadius: 6,
       }}>
-        <h3 style={{ fontSize: 20, fontWeight: 300, marginBottom: 10, color: "#D6E4FF" }}>
+        <h3 style={{ fontSize: 20, fontWeight: 300, marginBottom: 10, color: "#E8E8F0" }}>
           Ready to try the real test?
         </h3>
         <p style={{ fontSize: 14, color: dim, marginBottom: 24 }}>
@@ -294,7 +294,7 @@ export default function SampleQuestionsPage() {
           background: blue, color: "#fff", textDecoration: "none",
           fontSize: 11, fontWeight: 600, letterSpacing: "0.12em",
           textTransform: "uppercase", borderRadius: 2,
-          boxShadow: "0 0 20px rgba(0,85,255,0.5)",
+          boxShadow: "0 0 20px rgba(91,79,255,0.5)",
         }}>Start the Free Test</a>
       </div>
     </ContentShell>

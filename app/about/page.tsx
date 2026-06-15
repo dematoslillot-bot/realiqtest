@@ -23,8 +23,8 @@ const schemaOrg = {
 };
 
 export default function AboutPage() {
-  const blue = "#0055FF";
-  const cyan = "#00AAFF";
+  const blue = "#5B4FFF";
+  const cyan = "#00F5D4";
 
   return (
     <ContentShell
@@ -83,16 +83,16 @@ export default function AboutPage() {
         </p>
         <ol style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
           <li>
-            <strong style={{ color: "#D6E4FF" }}>Weighted raw score:</strong> Correct answers are weighted by difficulty — easy questions (1.0×), medium questions (1.5×), and hard questions (2.0×). This matches the differential item weighting used in adaptive intelligence tests.
+            <strong style={{ color: "#E8E8F0" }}>Weighted raw score:</strong> Correct answers are weighted by difficulty — easy questions (1.0×), medium questions (1.5×), and hard questions (2.0×). This matches the differential item weighting used in adaptive intelligence tests.
           </li>
           <li>
-            <strong style={{ color: "#D6E4FF" }}>Speed bonus:</strong> Answers given in under 50% of the allotted time with correct answers earn a fractional accuracy boost (up to +15% per question), mirroring the processing speed correlation that contributes to full-scale IQ in real assessments.
+            <strong style={{ color: "#E8E8F0" }}>Speed bonus:</strong> Answers given in under 50% of the allotted time with correct answers earn a fractional accuracy boost (up to +15% per question), mirroring the processing speed correlation that contributes to full-scale IQ in real assessments.
           </li>
           <li>
-            <strong style={{ color: "#D6E4FF" }}>Dimensional sub-scores:</strong> Performance is calculated separately for each of the six dimensions, allowing identification of cognitive strengths and relative weaknesses even before the overall score is computed.
+            <strong style={{ color: "#E8E8F0" }}>Dimensional sub-scores:</strong> Performance is calculated separately for each of the six dimensions, allowing identification of cognitive strengths and relative weaknesses even before the overall score is computed.
           </li>
           <li>
-            <strong style={{ color: "#D6E4FF" }}>Population normalisation:</strong> The combined weighted score is normalised to an approximate normal distribution calibrated against a reference dataset from over 2.4 million test sessions, then converted to the IQ scale (M=100, SD=15).
+            <strong style={{ color: "#E8E8F0" }}>Population normalisation:</strong> The combined weighted score is normalised to an approximate normal distribution calibrated against a reference dataset from over 2.4 million test sessions, then converted to the IQ scale (M=100, SD=15).
           </li>
         </ol>
         <p style={{ marginBottom: 16 }}>
@@ -113,12 +113,12 @@ export default function AboutPage() {
           We cannot make the same guarantees as a supervised clinical assessment — factors like distraction, fatigue, and guessing affect online test results. However, several features of our design improve validity and make our test more reliable than most online IQ tools:
         </p>
         <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-          <li><strong style={{ color: "#D6E4FF" }}>Multi-dimensional coverage:</strong> Six independent cognitive dimensions produce a more robust IQ estimate than any single-dimension test. A user who struggles with verbal questions but excels at matrices is scored more accurately than they would be on a purely verbal test.</li>
-          <li><strong style={{ color: "#D6E4FF" }}>Pure visual stimuli:</strong> Raven matrices and rotation tasks are culture-fair by design — they do not disadvantage non-native English speakers or users from different educational backgrounds.</li>
-          <li><strong style={{ color: "#D6E4FF" }}>Graduated difficulty:</strong> Questions within each category increase in complexity, reducing floor and ceiling effects and providing better discrimination across the ability range.</li>
-          <li><strong style={{ color: "#D6E4FF" }}>Time-pressure weighting:</strong> Incorporating response speed as a minor score component mirrors the processing speed correlation present in all major IQ batteries, rather than treating all correct answers identically regardless of speed.</li>
-          <li><strong style={{ color: "#D6E4FF" }}>Honest scoring:</strong> We do not inflate scores. Our calibration prioritises accuracy over user satisfaction. An honest score is more useful for self-knowledge than a flattering one.</li>
-          <li><strong style={{ color: "#D6E4FF" }}>Transparent methodology:</strong> We publish our scoring algorithm logic and make clear what the results represent and do not represent — a level of transparency rare among online IQ tests.</li>
+          <li><strong style={{ color: "#E8E8F0" }}>Multi-dimensional coverage:</strong> Six independent cognitive dimensions produce a more robust IQ estimate than any single-dimension test. A user who struggles with verbal questions but excels at matrices is scored more accurately than they would be on a purely verbal test.</li>
+          <li><strong style={{ color: "#E8E8F0" }}>Pure visual stimuli:</strong> Raven matrices and rotation tasks are culture-fair by design — they do not disadvantage non-native English speakers or users from different educational backgrounds.</li>
+          <li><strong style={{ color: "#E8E8F0" }}>Graduated difficulty:</strong> Questions within each category increase in complexity, reducing floor and ceiling effects and providing better discrimination across the ability range.</li>
+          <li><strong style={{ color: "#E8E8F0" }}>Time-pressure weighting:</strong> Incorporating response speed as a minor score component mirrors the processing speed correlation present in all major IQ batteries, rather than treating all correct answers identically regardless of speed.</li>
+          <li><strong style={{ color: "#E8E8F0" }}>Honest scoring:</strong> We do not inflate scores. Our calibration prioritises accuracy over user satisfaction. An honest score is more useful for self-knowledge than a flattering one.</li>
+          <li><strong style={{ color: "#E8E8F0" }}>Transparent methodology:</strong> We publish our scoring algorithm logic and make clear what the results represent and do not represent — a level of transparency rare among online IQ tests.</li>
         </ul>
       </Section>
 
@@ -164,11 +164,11 @@ export default function AboutPage() {
       {/* CTA */}
       <div style={{
         marginTop: 56, padding: "32px", textAlign: "center",
-        background: "rgba(0,85,255,0.06)",
-        border: "1px solid rgba(0,85,255,0.18)",
+        background: "rgba(91,79,255,0.06)",
+        border: "1px solid rgba(91,79,255,0.18)",
         borderRadius: 6,
       }}>
-        <h3 style={{ fontSize: 22, fontWeight: 300, marginBottom: 12, color: "#D6E4FF" }}>
+        <h3 style={{ fontSize: 22, fontWeight: 300, marginBottom: 12, color: "#E8E8F0" }}>
           Ready to discover your cognitive profile?
         </h3>
         <p style={{ fontSize: 14, color: "#8AABCC", marginBottom: 24 }}>
@@ -179,7 +179,7 @@ export default function AboutPage() {
           background: blue, color: "#fff", textDecoration: "none",
           fontSize: 11, fontWeight: 600, letterSpacing: "0.12em",
           textTransform: "uppercase", borderRadius: 2,
-          boxShadow: `0 0 20px rgba(0,85,255,0.5)`,
+          boxShadow: `0 0 20px rgba(91,79,255,0.5)`,
         }}>
           Take the Free Test
         </a>

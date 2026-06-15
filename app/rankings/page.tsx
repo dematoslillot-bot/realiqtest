@@ -3,13 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 
-const BLUE  = "#0055FF";
-const CYAN  = "#06B6D4";
+const BLUE  = "#5B4FFF";
+const CYAN  = "#00F5D4";
 const DIM   = "#8AABCC";
-const BG    = "#020617";
-const BORD  = "rgba(0,85,255,0.18)";
+const BG    = "#03050F";
+const BORD  = "rgba(91,79,255,0.18)";
 const GLASS = "rgba(6,14,40,0.78)";
-const TEXT  = "#E8F0FF";
+const TEXT  = "#EFEFF7";
 
 function GlassCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
@@ -40,7 +40,7 @@ function EmptyState({ message }: { message?: string }) {
     <GlassCard style={{ padding:"56px 32px", textAlign:"center" }}>
       <div style={{
         width:56, height:56, borderRadius:"50%", margin:"0 auto 20px",
-        background:"rgba(0,85,255,0.08)", border:`1px solid ${BORD}`,
+        background:"rgba(91,79,255,0.08)", border:`1px solid ${BORD}`,
         display:"flex", alignItems:"center", justifyContent:"center",
       }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={CYAN} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -61,7 +61,7 @@ function EmptyState({ message }: { message?: string }) {
         padding:"11px 28px",
         background:`linear-gradient(135deg,${BLUE},${CYAN})`,
         color:"#fff", textDecoration:"none", borderRadius:8,
-        boxShadow:"0 0 20px rgba(0,85,255,0.4)",
+        boxShadow:"0 0 20px rgba(91,79,255,0.4)",
       }}>Take the Free Test</Link>
     </GlassCard>
   );
@@ -86,29 +86,29 @@ export default function RankingsPage() {
       <svg aria-hidden="true" style={{ position:"fixed",inset:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0,opacity:0.35 }} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
         <defs>
           <radialGradient id="rg2" cx="50%" cy="30%" r="50%">
-            <stop offset="0%" stopColor="#0055FF" stopOpacity="0.2"/>
-            <stop offset="100%" stopColor="#020617" stopOpacity="0"/>
+            <stop offset="0%" stopColor="#5B4FFF" stopOpacity="0.2"/>
+            <stop offset="100%" stopColor="#03050F" stopOpacity="0"/>
           </radialGradient>
         </defs>
         <rect width="100" height="100" fill="url(#rg2)"/>
         {[[10,15,45,20],[25,8,55,42],[45,20,65,5],[65,5,82,18],[10,15,5,40],[25,8,30,35],[45,20,55,42],[65,5,76,30],[5,40,15,62],[30,35,40,55],[55,42,62,68],[76,30,85,58]].map(([x1,y1,x2,y2],i)=>(
-          <line key={i} className="rnl" x1={x1} y1={y1} x2={x2} y2={y2} stroke="#0055FF" strokeWidth="0.12" style={{animationDelay:`${i*0.3}s`}}/>
+          <line key={i} className="rnl" x1={x1} y1={y1} x2={x2} y2={y2} stroke="#5B4FFF" strokeWidth="0.12" style={{animationDelay:`${i*0.3}s`}}/>
         ))}
         {[[10,15],[25,8],[45,20],[65,5],[82,18],[5,40],[30,35],[55,42],[76,30],[15,62],[40,55],[62,68],[85,58],[20,82],[50,76]].map(([x,y],i)=>(
-          <circle key={i} className="rnn" cx={x} cy={y} r="0.4" fill="#4F8EFF" style={{animationDelay:`${i*0.22}s`}}/>
+          <circle key={i} className="rnn" cx={x} cy={y} r="0.4" fill="#7C6FFF" style={{animationDelay:`${i*0.22}s`}}/>
         ))}
       </svg>
 
       {/* Nav */}
-      <nav style={{ position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 28px",borderBottom:`1px solid ${BORD}`,background:"rgba(2,6,23,0.94)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)" }}>
+      <nav style={{ position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 28px",borderBottom:`1px solid ${BORD}`,background:"rgba(3,5,15,0.94)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)" }}>
         <Link href="/" style={{ fontSize:17,fontWeight:800,color:TEXT,textDecoration:"none",letterSpacing:"-0.03em" }}>
-          Real<span style={{color:BLUE,textShadow:"0 0 14px rgba(0,85,255,0.7)"}}>IQ</span>Test
+          Real<span style={{color:BLUE,textShadow:"0 0 14px rgba(91,79,255,0.7)"}}>IQ</span>Test
         </Link>
         <div style={{ display:"flex",gap:20,alignItems:"center",flexWrap:"wrap" }}>
           {([{href:"/",l:"Home"},{href:"/rankings",l:"Rankings"},{href:"/faq",l:"FAQ"}] as const).map(({href,l})=>(
             <Link key={href} href={href} style={{ fontSize:13,color:l==="Rankings"?CYAN:DIM,textDecoration:"none",fontWeight:l==="Rankings"?700:400 }}>{l}</Link>
           ))}
-          <Link href="/test" style={{ fontSize:11,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",padding:"9px 20px",background:BLUE,color:"#fff",textDecoration:"none",borderRadius:6,boxShadow:"0 0 14px rgba(0,85,255,0.4)" }}>Take Test — Free</Link>
+          <Link href="/test" style={{ fontSize:11,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",padding:"9px 20px",background:BLUE,color:"#fff",textDecoration:"none",borderRadius:6,boxShadow:"0 0 14px rgba(91,79,255,0.4)" }}>Take Test — Free</Link>
         </div>
       </nav>
 
@@ -140,7 +140,7 @@ export default function RankingsPage() {
                 borderRadius:8, fontSize:13, fontWeight:activeTab===tab?700:400,
                 color: activeTab===tab ? "#fff" : DIM,
                 cursor:"pointer",
-                boxShadow: activeTab===tab ? "0 0 18px rgba(0,85,255,0.4)" : "none",
+                boxShadow: activeTab===tab ? "0 0 18px rgba(91,79,255,0.4)" : "none",
                 transition:"all 150ms",
               }}
             >{tab}</button>
@@ -176,7 +176,7 @@ export default function RankingsPage() {
         </div>
 
         {/* Info note */}
-        <div style={{ marginTop:40,padding:"20px 24px",background:"rgba(0,85,255,0.04)",border:`1px solid ${BORD}`,borderRadius:10 }}>
+        <div style={{ marginTop:40,padding:"20px 24px",background:"rgba(91,79,255,0.04)",border:`1px solid ${BORD}`,borderRadius:10 }}>
           <p style={{ fontSize:12,color:DIM,lineHeight:1.7,margin:0 }}>
             <strong style={{color:TEXT}}>How rankings work:</strong> Every completed test contributes to these tables anonymously. Your country is detected automatically from your timezone. Rankings update in real time as more people complete the assessment.
           </p>

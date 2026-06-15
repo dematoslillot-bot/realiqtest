@@ -862,13 +862,118 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
   return <span style={{ fontSize: "clamp(13px,3vw,16px)", lineHeight: 1.25, fontWeight: 500 }}>{opt}</span>;
 }
 
-/* ── Animated test background ───────────────────────────────────────────── */
+/* ── Animated test background (form + category transitions) ─────────────── */
 
 function AnimatedTestBg({ catIdx, flyKey }: { catIdx: number; flyKey?: number }) {
+  const catColors: [string, string, string][] = [
+    ["rgba(91,79,255,0.55)", "rgba(167,139,250,0.32)", "rgba(0,245,212,0.20)"],
+    ["rgba(167,139,250,0.55)", "rgba(91,79,255,0.32)", "rgba(255,107,107,0.14)"],
+    ["rgba(0,245,212,0.45)", "rgba(91,79,255,0.32)", "rgba(167,139,250,0.18)"],
+    ["rgba(255,215,0,0.30)", "rgba(91,79,255,0.32)", "rgba(0,245,212,0.16)"],
+    ["rgba(255,107,107,0.42)", "rgba(91,79,255,0.30)", "rgba(167,139,250,0.18)"],
+    ["rgba(255,159,28,0.40)", "rgba(91,79,255,0.30)", "rgba(0,245,212,0.16)"],
+  ];
+  const [c1, c2, c3] = catColors[catIdx] ?? catColors[0];
   const accent = DIM_ACCENTS[catIdx] ?? DIM_ACCENTS[0];
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
-      <NeuralScene accent={accent} accent2={catIdx === 2 ? "#5B4FFF" : "#00F5D4"} opacity={0.72} density={0.85} flyKey={flyKey} fixed />
+      <div style={{ position: "absolute", top: "-25%", left: "-15%", width: "65%", height: "65%", background: `radial-gradient(ellipse, ${c1}, transparent 68%)`, animation: "bgPulse1 7s ease-in-out infinite", transition: "background 0.8s ease" }} />
+      <div style={{ position: "absolute", bottom: "-25%", right: "-15%", width: "65%", height: "65%", background: `radial-gradient(ellipse, ${c2}, transparent 68%)`, animation: "bgPulse2 7s ease-in-out infinite", transition: "background 0.8s ease" }} />
+      <div style={{ position: "absolute", top: "30%", right: "5%", width: "45%", height: "45%", background: `radial-gradient(ellipse, ${c3}, transparent 65%)`, animation: "bgPulse1 10s ease-in-out infinite reverse", transition: "background 0.8s ease" }} />
+      <NeuralScene accent={accent} accent2={catIdx === 2 ? "#5B4FFF" : "#00F5D4"} opacity={0.55} density={0.85} flyKey={flyKey} fixed />
+    </div>
+  );
+}
+
+/* ── Neural network background (quiz view — black + SVG neurons) ─────────── */
+
+// 27 question nodes spread organically left→right in a 1920×1080 canvas
+const Q_NODES: [number, number][] = [
+  [ 80, 540], [165, 280], [220, 760], [295, 175], [335, 520],
+  [400, 380], [460, 760], [515, 155], [570, 455], [610, 295],
+  [670, 680], [730, 215], [775, 520], [835, 355], [880, 755],
+  [940, 175], [980, 480], [1045, 315], [1095, 675], [1145, 195],
+  [1195, 440], [1255, 740], [1305, 295], [1360, 555], [1415, 175],
+  [1470, 440], [1555, 340],
+];
+
+const _BG_NODES: [number, number][] = [
+  [115, 120], [165, 900], [265, 440], [365,  90], [355, 870],
+  [505, 610], [505, 270], [595, 860], [665, 100], [715, 440],
+  [765, 760], [835, 560], [915, 640], [965, 100], [1015, 780],
+  [1065, 520], [1135, 380], [1175, 840], [1215, 120], [1275, 600],
+  [1315, 840], [1385, 280], [1435, 720], [1495, 580], [1565, 600],
+  [1595, 200], [1635, 800], [1695, 420], [1735, 160], [1795, 600],
+  [1835, 380], [1875, 760], [1915, 240],  [55, 780], [105, 200],
+  [215, 630], [295, 320], [435, 180], [635, 580], [1915, 540],
+];
+
+const _ALL_NET = [...Q_NODES, ..._BG_NODES];
+
+const NET_EDGES: [number, number][] = (() => {
+  const out: [number, number][] = [];
+  const T2 = 285 * 285;
+  for (let i = 0; i < _ALL_NET.length; i++) {
+    let cnt = 0;
+    for (let j = i + 1; j < _ALL_NET.length && cnt < 4; j++) {
+      const dx = _ALL_NET[i][0] - _ALL_NET[j][0], dy = _ALL_NET[i][1] - _ALL_NET[j][1];
+      if (dx * dx + dy * dy < T2) { out.push([i, j]); cnt++; }
+    }
+  }
+  return out;
+})();
+
+function NeuralNetBg({ qIdx }: { qIdx: number }) {
+  const [cx, cy] = Q_NODES[Math.min(qIdx, Q_NODES.length - 1)];
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden", background: "#000" }}>
+      <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"
+        style={{ width: "100%", height: "100%", display: "block" }}>
+
+        {NET_EDGES.map(([a, b], k) => {
+          const aQ = a < 27, bQ = b < 27;
+          const aLit = aQ && a <= qIdx, bLit = bQ && b <= qIdx;
+          const bothLit = aLit && bLit;
+          const touchesCur = (aQ && a === qIdx) || (bQ && b === qIdx);
+          return (
+            <line key={k}
+              x1={_ALL_NET[a][0]} y1={_ALL_NET[a][1]}
+              x2={_ALL_NET[b][0]} y2={_ALL_NET[b][1]}
+              stroke={bothLit ? "rgba(91,79,255,0.28)" : touchesCur ? "rgba(91,79,255,0.16)" : "rgba(91,79,255,0.05)"}
+              strokeWidth={bothLit ? 1.2 : 0.5}
+              style={{ transition: "stroke 0.7s ease, stroke-width 0.7s ease" }}
+            />
+          );
+        })}
+
+        {_BG_NODES.map(([x, y], i) => (
+          <circle key={`bg${i}`} cx={x} cy={y} r={2.5} fill="rgba(91,79,255,0.07)" />
+        ))}
+
+        {Q_NODES.map(([x, y], i) => {
+          const lit = i < qIdx, cur = i === qIdx;
+          return (
+            <circle key={`q${i}`} cx={x} cy={y}
+              r={cur ? 7 : lit ? 4.5 : 3}
+              fill={cur ? "#5B4FFF" : lit ? "rgba(91,79,255,0.55)" : "rgba(91,79,255,0.12)"}
+              style={{
+                filter: cur
+                  ? "drop-shadow(0 0 10px #5B4FFF) drop-shadow(0 0 22px rgba(91,79,255,0.9))"
+                  : lit ? "drop-shadow(0 0 5px rgba(91,79,255,0.5))" : "none",
+                transition: "all 0.7s ease",
+              }}
+            />
+          );
+        })}
+
+        {/* Pulsing ring on current node — travels with question index */}
+        <g style={{ transform: `translate(${cx}px,${cy}px)`, transition: "transform 0.7s ease" }}>
+          <circle r={12} fill="none" stroke="rgba(91,79,255,0.5)" strokeWidth={1.5}
+            style={{ transformBox: "fill-box", transformOrigin: "center", animation: "neuronRing 2s ease-out infinite" }} />
+          <circle r={18} fill="none" stroke="rgba(0,245,212,0.18)" strokeWidth={0.8}
+            style={{ transformBox: "fill-box", transformOrigin: "center", animation: "neuronRing 2s ease-out infinite 0.7s" }} />
+        </g>
+      </svg>
     </div>
   );
 }
@@ -1260,8 +1365,11 @@ function QuizScreen() {
     || q.vis?.kind === "binary" || q.vis?.kind === "shadow3d" || q.vis?.kind === "origami" || q.vis?.kind === "shapesum";
 
   const keyframes = `
+    @keyframes bgPulse1 { 0%,100%{opacity:0.7} 50%{opacity:0.3} }
+    @keyframes bgPulse2 { 0%,100%{opacity:0.3} 50%{opacity:0.7} }
     @keyframes nodeGlow { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
     @keyframes lineGlow { 0%,100%{opacity:0.06} 50%{opacity:0.18} }
+    @keyframes neuronRing { 0%{transform:scale(0.8);opacity:0.8} 100%{transform:scale(2.8);opacity:0} }
     @keyframes streakSlide { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes qFadeIn { from{opacity:0} to{opacity:1} }
     @keyframes slideOutUp { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-30px)} }
@@ -1360,7 +1468,7 @@ function QuizScreen() {
     }}>
       <style>{keyframes}</style>
 
-      <AnimatedTestBg catIdx={q.cat} flyKey={qIdx} />
+      <NeuralNetBg qIdx={qIdx} />
 
       {/* Milestone overlay */}
       {milestoneData && (

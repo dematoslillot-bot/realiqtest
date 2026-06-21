@@ -11,11 +11,11 @@ create table if not exists public.scores (
 -- Index for fast leaderboard queries
 create index if not exists scores_score_desc on public.scores (score desc);
 
--- Allow anyone to insert their score
+-- Allow anyone to insert their score (validated range only)
 create policy "Anyone can insert"
   on public.scores for insert
   to anon
-  with check (true);
+  with check (score >= 60 AND score <= 148 AND length(country) <= 3);
 
 -- Allow anyone to read leaderboard
 create policy "Anyone can read"

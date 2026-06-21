@@ -22,11 +22,19 @@ export async function POST(req: NextRequest) {
       session.status === "complete" &&
       session.metadata?.product === "premium_report"
     ) {
-      return NextResponse.json({ paid: true });
+      const res = NextResponse.json({ paid: true });
+      res.cookies.set("report_access", session_id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: "/",
+      });
+      return res;
     }
 
     return NextResponse.json({ paid: false, error: "Payment not completed" });
   } catch (error: any) {
-    return NextResponse.json({ paid: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ paid: false, error: "Payment verification error" }, { status: 500 });
   }
 }

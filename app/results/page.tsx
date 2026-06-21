@@ -464,7 +464,11 @@ export default function ResultsPage() {
     setTestsToday(count);
     // Save to Supabase leaderboard (fire-and-forget, non-blocking)
     const country = localStorage.getItem("user_country") || "";
-    supabase.from("scores").insert({ score: final, country }).then(() => {});
+    fetch("/api/save-score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ score: final, country }),
+    }).then(() => {});
 
     // Also keep localStorage copy for instant local display
     const lbEntry = {

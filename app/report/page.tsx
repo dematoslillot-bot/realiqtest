@@ -204,14 +204,19 @@ function ReportInner() {
         .then(r=>r.json())
         .then(d=>{
           if(d.paid){
-            localStorage.setItem("report_paid",session_id);
+            // Strip session_id from URL so it cannot be shared
+            router.replace("/report");
             setScreen("report");
           } else { setVerifyError(d.error||"Payment could not be verified."); setScreen("pay"); }
         })
         .catch(()=>{ setVerifyError("Network error verifying payment."); setScreen("pay"); });
       return;
     }
-    if(localStorage.getItem("report_paid")) setScreen("report");
+    // Subsequent loads: check HttpOnly cookie via server (cannot be forged by JS)
+    fetch("/api/check-access")
+      .then(r=>r.json())
+      .then(d=>{ if(d.hasAccess) setScreen("report"); })
+      .catch(()=>{});
   },[searchParams]);
 
   /* Count-up animation when report shown */

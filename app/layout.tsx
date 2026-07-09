@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import CookieBanner from "./components/CookieBanner";
 import Script from "next/script";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,6 +58,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <CookieBanner />
+        <SpeedInsights />
         <Script src="/_vercel/insights/script.js" defer />
       </body>
     </html>

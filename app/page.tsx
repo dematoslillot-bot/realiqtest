@@ -672,13 +672,13 @@ const FEATURES = [
   { title: "Career Matches",           desc: "Careers that align with your unique cognitive profile." },
   { title: "Improvement Tips",         desc: "Personalised neuroscience-backed advice for each area." },
   { title: "Famous IQ Comparisons",    desc: "See how your score compares to historical geniuses." },
-  { title: "Official PDF Certificate", desc: "Download your personalised IQ certificate." },
+  { title: "PDF Certificate",          desc: "Download your personalised IQ certificate." },
   { title: "Strengths and Weaknesses", desc: "Clear identification of cognitive superpowers and growth areas." },
 ];
 
-const FREE_FEATURES    = ["Full 30-question test", "Overall IQ score", "Population percentile"];
+const FREE_FEATURES    = ["Full 30-question test", "Your IQ level", "First digit of your score"];
 const PREMIUM_FEATURES = [
-  "Full 30-question test", "Overall IQ score", "Population percentile",
+  "Full 30-question test", "Exact IQ score", "Population percentile",
   "Radar chart", "Category breakdown", "Career matches",
   "Improvement tips", "Famous comparisons", "PDF certificate",
 ];

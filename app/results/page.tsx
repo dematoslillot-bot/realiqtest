@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { calculateIQWeighted, calculateIQFull, getIQLabel, getPercentile, type AnswerRecord } from "@/lib/iq-calculator";
-import { CATEGORIES } from "@/lib/questions";
+import { calculateIQWeighted, calculateIQFull, getIQLabel, getPercentile, getCategoryResults, type AnswerRecord } from "@/lib/iq-calculator";
+import { fetchAccess, startCheckout, type Plan } from "@/lib/stripe";
+import { recordHistory } from "@/lib/stored-result";
 import { detectCountryCode, getCountryByCode, type CountryEntry } from "@/lib/leaderboard-data";
 import { supabase } from "@/lib/supabase";
 import NavLogo from "@/app/components/NavLogo";
@@ -25,6 +26,26 @@ function AnimatedIQ({ target }: { target: number }) {
     requestAnimationFrame(tick);
   }, [target]);
   return <>{display || ""}</>;
+}
+
+/* ── Locked IQ: first digit visible, the rest blurred ──────────────────── */
+function LockedIQ({ target }: { target: number }) {
+  const digits = String(target).split("");
+  return (
+    <span aria-label="IQ score locked" style={{ display:"inline-flex",alignItems:"baseline" }}>
+      <span style={{
+        background:"linear-gradient(135deg, #5B4FFF 0%, #00F5D4 60%, #A78BFA 100%)",
+        WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
+      }}>{digits[0]}</span>
+      {digits.slice(1).map((_, i) => (
+        <span key={i} aria-hidden="true" style={{
+          display:"inline-block", userSelect:"none",
+          color:"transparent", WebkitTextFillColor:"transparent", background:"none",
+          textShadow:"0 0 28px rgba(124,140,255,0.95)",
+        }}>0</span>
+      ))}
+    </span>
+  );
 }
 
 /* ── Gaussian bell curve ─────────────────────────────────────────────────── */
@@ -432,6 +453,22 @@ export default function ResultsPage() {
   const [shareOpen,     setShareOpen]     = useState(false);
   const [shareImg,      setShareImg]      = useState("");
   const [shareLoading,  setShareLoading]  = useState(false);
+  const [unlocked,      setUnlocked]      = useState(false);
+  const [premium,       setPremium]       = useState(false);
+  const [buying,        setBuying]        = useState<Plan | null>(null);
+  const [buyError,      setBuyError]      = useState("");
+  const [catScoresState,setCatScoresState]= useState<number[]>([0,0,0,0,0,0]);
+  const [catTotalsState,setCatTotalsState]= useState<number[]>([0,0,0,0,0,0]);
+
+  useEffect(() => {
+    fetchAccess().then(a => { setUnlocked(a.hasAccess); setPremium(a.premium); });
+  }, []);
+
+  async function buy(plan: Plan) {
+    setBuyError(""); setBuying(plan);
+    try { await startCheckout(plan); }
+    catch { setBuyError("Could not open the secure checkout. Please try again."); setBuying(null); }
+  }
 
   useEffect(() => {
     const s       = parseInt(localStorage.getItem("iq_score")       || "0");
@@ -450,6 +487,8 @@ export default function ResultsPage() {
       final = Math.max(78, Math.min(148, calculateIQWeighted(weighted, maxPoss, minPoss)));
     }
     setScore(s); setTotal(t);
+    setCatScoresState(catScoresLS); setCatTotalsState(catTotalsLS);
+    recordHistory(final);
     setIq(final); setLabel(getIQLabel(final)); setPercentile(getPercentile(final));
     setUserCountry(localStorage.getItem("user_country") || "");
     setUserGender(localStorage.getItem("user_gender")   || "");
@@ -486,7 +525,6 @@ export default function ResultsPage() {
   }, []);
 
   const meterFill  = iq > 0 ? Math.round(((iq - 70) / 80) * 100) : 0;
-  const catOffsets = [5, -2, -8, 3, -5, -12];
   const blue       = "#5B4FFF";
   const blue2      = "rgba(91,79,255,0.16)";
   const dim        = "#8AABCC";
@@ -505,9 +543,7 @@ export default function ResultsPage() {
   }
 
   /* Personalised comparison */
-  const personalPct = userCountry
-    ? Math.min(99, Math.max(40, percentile + Math.round((Math.random() * 6) - 3)))
-    : null;
+  const personalPct = unlocked && userCountry ? percentile : null;
 
   return (
     <div style={{ minHeight:"100dvh", background:"#03050F", color:"#E8E8F0" }}>
@@ -526,7 +562,7 @@ export default function ResultsPage() {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      {showLeaderboard && iq > 0 && (
+      {showLeaderboard && unlocked && iq > 0 && (
         <LeaderboardPopup iq={iq} onClose={() => setShowLeaderboard(false)} />
       )}
       {shareOpen && shareImg && (
@@ -563,18 +599,20 @@ export default function ResultsPage() {
             fontWeight: 800,
             lineHeight: 1,
             letterSpacing: "-0.04em",
-            background: "linear-gradient(135deg, #5B4FFF 0%, #00F5D4 40%, #A78BFA 70%, #5B4FFF 100%)",
-            backgroundSize: "300% 300%",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            filter: "drop-shadow(0 0 30px rgba(91,79,255,0.5))",
+            ...(unlocked ? {
+              background: "linear-gradient(135deg, #5B4FFF 0%, #00F5D4 40%, #A78BFA 70%, #5B4FFF 100%)",
+              backgroundSize: "300% 300%",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              filter: "drop-shadow(0 0 30px rgba(91,79,255,0.5))",
+            } : {}),
             animation: "iqGradAnim 3s ease infinite, animate-fade-up 0.6s ease forwards",
             animationDelay: "80ms",
             position: "relative",
             zIndex: 1,
           }}>
-            <AnimatedIQ target={iq} />
+            {unlocked ? <AnimatedIQ target={iq} /> : iq > 0 ? <LockedIQ target={iq} /> : null}
           </div>
         </div>
         <p className="animate-fade-up" style={{ fontSize:10,letterSpacing:"0.22em",textTransform:"uppercase",color:dim,marginTop:8,animationDelay:"160ms" }}>
@@ -584,7 +622,7 @@ export default function ResultsPage() {
         {/* Label badge */}
         <div className="animate-fade-up" style={{ animationDelay:"220ms",marginTop:16,marginBottom:28 }}>
           <span style={{ display:"inline-block",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",padding:"7px 20px",border:`1px solid ${blue}`,color:blue,boxShadow:"0 0 16px rgba(91,79,255,0.3)" }}>{label}</span>
-          {iq > 0 && (
+          {unlocked && iq > 0 && (
             <div style={{
               marginTop: 8,
               fontSize: "clamp(14px,3vw,18px)",
@@ -601,7 +639,7 @@ export default function ResultsPage() {
         </div>
 
         {/* ── Share button ─────────────────────────────────────────────── */}
-        {iq > 0 && (
+        {unlocked && iq > 0 && (
           <div className="animate-fade-up" style={{ animationDelay:"250ms",marginBottom:24 }}>
             <button
               onClick={handleShare}
@@ -665,9 +703,7 @@ export default function ResultsPage() {
               <span style={{ background:"linear-gradient(90deg,#5B4FFF,#00F5D4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",fontWeight:700 }}>
                 {personalPct}%
               </span>
-              {" "}of {userGender ? (userGender === "man" ? "men" : userGender === "woman" ? "women" : "people") : "people"}
-              {userAge ? ` aged ${userAge}` : ""}
-              {` in ${userCountry}`}
+              {" "}of the general population (global norms, mean 100, SD 15)
             </p>
           </div>
         )}
@@ -703,8 +739,8 @@ export default function ResultsPage() {
         <div className="animate-fade-up" style={{ animationDelay:"490ms",marginBottom:24,textAlign:"left",filter:"blur(7px)",opacity:0.5,userSelect:"none",pointerEvents:"none" }}>
           <p style={{ fontSize:9,letterSpacing:"0.18em",textTransform:"uppercase",color:dim,marginBottom:14,textAlign:"center" }}>Score by category</p>
           <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-            {CATEGORIES.map((cat, i) => {
-              const catIQ = Math.min(145, Math.max(70, iq + catOffsets[i]));
+            {getCategoryResults(iq, catScoresState, catTotalsState).map((cat, i) => {
+              const catIQ = cat.iq;
               const barW  = Math.round(((catIQ - 70) / 80) * 100);
               return (
                 <div key={i} style={{ display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"rgba(5,18,45,0.75)",border:`1px solid ${blue2}`,borderRadius:4 }}>
@@ -719,96 +755,82 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* ══ PREMIUM UPSELL ══ */}
+        {/* ══ UNLOCK OPTIONS ══ */}
+        {unlocked ? (
+          <div className="animate-fade-up" style={{ animationDelay:"560ms",marginBottom:28,display:"flex",flexDirection:"column",gap:10,alignItems:"center" }}>
+            <button onClick={() => router.push("/report")} className="btn btn-primary" style={{ width:"100%",maxWidth:420 }}>Open my full report →</button>
+            {premium && <button onClick={() => router.push("/premium")} className="btn btn-outline" style={{ width:"100%",maxWidth:420 }}>Go to my Premium area</button>}
+          </div>
+        ) : (
         <div className="animate-fade-up" style={{
           animationDelay:"560ms", marginBottom:28,
           background:"linear-gradient(135deg,rgba(91,79,255,0.12),rgba(0,245,212,0.06))",
           border:"1px solid rgba(91,79,255,0.45)",
           borderRadius:14,overflow:"hidden",
           boxShadow:"0 0 50px rgba(91,79,255,0.12),0 4px 32px rgba(0,0,0,0.4)",
+          textAlign:"left",
         }}>
-          {/* Top urgency bar */}
-          <div style={{ background:"rgba(91,79,255,0.15)",borderBottom:"1px solid rgba(91,79,255,0.3)",padding:"8px 20px",display:"flex",alignItems:"center",justifyContent:"center",gap:8 }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00F5D4" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span style={{ fontSize:10,color:"#00F5D4",letterSpacing:"0.14em",fontWeight:600 }}>Your results are saved for 24 hours</span>
-          </div>
-
           <div style={{ padding:"28px 24px" }}>
-            {/* Hook */}
-            <p style={{ fontSize:16,fontWeight:700,color:"#E2EEFF",lineHeight:1.5,marginBottom:20,textAlign:"left" }}>
-              You have a critical weakness in one of your 6 cognitive dimensions.{" "}
-              <span style={{ background:"linear-gradient(90deg,#5B4FFF,#00F5D4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text" }}>
-                Find out which one — and how to fix it.
-              </span>
+            <p style={{ fontSize:16,fontWeight:700,color:"#E2EEFF",lineHeight:1.5,marginBottom:6 }}>
+              Your result is ready: <span style={{ color:"#00F5D4" }}>{label}</span>.
+            </p>
+            <p style={{ fontSize:14,color:"#C4D8F0",lineHeight:1.6,marginBottom:22 }}>
+              Unlock your exact IQ score and see your strongest and weakest areas, with tips to improve each one.
             </p>
 
-            {/* Price */}
-            <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:20,textAlign:"left" }}>
-              <div>
-                <span style={{ fontSize:13,color:"#6A88AA",textDecoration:"line-through",display:"block",marginBottom:2 }}>€9.99</span>
-                <span style={{ fontSize:38,fontWeight:800,background:"linear-gradient(135deg,#5B4FFF,#00F5D4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",letterSpacing:"-0.03em" }}>€1.99</span>
-              </div>
-              <span style={{ fontSize:10,background:"rgba(16,185,129,0.12)",color:"#10B981",border:"1px solid rgba(16,185,129,0.3)",padding:"4px 10px",borderRadius:99,fontWeight:700,letterSpacing:"0.1em" }}>−80%</span>
-            </div>
-
-            {/* Checklist */}
-            <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:24,textAlign:"left" }}>
-              {[
-                "Full radar chart across all 6 cognitive dimensions",
-                "Identify your specific cognitive weakness",
-                "Personalised improvement roadmap for each skill",
-                "Career matches based on your cognitive profile",
-                "Premium Intelligence Leaderboard access",
-                "Official PDF certificate of your IQ",
-              ].map((item,i)=>(
-                <div key={i} style={{ display:"flex",alignItems:"center",gap:10 }}>
-                  <CheckIcon/>
-                  <span style={{ fontSize:13,color:"#C4D8F0" }}>{item}</span>
+            <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,240px),1fr))",gap:12 }}>
+              {/* One-time report */}
+              <div style={{ border:"1px solid rgba(91,79,255,0.35)",borderRadius:12,padding:18,background:"rgba(5,18,45,0.6)",display:"flex",flexDirection:"column",gap:12 }}>
+                <div>
+                  <p style={{ fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",color:dim }}>Full report · one-time</p>
+                  <p style={{ fontSize:32,fontWeight:800,color:"#EFEFF7",letterSpacing:"-0.03em" }}>€1.99</p>
                 </div>
-              ))}
+                <div style={{ display:"flex",flexDirection:"column",gap:7 }}>
+                  {["Exact IQ score and percentile","Breakdown of your 6 cognitive areas","Improvement tips for each area","Career matches for your profile","Downloadable PDF certificate"].map((item,i)=>(
+                    <div key={i} style={{ display:"flex",alignItems:"center",gap:8 }}><CheckIcon/><span style={{ fontSize:13,color:"#C4D8F0" }}>{item}</span></div>
+                  ))}
+                </div>
+                <button onClick={() => buy("report")} disabled={!!buying} className="btn btn-outline" style={{ marginTop:"auto",width:"100%" }}>
+                  {buying === "report" ? "Opening secure checkout…" : "Unlock for €1.99"}
+                </button>
+              </div>
+
+              {/* Premium subscription */}
+              <div style={{ border:"1px solid #00F5D4",borderRadius:12,padding:18,background:"rgba(0,245,212,0.06)",display:"flex",flexDirection:"column",gap:12,position:"relative" }}>
+                <div>
+                  <p style={{ fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",color:"#00F5D4" }}>Premium · monthly</p>
+                  <p style={{ fontSize:32,fontWeight:800,color:"#EFEFF7",letterSpacing:"-0.03em" }}>€4.99<span style={{ fontSize:14,fontWeight:500,color:dim }}> / month</span></p>
+                </div>
+                <div style={{ display:"flex",flexDirection:"column",gap:7 }}>
+                  {["Everything in the full report","Daily brain challenge with streaks","Re-take the test monthly and track progress","Your IQ history chart"].map((item,i)=>(
+                    <div key={i} style={{ display:"flex",alignItems:"center",gap:8 }}><CheckIcon/><span style={{ fontSize:13,color:"#C4D8F0" }}>{item}</span></div>
+                  ))}
+                </div>
+                <button onClick={() => buy("premium")} disabled={!!buying} className="btn btn-primary" style={{ marginTop:"auto",width:"100%" }}>
+                  {buying === "premium" ? "Opening secure checkout…" : "Start Premium — €4.99/month"}
+                </button>
+                <p style={{ fontSize:11,color:dim,lineHeight:1.5 }}>Renews monthly until you cancel. Cancel anytime in one click.</p>
+              </div>
             </div>
 
-            {/* CTA Button */}
-            <button
-              onClick={() => router.push("/report")}
-              style={{
-                width:"100%",padding:"20px 24px",
-                background:"linear-gradient(135deg,#5B4FFF 0%,#00C9AE 50%,#00F5D4 100%)",
-                border:"none",borderRadius:10,
-                fontSize:17,fontWeight:800,color:"#fff",
-                cursor:"pointer",
-                boxShadow:"0 6px 32px rgba(91,79,255,0.55),0 0 80px rgba(91,79,255,0.2),inset 0 1px 0 rgba(255,255,255,0.15)",
-                transition:"transform 150ms,box-shadow 150ms",
-                letterSpacing:"-0.02em",
-              }}
-              onMouseEnter={e=>{(e.target as HTMLButtonElement).style.transform="translateY(-2px)";(e.target as HTMLButtonElement).style.boxShadow="0 10px 40px rgba(91,79,255,0.65),0 0 100px rgba(0,245,212,0.25)";}}
-              onMouseLeave={e=>{(e.target as HTMLButtonElement).style.transform="translateY(0)";(e.target as HTMLButtonElement).style.boxShadow="0 6px 32px rgba(91,79,255,0.55),0 0 80px rgba(91,79,255,0.2)";}}
-            >
-              Reveal My Full Report — €1.99
-            </button>
+            {buyError && <p role="alert" style={{ marginTop:14,fontSize:12,color:"#FB7185" }}>{buyError}</p>}
 
-            {/* Scientific badges */}
-            <div style={{ display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap",marginTop:16 }}>
-              {["Scientifically calibrated","6 cognitive dimensions","Visual pattern recognition"].map((badge,i)=>(
+            <div style={{ display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap",marginTop:18 }}>
+              {["Secure payment by Stripe","27 visual questions","6 cognitive areas"].map((badge,i)=>(
                 <span key={i} style={{ fontSize:10,color:"#8AABCC",background:"rgba(91,79,255,0.08)",border:"1px solid rgba(91,79,255,0.22)",padding:"4px 10px",borderRadius:99 }}>
                   <span style={{ color:"#00F5D4",fontWeight:700,marginRight:4 }}>✓</span>{badge}
                 </span>
               ))}
             </div>
-
-            {/* Urgency */}
-            <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginTop:14 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00F5D4" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span style={{ fontSize:11,color:"#00F5D4",fontWeight:600 }}>Your detailed cognitive breakdown expires in 24h</span>
-            </div>
           </div>
         </div>
+        )}
 
         {/* Retry button */}
         <div className="animate-fade-up" style={{ display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",animationDelay:"800ms" }}>
           <button onClick={() => router.push("/test")} className="btn btn-outline">Retry</button>
         </div>
-        <p style={{ fontSize:10,color:"#6A88AA",marginTop:16 }}>No subscription · One-time payment · Instant access</p>
+        <p style={{ fontSize:10,color:"#6A88AA",marginTop:16 }}>The test is free. The exact score and full report are optional.</p>
       </div>
     </div>
   );

@@ -1,27 +1,34 @@
-export const REPORT_PRICE = 9.99;
+// Client-side helpers for starting a Stripe Checkout.
+export const REPORT_PRICE = 1.99;
+export const PREMIUM_PRICE = 4.99;
 export const CURRENCY = "eur";
 
-export interface PaymentResult {
-  success: boolean;
-  error?: string;
-}
+export type Plan = "report" | "premium";
 
-// This runs on the server (API route)
-export async function createCheckoutSession(email: string): Promise<{ url: string }> {
+export async function startCheckout(plan: Plan, email?: string): Promise<void> {
   const res = await fetch("/api/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ plan, email }),
   });
-
-  if (!res.ok) throw new Error("Failed to create checkout session");
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.url) throw new Error(data.error || "Could not start checkout");
+  window.location.href = data.url;
 }
 
-// Verify payment on the server
-export async function verifyPayment(sessionId: string): Promise<boolean> {
-  const res = await fetch(`/api/verify?session_id=${sessionId}`);
-  if (!res.ok) return false;
-  const data = await res.json();
-  return data.paid === true;
+export interface AccessInfo {
+  hasAccess: boolean;
+  report: boolean;
+  premium: boolean;
+  cancelAt: number | null;
+  accessLink: string | null;
+}
+
+export async function fetchAccess(): Promise<AccessInfo> {
+  try {
+    const r = await fetch("/api/check-access", { cache: "no-store" });
+    return await r.json();
+  } catch {
+    return { hasAccess: false, report: false, premium: false, cancelAt: null, accessLink: null };
+  }
 }

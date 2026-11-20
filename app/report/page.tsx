@@ -3,7 +3,9 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import NavLogo from "@/app/components/NavLogo";
-import { calculateIQ, getIQLabel, getPercentile, getCategoryResults } from "@/lib/iq-calculator";
+import { getCategoryResults } from "@/lib/iq-calculator";
+import { loadStoredResult } from "@/lib/stored-result";
+import { startCheckout, type Plan } from "@/lib/stripe";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────────── */
 const B    = "#0055FF";
@@ -165,13 +167,9 @@ function ReportInner() {
 
   /* payment / screen state — UNTOUCHED */
   const [screen,  setScreen]  = useState<"pay"|"processing"|"verifying"|"report">("pay");
-  const [email,   setEmail]   = useState("");
-  const [card,    setCard]    = useState("");
-  const [expiry,  setExpiry]  = useState("");
-  const [cvc,     setCvc]     = useState("");
-  const [name,    setName]    = useState("");
   const [consent, setConsent] = useState(false);
-  const [errors,  setErrors]  = useState<Record<string,boolean>>({});
+  const [buying,  setBuying]  = useState<Plan|null>(null);
+  const [payError,setPayError]= useState("");
   const [verifyError,setVerifyError] = useState("");
 
   /* IQ state */
@@ -185,13 +183,10 @@ function ReportInner() {
 
   /* Load IQ from localStorage */
   useEffect(()=>{
-    const s  = parseInt(localStorage.getItem("iq_score")||"0");
-    const t  = parseInt(localStorage.getItem("iq_total")||"30");
-    const cs = JSON.parse(localStorage.getItem("iq_catScores")||"[0,0,0,0,0,0]");
-    const ct = JSON.parse(localStorage.getItem("iq_catTotals")||"[0,0,0,0,0,0]");
-    const v  = calculateIQ(s,t);
-    setIq(v); setLabel(getIQLabel(v)); setPercentile(getPercentile(v));
-    setCatResults(getCategoryResults(v,cs,ct));
+    const r = loadStoredResult();
+    if (!r) return;
+    setIq(r.iq); setLabel(r.label); setPercentile(r.percentile);
+    setCatResults(getCategoryResults(r.iq,r.catScores,r.catTotals));
   },[]);
 
   /* Detect Stripe return */
@@ -212,8 +207,8 @@ function ReportInner() {
         .catch(()=>{ setVerifyError("Network error verifying payment."); setScreen("pay"); });
       return;
     }
-    // Subsequent loads: check HttpOnly cookie via server (cannot be forged by JS)
-    fetch("/api/check-access")
+    // Subsequent loads: check the signed HttpOnly cookie on the server
+    fetch("/api/check-access",{cache:"no-store"})
       .then(r=>r.json())
       .then(d=>{ if(d.hasAccess) setScreen("report"); })
       .catch(()=>{});
@@ -243,33 +238,18 @@ function ReportInner() {
     }
   },[screen,iq]);
 
-  function formatCard(v:string)  { return v.replace(/\D/g,"").substring(0,16).replace(/(.{4})/g,"$1 ").trim(); }
-  function formatExpiry(v:string){ const n=v.replace(/\D/g,""); return n.length>=2?n.substring(0,2)+" / "+n.substring(2,4):n; }
-
-  async function handlePay(){
-    const e:Record<string,boolean>={};
-    if(!email) e.email=true;
-    if(card.length<19) e.card=true;
-    if(!consent) e.consent=true;
-    setErrors(e);
-    if(Object.keys(e).length) return;
-    setScreen("processing");
-    try{
-      const res  = await fetch("/api/checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
-      const data = await res.json();
-      if(data.url){ window.location.href=data.url; } else { setScreen("pay"); }
-    } catch{ setScreen("pay"); }
+  async function handlePay(plan:Plan){
+    setPayError("");
+    if(plan==="report" && !consent){ setPayError("Please tick the box to confirm immediate access."); return; }
+    setBuying(plan);
+    try{ await startCheckout(plan); }
+    catch{ setPayError("Could not open the secure checkout. Please try again."); setBuying(null); }
   }
 
   /* Shared card/input styles for pay screen */
   const payCard: React.CSSProperties = {
     background:"rgba(5,18,45,0.80)",border:`1px solid ${BORD}`,
     backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderRadius:6,
-  };
-  const inputSt: React.CSSProperties = {
-    background:"rgba(5,18,45,0.9)",border:`1px solid ${BORD}`,
-    borderRadius:4,padding:"10px 14px",fontSize:13,color:"#D6E4FF",
-    outline:"none",width:"100%",fontFamily:"inherit",
   };
 
   /* ── Verifying ─────────────────────────────────────────────────────────────── */
@@ -680,7 +660,7 @@ function ReportInner() {
 
           {/* ── Certificate ─────────────────────────────────────────────────── */}
           <div style={{marginBottom:40}}>
-            <SectionH title="Official Certificate" accent={`linear-gradient(90deg,${GOLD},#FDE68A)`}/>
+            <SectionH title="Your Certificate" accent={`linear-gradient(90deg,${GOLD},#FDE68A)`}/>
             <div className="animate-fade-up" style={{
               background:`linear-gradient(135deg,rgba(6,14,40,0.9),rgba(10,20,55,0.9))`,
               border:`1px solid rgba(245,158,11,0.35)`,borderRadius:16,
@@ -705,7 +685,7 @@ function ReportInner() {
                 pointerEvents:"none"}}/>
 
               <p style={{fontSize:9,letterSpacing:"0.22em",textTransform:"uppercase",color:DIM_C,marginBottom:16}}>
-                RealIQTest · Official Certificate of Intelligence Assessment
+                RealIQTest · Certificate of Online IQ Test Result
               </p>
               <p style={{fontSize:15,color:TEXT,marginBottom:14,fontWeight:300}}>This certifies an IQ score of</p>
               <div style={{
@@ -769,7 +749,7 @@ function ReportInner() {
             </span>
           </h1>
           <p style={{fontSize:13,color:DIM_C,lineHeight:1.8,marginBottom:28}}>
-            Your free result shows your overall IQ. The premium report gives you everything — detailed breakdown, career matches, improvement tips, famous comparisons and your official certificate.
+            The free result shows your IQ range. The full report shows your exact score, your strongest and weakest areas, career matches, improvement tips and a PDF certificate.
           </p>
 
           {verifyError && (
@@ -789,7 +769,7 @@ function ReportInner() {
               "Best career matches for your IQ profile",
               "Personalised tips to improve each category",
               "Famous IQ comparisons",
-              "Official downloadable PDF certificate",
+              "Downloadable PDF certificate",
             ].map((item,i)=>(
               <div key={i} className="animate-fade-up" style={{
                 display:"flex",alignItems:"center",gap:10,padding:"10px 14px",
@@ -804,112 +784,48 @@ function ReportInner() {
             ))}
           </div>
           <div style={{display:"flex",gap:16,flexWrap:"wrap",fontSize:11,color:DIM_C}}>
-            <span>SSL Encrypted</span><span>·</span><span>Instant access</span><span>·</span><span>No subscription</span>
+            <span>Secure payment by Stripe</span><span>·</span><span>Instant access</span>
           </div>
         </div>
 
-        {/* Right: payment form */}
+        {/* Right: plans */}
         <div className="animate-scale-in" style={{...payCard,overflow:"hidden",animationDelay:"120ms",borderRadius:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-            padding:"20px 24px",borderBottom:`1px solid ${BORD}`}}>
-            <div>
-              <p style={{fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C,marginBottom:6}}>Premium Report — One time</p>
-              <div style={{display:"flex",alignItems:"baseline",gap:10}}>
-                <span style={{fontSize:13,textDecoration:"line-through",color:"#6A88AA"}}>€9.99</span>
-                <span style={{fontSize:32,fontWeight:800,
-                  background:`linear-gradient(135deg,${B},${CYAN})`,
-                  WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
-                }}>€1.99</span>
-                <span style={{fontSize:9,background:"rgba(16,185,129,0.12)",color:GRN,
-                  border:"1px solid rgba(16,185,129,0.3)",padding:"3px 8px",borderRadius:99}}>-80%</span>
-              </div>
-            </div>
-            <div style={{display:"flex",gap:6}}>
-              {["VISA","MC","AMEX"].map(c=>(
-                <span key={c} style={{fontSize:9,padding:"4px 8px",background:"rgba(0,85,255,0.08)",
-                  border:`1px solid ${BORD}`,borderRadius:4,color:DIM_C}}>{c}</span>
-              ))}
-            </div>
-          </div>
-          <div style={{padding:24,display:"flex",flexDirection:"column",gap:16}}>
-            <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Email address</label>
-              <input value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="you@example.com"
-                style={{...inputSt,borderColor:errors.email?"#FB7185":BORD}}/>
-            </div>
-            <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Card number</label>
-              <input value={card} onChange={e=>setCard(formatCard(e.target.value))} placeholder="1234 5678 9012 3456" maxLength={19}
-                style={{...inputSt,borderColor:errors.card?"#FB7185":BORD}}/>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Expiry</label>
-                <input value={expiry} onChange={e=>setExpiry(formatExpiry(e.target.value))} placeholder="MM / YY" maxLength={7} style={inputSt}/>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>CVC</label>
-                <input value={cvc} onChange={e=>setCvc(e.target.value)} placeholder="123" maxLength={3} style={inputSt}/>
-              </div>
-            </div>
-            <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              <label style={{fontSize:9,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Name on card</label>
-              <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full name" style={inputSt}/>
-            </div>
-            <label style={{display:"flex",alignItems:"flex-start",gap:10,padding:12,borderRadius:8,cursor:"pointer",
-              border:`1px solid ${errors.consent?"#FB7185":BORD}`,
-              background:errors.consent?"rgba(251,113,133,0.05)":"rgba(0,85,255,0.05)"}}>
-              <input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)} style={{marginTop:2,accentColor:B}}/>
-              <span style={{fontSize:11,color:DIM_C,lineHeight:1.5}}>
-                <strong style={{color:TEXT}}>I understand this is a digital product with immediate access.</strong>{" "}
-                Refunds are only available in case of a technical error preventing access.
-              </span>
-            </label>
-            {/* Urgency line */}
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"8px 12px",
-              background:"rgba(245,158,11,0.06)",border:"1px solid rgba(245,158,11,0.25)",borderRadius:8}}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span style={{fontSize:11,color:"#F59E0B",fontWeight:600}}>80% discount — limited availability</span>
+          <div style={{padding:24,display:"flex",flexDirection:"column",gap:18}}>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <p style={{fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Full report — one-time payment</p>
+              <span style={{fontSize:32,fontWeight:800,background:`linear-gradient(135deg,${B},${CYAN})`,
+                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>€1.99</span>
+              <label style={{display:"flex",alignItems:"flex-start",gap:10,padding:12,borderRadius:8,cursor:"pointer",
+                border:`1px solid ${BORD}`,background:"rgba(0,85,255,0.05)"}}>
+                <input id="consent" type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)} style={{marginTop:2,accentColor:B}}/>
+                <span style={{fontSize:11,color:DIM_C,lineHeight:1.5}}>
+                  <strong style={{color:TEXT}}>I want immediate access to this digital report</strong> and I understand that I lose my 14-day right of withdrawal once the report is shown.
+                </span>
+              </label>
+              <button onClick={()=>handlePay("report")} disabled={!!buying}
+                style={{width:"100%",padding:"16px 20px",background:"linear-gradient(135deg,#0055FF 0%,#0099CC 50%,#06B6D4 100%)",
+                  border:"none",borderRadius:10,fontSize:16,fontWeight:800,color:"#fff",cursor:"pointer",opacity:buying?0.6:1}}>
+                {buying==="report"?"Opening secure checkout…":"Unlock my full report — €1.99"}
+              </button>
             </div>
 
-            {/* CTA button */}
-            <button
-              onClick={handlePay}
-              disabled={!consent}
-              style={{
-                width:"100%",padding:"20px 24px",
-                background: consent
-                  ? "linear-gradient(135deg,#0055FF 0%,#0099CC 50%,#06B6D4 100%)"
-                  : "rgba(0,85,255,0.25)",
-                border:"none",borderRadius:10,
-                fontSize:17,fontWeight:800,color:"#fff",
-                cursor:consent?"pointer":"not-allowed",
-                opacity:consent?1:0.45,
-                boxShadow:consent?"0 6px 32px rgba(0,85,255,0.55),0 0 80px rgba(0,85,255,0.2),inset 0 1px 0 rgba(255,255,255,0.15)":"none",
-                letterSpacing:"-0.02em",
-                transition:"transform 150ms,box-shadow 150ms",
-              }}
-              onMouseEnter={e=>{ if(consent){ (e.target as HTMLButtonElement).style.transform="translateY(-2px)"; (e.target as HTMLButtonElement).style.boxShadow="0 10px 40px rgba(0,85,255,0.65),0 0 100px rgba(6,182,212,0.25)"; } }}
-              onMouseLeave={e=>{ (e.target as HTMLButtonElement).style.transform="translateY(0)"; (e.target as HTMLButtonElement).style.boxShadow="0 6px 32px rgba(0,85,255,0.55),0 0 80px rgba(0,85,255,0.2)"; }}
-            >
-              Unlock My Premium Report — €1.99
-            </button>
+            <div style={{height:1,background:BORD}}/>
 
-            {/* Trust strip */}
-            <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap"}}>
-              {[
-                {icon:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",label:"SSL Encrypted"},
-                {icon:"M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z",label:"Powered by Stripe"},
-                {icon:"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",label:"Instant access"},
-              ].map(({icon,label},i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8AABCC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d={icon}/>
-                  </svg>
-                  <span style={{fontSize:10,color:"#6A88AA"}}>{label}</span>
-                </div>
-              ))}
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <p style={{fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",color:CYAN}}>Premium — monthly</p>
+              <span style={{fontSize:28,fontWeight:800,color:TEXT}}>€4.99<span style={{fontSize:13,fontWeight:500,color:DIM_C}}> / month</span></span>
+              <p style={{fontSize:12,color:DIM_C,lineHeight:1.6}}>Everything in the full report, plus a daily brain challenge with streaks, a monthly re-test and your IQ history chart.</p>
+              <button onClick={()=>handlePay("premium")} disabled={!!buying}
+                style={{width:"100%",padding:"14px 20px",background:"transparent",border:`1px solid ${CYAN}`,borderRadius:10,
+                  fontSize:15,fontWeight:700,color:CYAN,cursor:"pointer",opacity:buying?0.6:1}}>
+                {buying==="premium"?"Opening secure checkout…":"Start Premium — €4.99/month"}
+              </button>
+              <p style={{fontSize:11,color:DIM_C,lineHeight:1.5}}>Renews every month until you cancel. Cancel anytime in one click from your Premium page.</p>
             </div>
+
+            {payError && <p role="alert" style={{fontSize:12,color:ROSE}}>{payError}</p>}
+
+            <p style={{fontSize:10,color:"#6A88AA",textAlign:"center"}}>You enter your card on Stripe&apos;s secure page. RealIQTest never sees your card details.</p>
           </div>
         </div>
       </div>

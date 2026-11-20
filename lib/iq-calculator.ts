@@ -212,15 +212,6 @@ export function getCategoryResults(
   catScores: number[],
   catTotals: number[],
 ): CategoryResult[] {
-  const offsets = [+5, -2, -8, +3, -5, -12];
-  const descs = [
-    "You excel at identifying patterns and abstract relationships. Your deductive reasoning is well above average.",
-    "Strong vocabulary and linguistic reasoning. You handle analogies and word relationships with ease.",
-    "Moderate spatial visualisation. You handle 2D patterns well but complex 3D rotation tasks slow you down.",
-    "Solid numerical reasoning. You handle sequences and arithmetic efficiently under time pressure.",
-    "Your working memory is functional but shows some strain on multi-step recall tasks. An area to develop.",
-    "Processing speed is your relative weakness. Faster decisions would meaningfully boost your overall score.",
-  ];
   const names = [
     "Logical Reasoning",
     "Verbal Intelligence",
@@ -229,12 +220,38 @@ export function getCategoryResults(
     "Working Memory",
     "Processing Speed",
   ];
+  // One description per area and level, chosen from the user's real answers in that area.
+  const descs: Record<"strong" | "avg" | "weak", string>[] = [
+    { strong: "You spot patterns and abstract rules quickly. Logical reasoning is one of your clear strengths.",
+      avg:    "Your pattern and rule-finding is solid. Harder multi-rule puzzles are where you can still gain points.",
+      weak:   "Abstract pattern puzzles cost you the most points. Practising matrix puzzles is the fastest way to improve here." },
+    { strong: "You handle analogies and word relationships with ease. Verbal reasoning is a strength.",
+      avg:    "Your verbal reasoning is in line with your overall score. Reading widely keeps it sharp.",
+      weak:   "Analogies and word relationships were harder for you. Word puzzles and reading build this skill." },
+    { strong: "You rotate and fold shapes in your head accurately. Spatial reasoning is a strength.",
+      avg:    "You manage 2D shapes well; complex 3D rotation and folding slowed you down at times.",
+      weak:   "Rotation, mirror and folding tasks were your hardest. Spatial games and 3D puzzles help a lot here." },
+    { strong: "You read sequences and number patterns fast and accurately. Numerical ability is a strength.",
+      avg:    "Your numerical reasoning is steady. Longer sequences are where errors crept in.",
+      weak:   "Number sequences cost you points. Short daily mental-arithmetic practice improves this quickly." },
+    { strong: "You held several items in mind without losing track. Working memory is a strength.",
+      avg:    "Your working memory is functional, with some strain on multi-step recall tasks.",
+      weak:   "Memory tasks were your hardest area. Memory games and chunking techniques help train it." },
+    { strong: "You answered quickly without losing accuracy. Processing speed is a strength.",
+      avg:    "Your speed is average. Deciding a little faster on easy items would raise your score.",
+      weak:   "You spent long on items or rushed them. Timed practice helps you find a faster, steady pace." },
+  ];
+
+  const totalScore = catScores.reduce((a, b) => a + b, 0);
+  const totalItems = catTotals.reduce((a, b) => a + b, 0);
+  const overallPct = totalItems > 0 ? totalScore / totalItems : 0.5;
 
   return names.map((name, i) => {
-    const catIQ  = Math.min(148, Math.max(70, iq + offsets[i]));
-    const pct    = catTotals[i] > 0 ? catScores[i] / catTotals[i] : 0;
+    const pct = catTotals[i] > 0 ? catScores[i] / catTotals[i] : overallPct;
+    // Shift the overall IQ by how this area compares with the user's own average.
+    const catIQ = Math.min(148, Math.max(70, Math.round(iq + (pct - overallPct) * 30)));
     const badge: "strong" | "avg" | "weak" =
       pct >= 0.75 ? "strong" : pct >= 0.5 ? "avg" : "weak";
-    return { name, iq: catIQ, score: catScores[i], total: catTotals[i], badge, desc: descs[i] };
+    return { name, iq: catIQ, score: catScores[i], total: catTotals[i], badge, desc: descs[i][badge] };
   });
 }

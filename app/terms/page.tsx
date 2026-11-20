@@ -60,7 +60,8 @@ export default function TermsPage() {
             <li>You were charged multiple times for the same purchase due to a system error.</li>
           </ul>
           <p style={{ marginTop: 10 }}>To request a refund on eligible grounds, contact <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: "#c9a96e" }}>{CONTACT_EMAIL}</a> within 14 days of purchase, including your payment confirmation.</p>
-          <p style={{ marginTop: 10 }}><strong>4.4 No subscription:</strong> The Premium Report is a one-time purchase. There is no recurring charge or subscription.</p>
+          <p style={{ marginTop: 10 }}><strong>4.4 One-time purchase:</strong> The Premium Report is a one-time purchase with no recurring charge.</p>
+          <p style={{ marginTop: 10 }}><strong>4.4b Premium subscription:</strong> RealIQTest Premium costs €4.99 per month and includes the full report, a daily brain challenge, a monthly re-test and your IQ history. It renews automatically every month until you cancel. You can cancel at any time in one click from your Premium page; you keep access until the end of the period you have already paid for, and you will not be charged again. We show the price and renewal terms before you pay, and Stripe sends a receipt for every charge.</p>
           <p style={{ marginTop: 10 }}><strong>4.5 Payment processing:</strong> Payments are processed by Stripe. Your card details are handled securely by Stripe and are never stored by us. You can review Stripe&rsquo;s terms at <a href="https://stripe.com/ssa" target="_blank" rel="noopener noreferrer" style={{ color: "#c9a96e" }}>stripe.com/ssa</a>.</p>
         </Section>
 

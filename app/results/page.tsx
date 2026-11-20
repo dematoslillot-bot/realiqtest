@@ -816,7 +816,7 @@ export default function ResultsPage() {
             {buyError && <p role="alert" style={{ marginTop:14,fontSize:12,color:"#FB7185" }}>{buyError}</p>}
 
             <div style={{ display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap",marginTop:18 }}>
-              {["Secure payment by Stripe","27 visual questions","6 cognitive areas"].map((badge,i)=>(
+              {["Secure payment by Stripe","30 questions","6 cognitive areas"].map((badge,i)=>(
                 <span key={i} style={{ fontSize:10,color:"#8AABCC",background:"rgba(91,79,255,0.08)",border:"1px solid rgba(91,79,255,0.22)",padding:"4px 10px",borderRadius:99 }}>
                   <span style={{ color:"#00F5D4",fontWeight:700,marginRight:4 }}>✓</span>{badge}
                 </span>

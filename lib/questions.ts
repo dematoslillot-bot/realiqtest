@@ -245,70 +245,10 @@ const ARROW_TRI = "M10,30 L50,10 L50,50 Z";
 
 export const ALL_QUESTIONS: Question[] = [
 
-  // ── CAT 0 · LOGICAL REASONING ────────────────────────────────────────────
+  // ── CAT 0 · LOGICAL REASONING (5 questions, easy → hard) ──
 
-  // Q1 · CLOCK LOGIC — each clock advances +1h 30min
   {
-    cat: 0, type: "raven", diff: "medium", badge: "Clock Logic", time: 32,
-    text: "Each clock advances by the same time interval. What does the 4th clock show?",
-    opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "Each clock advances +1h 30min: 2:00 → 3:30 → 5:00 → 6:30.",
-    vis: {
-      kind: "clock",
-      seqH: [2, 3, 5],
-      seqM: [0, 30, 0],
-      optH: [6, 7, 6, 5],
-      optM: [0, 0, 30, 30],
-    },
-  },
-
-  // Q2 · LOGIC MAZE — follow the arrows from START, reach the correct exit
-  {
-    cat: 0, type: "raven", diff: "medium", badge: "Logic Maze", time: 30,
-    text: "Follow the arrows from START. Which EXIT do you reach?",
-    opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "Trace: START(0,0)→ right → (0,1)↓ down → (1,1)→ right → (1,2)↓ down → (2,2)→ exits right. Exit C is on the right side of the grid.",
-    vis: {
-      kind: "maze",
-      // 3×3 grid row-major: row0=[R,D,D] row1=[U,R,D] row2=[U,L,R]
-      arrows: ["R","D","D", "U","R","D", "U","L","R"],
-    },
-  },
-
-  // Q3 · DIRECTION MATRIX — each arrow rotates +45° CW per step
-  {
-    cat: 0, type: "raven", diff: "hard", badge: "Direction Matrix", time: 35,
-    text: "Each arrow rotates by the same angle at every step. Which option belongs in the empty cell?",
-    opts: ["A", "B", "C", "D"],
-    ans: 0,
-    exp: "Each step clockwise adds 45°. Diagonals all point in the same direction. Row 3, col 3 → 270° (pointing up).",
-    vis: {
-      kind: "ravenrot",
-      path: ARROW_TRI,
-      angles: [270, 315, 0,  225, 270, 315,  180, 225, null],
-      optAngles: [270, 225, 315, 0],
-    },
-  },
-
-  // Q4 · BINARY CODE — find the row that makes all column XORs equal zero
-  {
-    cat: 0, type: "raven", diff: "medium", badge: "Binary Code", time: 28,
-    text: "Each column must XOR to 0 (even number of filled dots per column). Which row completes the grid?",
-    opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "XOR rule: filled=1, empty=0. Col sums must be even. Col0: 1⊕0⊕1⊕?=0→?=0. Col1: 0⊕1⊕1⊕?=0→?=0. Col2: 1⊕1⊕0⊕?=0→?=0. Col3: 1⊕0⊕1⊕?=0→?=0. Answer: all empty (0,0,0,0).",
-    vis: {
-      kind: "binary",
-      rows: [[1,0,1,1],[0,1,1,0],[1,1,0,1],[null,null,null,null]],
-      optRows: [[1,0,0,1],[0,1,0,1],[0,0,0,0],[1,1,0,0]],
-    },
-  },
-
-  // Q5 · HEAT PATTERN — row & column sums all equal
-  {
-    cat: 0, type: "raven", diff: "medium", badge: "Heat Pattern", time: 28,
+    cat: 0, type: "raven", diff: "easy", badge: "Heat Pattern", time: 28,
     text: "Row sums and column sums are all equal. Which intensity completes the grid?",
     opts: ["A", "B", "C", "D"],
     ans: 2,
@@ -320,37 +260,21 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q6 · SYMBOL CODE — solve the system of symbol equations
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Symbol Code", time: 35,
-    text: "Each symbol has a hidden value. Solve for ◆ + ■ + ●",
-    opts: ["16", "14", "18", "20"],
-    ans: 0,
-    exp: "◆+■=9, ■+●=13, ◆+●=10. Adding all three: 2(◆+■+●)=32 → ◆+■+●=16.",
-    vis: {
-      kind: "symcode",
-      equations: ["◆ + ■ = 9", "■ + ● = 13", "◆ + ● = 10", "◆ + ■ + ● = ?"],
-      optVals: ["16", "14", "18", "20"],
-    },
-  },
-
-  // Q7 · POSITION ROTATION — filled quadrant steps 90° CW each move
-  {
-    cat: 0, type: "raven", diff: "hard", badge: "Position Rotation", time: 38,
-    text: "Find the hidden rule, then choose the image that belongs in the empty cell.",
+    cat: 0, type: "raven", diff: "medium", badge: "Matrix Reasoning", time: 35,
+    text: "Find the two rules in the rows and columns, then choose the image for the empty cell.",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
-    exp: "The filled circle rotates 90° clockwise each step (TL→TR→BR→BL→TL). After 8 steps the cycle completes — the answer brings the filled circle back to the top-left.",
+    ans: 1,
+    exp: "Rule 1: every cell in a row has the same number of shapes (1, 2, 3). Rule 2: each row and each column contains one circle, one square and one triangle. Row 3 already has triangles and circles, so the missing cell is three filled squares.",
     vis: {
       kind: "raven",
-      cells: [qTL, qTR, qBR,  qTR, qBR, qBL,  qBR, qBL, null],
-      optCells: [qTL, qBL, qTR, qAll4],
+      cells: [C1, S1, T1,  S2, T2, C2,  T3, C3, null],
+      optCells: [T3, S3, S2, S3o],
     },
   },
 
-  // Q8 · SHAPE SUM — A + B = C (concentric rule), apply to D + E = ?
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Shape Sum", time: 35,
+    cat: 0, type: "raven", diff: "medium", badge: "Shape Sum", time: 35,
     text: "A + B = C follows a rule. Apply the same rule: D + E = ?",
     opts: ["A", "B", "C", "D"],
     ans: 0,
@@ -371,33 +295,80 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q9 · ROW OPERATIONS — each row uses a different set operation
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Row Operations", time: 45,
-    text: "Each row applies a different logical operation to its shapes. Discover the three rules, then choose the image for the empty cell.",
-    opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "Row 1 UNION (all shapes), Row 2 SUBTRACT (remove shared shapes), Row 3 XOR (cancel shared). {T,C} ⊕ {T,S} → triangle cancels → {C,S}.",
+    cat: 0, type: "raven", diff: "hard", badge: "Symbol Code", time: 35,
+    text: "Each symbol has a hidden value. Solve for ◆ + ■ + ●",
+    opts: ["16", "14", "18", "20"],
+    ans: 0,
+    exp: "◆+■=9, ■+●=13, ◆+●=10. Adding all three: 2(◆+■+●)=32 → ◆+■+●=16.",
     vis: {
-      kind: "raven",
-      cells: [moR1C1, moR1C2, moR1C3,  moR2C1, moR2C2, moR2C3,  moR3C1, moR3C2, null],
-      optCells: [moR3C1, moR1C1, moR3C2, moR1C3],
+      kind: "symcode",
+      equations: ["◆ + ■ = 9", "■ + ● = 13", "◆ + ● = 10", "◆ + ■ + ● = ?"],
+      optVals: ["16", "14", "18", "20"],
     },
   },
 
-  // ── CAT 1 · VERBAL INTELLIGENCE ──────────────────────────────────────────
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Position Rotation", time: 38,
+    text: "Find the hidden rule, then choose the image that belongs in the empty cell.",
+    opts: ["A", "B", "C", "D"],
+    ans: 0,
+    exp: "The filled circle rotates 90° clockwise each step (TL→TR→BR→BL→TL). After 8 steps the cycle completes — the answer brings the filled circle back to the top-left.",
+    vis: {
+      kind: "raven",
+      cells: [qTL, qTR, qBR,  qTR, qBR, qBL,  qBR, qBL, null],
+      optCells: [qTL, qBL, qTR, qAll4],
+    },
+  },
+
+
+  // ── CAT 1 · VERBAL INTELLIGENCE (5 questions, easy → hard) ──
+
+  {
+    cat: 1, type: "text", diff: "easy", badge: "Odd One Out", time: 20,
+    text: "Which word does NOT belong with the others?",
+    opts: ["Violin", "Cello", "Flute", "Viola"],
+    ans: 2,
+    exp: "Violin, cello and viola are string instruments played with a bow. The flute is a wind instrument.",
+  },
+
+  {
+    cat: 1, type: "analogy", diff: "medium", badge: "Analogy", time: 25,
+    text: "Complete the analogy:",
+    w1: "Thermometer", w2: "Temperature", w3: "Odometer",
+    opts: ["Speed", "Distance", "Fuel", "Time"],
+    ans: 1,
+    exp: "A thermometer measures temperature; an odometer measures the distance a vehicle has travelled (a speedometer measures speed).",
+  },
+
+  {
+    cat: 1, type: "text", diff: "medium", badge: "Deduction", time: 30,
+    text: "No bakers are lazy. Some lazy people are students. Which MUST be true?",
+    opts: ["Some students are not bakers", "No students are bakers", "Some bakers are students", "All students are lazy"],
+    ans: 0,
+    exp: "The lazy students cannot be bakers (no baker is lazy), so at least some students are not bakers. The other options may or may not be true.",
+  },
 
   {
     cat: 1, type: "text", diff: "hard", badge: "Syllogistic Logic", time: 35,
-    text: "All Glimbs are Forbs. No Forbs are Splacts. Some Splacts are Yends. Which statement MUST be true?",
+    text: "Read the three statements. Which conclusion MUST be true?",
     opts: ["No Glimbs are Splacts", "Some Glimbs are Splacts", "All Yends are Forbs", "Some Forbs are Yends"],
     ans: 0,
+    vis: { kind: "symcode", equations: ["All Glimbs are Forbs.", "No Forbs are Splacts.", "Some Splacts are Yends."], optVals: [] },
     exp: "All Glimbs → Forbs. No Forbs → Splacts. Therefore: No Glimbs → Splacts (A). B contradicts this. C and D go beyond the premises.",
   },
 
-  // ── CAT 2 · SPATIAL REASONING ────────────────────────────────────────────
+  {
+    cat: 1, type: "text", diff: "hard", badge: "Vocabulary", time: 20,
+    text: "Which word is most nearly OPPOSITE in meaning to \"ephemeral\"?",
+    opts: ["Fragile", "Permanent", "Ancient", "Hidden"],
+    ans: 1,
+    exp: "Ephemeral means lasting a very short time. Its opposite is permanent. Ancient means very old, which is not the same as lasting forever.",
+  },
 
-  // Q11 · DICE NET
+
+  // ── CAT 2 · SPATIAL REASONING (5 questions, easy → hard) ──
+
   {
     cat: 2, type: "rotation", diff: "easy", badge: "Dice Net", time: 30,
     text: "Fold this net into a cube. Which face ends up directly OPPOSITE the face showing 2 dots?",
@@ -407,7 +378,6 @@ export const ALL_QUESTIONS: Question[] = [
     vis: { kind: "dicenet", faces: [1, 2, 3, 4, 5, 6] },
   },
 
-  // Q12 · HIDDEN SHAPE
   {
     cat: 2, type: "rotation", diff: "easy", badge: "Hidden Shape", time: 30,
     text: "The figure on the left is formed by overlapping two shapes. Which of the four shapes below is one of the two components?",
@@ -421,7 +391,6 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q13 · SHADOW 3D — identify the correct front-view silhouette of an L-shaped 3D object
   {
     cat: 2, type: "rotation", diff: "medium", badge: "Shadow 3D", time: 30,
     text: "The 3D arrangement of cubes is shown. Which silhouette represents the view from directly in FRONT?",
@@ -443,7 +412,6 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
-  // Q14 · ORIGAMI — fold, cut, unfold: where do the holes appear?
   {
     cat: 2, type: "rotation", diff: "hard", badge: "Origami", time: 35,
     text: "A square paper is folded (bottom half up), then a circle is cut from the top-right corner of the folded paper. When fully unfolded, which result appears?",
@@ -453,27 +421,12 @@ export const ALL_QUESTIONS: Question[] = [
     vis: { kind: "origami" },
   },
 
-  // Q15 · INVERSE ROTATION
-  {
-    cat: 2, type: "rotation", diff: "hard", badge: "Inverse Rotation", time: 25,
-    text: "This shape has been rotated 230° clockwise from its original position. Which option shows the ORIGINAL orientation?",
-    opts: ["A", "B", "C", "D"],
-    ans: 3,
-    exp: "360° − 230° = 130° more clockwise returns to the original (0°). Option A is 0° but horizontally mirrored. B is 350° (10° short). C is 10° (10° past). Only D is exactly 0°.",
-    vis: {
-      kind: "rotation", path: HOOK, showAngle: 230,
-      optAngles:  [0,   350, 10, 0],
-      optMirrors: [true, false, false, false],
-    },
-  },
-
-  // Q16 · MIRROR IMAGE
   {
     cat: 2, type: "rotation", diff: "hard", badge: "Mirror Image", time: 22,
     text: "Choose the exact horizontal mirror image of this shape.",
     opts: ["A", "B", "C", "D"],
     ans: 1,
-    exp: "A horizontal mirror flips left↔right. Option A is vertically flipped, C is the original, D has a subtly wrong step height. B is the correct horizontal mirror.",
+    exp: "A horizontal mirror flips left↔right. Option A is vertically flipped, C is the original, D has the lower step at the wrong height. B is the correct horizontal mirror.",
     vis: {
       kind: "mirror",
       path: "M8,48 L8,24 L18,24 L18,8 L38,8 L38,20 L28,20 L28,34 L50,34 L50,48 Z",
@@ -481,12 +434,13 @@ export const ALL_QUESTIONS: Question[] = [
         "M8,12 L8,36 L18,36 L18,52 L38,52 L38,40 L28,40 L28,26 L50,26 L50,12 Z",
         "M52,48 L52,24 L42,24 L42,8 L22,8 L22,20 L32,20 L32,34 L10,34 L10,48 Z",
         "M8,48 L8,24 L18,24 L18,8 L38,8 L38,20 L28,20 L28,34 L50,34 L50,48 Z",
-        "M52,48 L52,24 L42,24 L42,8 L22,8 L22,20 L32,20 L32,36 L10,36 L10,48 Z",
+        "M52,48 L52,24 L42,24 L42,8 L22,8 L22,20 L32,20 L32,40 L10,40 L10,48 Z",
       ],
     },
   },
 
-  // ── CAT 3 · NUMERICAL ABILITY ─────────────────────────────────────────────
+
+  // ── CAT 3 · NUMERICAL ABILITY (5 questions, easy → hard) ──
 
   {
     cat: 3, type: "bars", diff: "easy", badge: "Decreasing Series", time: 30,
@@ -524,7 +478,17 @@ export const ALL_QUESTIONS: Question[] = [
     vis: { kind: "bars", values: [1, 3, 7, 15, 31, null], max: 70 },
   },
 
-  // ── CAT 4 · WORKING MEMORY ────────────────────────────────────────────────
+  {
+    cat: 3, type: "bars", diff: "hard", badge: "Square Pattern", time: 25,
+    text: "What is the missing value?",
+    opts: ["35", "37", "36", "41"],
+    ans: 1,
+    exp: "Each term is a square number plus 1: 1²+1=2, 2²+1=5, 3²+1=10, 4²+1=17, 5²+1=26, 6²+1=37. (The gaps grow by 2: +3, +5, +7, +9, +11.)",
+    vis: { kind: "bars", values: [2, 5, 10, 17, 26, null], max: 42 },
+  },
+
+
+  // ── CAT 4 · WORKING MEMORY (5 questions, easy → hard) ──
 
   {
     cat: 4, type: "memory", diff: "easy", badge: "Colour Memory", time: 30,
@@ -545,6 +509,15 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
+    cat: 4, type: "memory", diff: "medium", badge: "Missing Colour", time: 25,
+    text: "Which colour did NOT appear in the sequence?",
+    opts: ["Purple", "Red", "Orange", "Yellow"],
+    ans: 1,
+    exp: "Sequence: Green → Purple → Orange → Blue → Yellow. Red never appeared.",
+    vis: { kind: "memory", colors: ["#00D87A","#9B59B6","#FF8C00","#00AAFF","#FFD700"], showMs: 2400 },
+  },
+
+  {
     cat: 4, type: "memory", diff: "medium", badge: "Sequence Recall", time: 25,
     text: "What was the 6th colour?",
     opts: ["Purple", "Orange", "Blue", "Red"],
@@ -562,7 +535,17 @@ export const ALL_QUESTIONS: Question[] = [
     vis: { kind: "memory", colors: ["#00AAFF","#FF3B3B","#00D87A","#FFD700","#9B59B6","#00AAFF","#FF8C00","#FF3B3B"], showMs: 1800 },
   },
 
-  // ── CAT 5 · PROCESSING SPEED ─────────────────────────────────────────────
+
+  // ── CAT 5 · PROCESSING SPEED (5 questions, easy → hard) ──
+
+  {
+    cat: 5, type: "symbols", diff: "easy", badge: "Rapid Compare", time: 10,
+    text: "Which number is the LARGEST?",
+    opts: ["0.7", "0.65", "0.709", "0.69"],
+    ans: 2,
+    exp: "Compare digit by digit: 0.709 > 0.700 > 0.690 > 0.650.",
+    vis: { kind: "symbols", target: "0.7    0.65    0.709    0.69" },
+  },
 
   {
     cat: 5, type: "symbols", diff: "medium", badge: "Rapid Calculation", time: 10,
@@ -574,12 +557,12 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Deduction", time: 10,
-    text: "Which value is the MEDIAN (middle) of these five?",
-    opts: ["S", "P", "T", "R"],
-    ans: 2,
-    exp: "Order ascending: Q < R < T < P < S. The median (3rd of 5) is T.",
-    vis: { kind: "symbols", target: "S > P > T > R > Q" },
+    cat: 5, type: "symbols", diff: "medium", badge: "Letter Count", time: 12,
+    text: "How many times does the letter E appear?",
+    opts: ["5", "6", "7", "4"],
+    ans: 1,
+    exp: "EVEREST has 3 E's and ELEVEN has 3 E's: 6 in total.",
+    vis: { kind: "symbols", target: "EVEREST  ELEVEN" },
   },
 
   {
@@ -590,4 +573,14 @@ export const ALL_QUESTIONS: Question[] = [
     exp: "Sequence: 3 · 7 · 5 · 2 · 7 · 9 · 1 · 4 — the number 7 appears at positions 2 and 5.",
     vis: { kind: "symbols", target: "3  ·  7  ·  5  ·  2  ·  7  ·  9  ·  1  ·  4" },
   },
+
+  {
+    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Deduction", time: 10,
+    text: "Which value is the MEDIAN (middle) of these five?",
+    opts: ["S", "P", "T", "R"],
+    ans: 2,
+    exp: "Order ascending: Q < R < T < P < S. The median (3rd of 5) is T.",
+    vis: { kind: "symbols", target: "S > P > T > R > Q" },
+  },
+
 ];

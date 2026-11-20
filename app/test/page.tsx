@@ -856,7 +856,7 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
   if (vis?.kind === "shapesum") {
     return <RavenCellSVG cell={vis.optCells[idx]} />;
   }
-  if (vis?.kind === "symcode") {
+  if (vis?.kind === "symcode" && vis.optVals.length) {
     return <span style={{ fontSize:"clamp(18px,4vw,26px)", fontWeight:800, fontFamily:"monospace", color:"#9D8FFF" }}>{vis.optVals[idx]}</span>;
   }
   return <span style={{ fontSize: "clamp(13px,3vw,16px)", lineHeight: 1.25, fontWeight: 500 }}>{opt}</span>;
@@ -887,14 +887,14 @@ function AnimatedTestBg({ catIdx, flyKey }: { catIdx: number; flyKey?: number })
 
 /* ── Neural network background (quiz view — black + SVG neurons) ─────────── */
 
-// 27 question nodes spread organically left→right in a 1920×1080 canvas
+// 30 question nodes spread organically left→right in a 1920×1080 canvas
 const Q_NODES: [number, number][] = [
   [ 80, 540], [165, 280], [220, 760], [295, 175], [335, 520],
   [400, 380], [460, 760], [515, 155], [570, 455], [610, 295],
   [670, 680], [730, 215], [775, 520], [835, 355], [880, 755],
   [940, 175], [980, 480], [1045, 315], [1095, 675], [1145, 195],
   [1195, 440], [1255, 740], [1305, 295], [1360, 555], [1415, 175],
-  [1470, 440], [1555, 340],
+  [1470, 440], [1555, 340], [1625, 640], [1700, 300], [1790, 520],
 ];
 
 const _BG_NODES: [number, number][] = [
@@ -931,7 +931,7 @@ function NeuralNetBg({ qIdx }: { qIdx: number }) {
         style={{ width: "100%", height: "100%", display: "block" }}>
 
         {NET_EDGES.map(([a, b], k) => {
-          const aQ = a < 27, bQ = b < 27;
+          const aQ = a < Q_NODES.length, bQ = b < Q_NODES.length;
           const aLit = aQ && a <= qIdx, bLit = bQ && b <= qIdx;
           const bothLit = aLit && bLit;
           const touchesCur = (aQ && a === qIdx) || (bQ && b === qIdx);
@@ -1051,9 +1051,9 @@ function MilestoneOverlay({
 /* ── Milestone data ─────────────────────────────────────────────────────── */
 
 const MILESTONE_DATA: Record<number, {icon:"brain"|"target"|"fire"; heading:string; sub:string}> = {
-  5:  { icon:"brain",  heading:"Your pattern recognition is exceptional!", sub:"You're in the top 20% so far — keep going!" },
-  16: { icon:"target", heading:"Halfway there!", sub:"Your IQ is tracking above average. Don't stop now." },
-  25: { icon:"fire",   heading:"Almost done!", sub:"Just 7 questions left — your score is looking very strong." },
+  10: { icon:"brain",  heading:"A third of the way!", sub:"10 questions done, 20 to go. Keep a steady pace." },
+  15: { icon:"target", heading:"Halfway there!", sub:"15 questions done, 15 to go. Don't stop now." },
+  25: { icon:"fire",   heading:"Almost done!", sub:"Just 5 questions left." },
 };
 
 /* ── Main test page ─────────────────────────────────────────────────────── */

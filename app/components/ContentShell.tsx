@@ -12,7 +12,7 @@ const dim   = "#8AABCC";
 const bg    = "#03050F";
 
 const NAV_LINKS = [
-  { href: "/rankings",    label: "Rankings" },
+  { href: "/leaderboard", label: "Leaderboard" },
   { href: "/about",       label: "About" },
   { href: "/faq",         label: "FAQ" },
   { href: "/what-is-iq",  label: "What is IQ?" },

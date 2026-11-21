@@ -1,5 +1,6 @@
 "use client";
 
+import { COUNTRY_LIST, codeFromName } from "@/lib/countries";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import NavLogo from "@/app/components/NavLogo";
 import NeuralScene from "@/app/components/NeuralScene";
@@ -1058,16 +1059,7 @@ const MILESTONE_DATA: Record<number, {icon:"brain"|"target"|"fire"; heading:stri
 
 /* ── Main test page ─────────────────────────────────────────────────────── */
 
-const COUNTRIES = [
-  "Afghanistan","Albania","Algeria","Argentina","Australia","Austria","Bangladesh","Belarus","Belgium","Bolivia",
-  "Brazil","Bulgaria","Cambodia","Canada","Chile","China","Colombia","Croatia","Czech Republic","Denmark",
-  "Ecuador","Egypt","Ethiopia","Finland","France","Germany","Ghana","Greece","Guatemala","Hungary",
-  "India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Japan","Jordan","Kenya",
-  "South Korea","Malaysia","Mexico","Morocco","Netherlands","New Zealand","Nigeria","Norway","Pakistan","Peru",
-  "Philippines","Poland","Portugal","Romania","Russia","Saudi Arabia","Serbia","Singapore","South Africa","Spain",
-  "Sri Lanka","Sweden","Switzerland","Taiwan","Thailand","Turkey","Ukraine","United Arab Emirates","United Kingdom","United States",
-  "Venezuela","Vietnam","Other",
-];
+const COUNTRIES = [...COUNTRY_LIST.map(c => c.name), "Other"];
 
 export default function TestPage() {
   const router = useRouter();
@@ -1083,6 +1075,7 @@ export default function TestPage() {
     if (gender)     localStorage.setItem("user_gender",     gender);
     if (ageGroup)   localStorage.setItem("user_age",        ageGroup);
     if (country)    localStorage.setItem("user_country",    country);
+    if (country)    localStorage.setItem("user_country_code", codeFromName(country));
     if (occupation) localStorage.setItem("user_occupation", occupation);
     setScreen("quiz");
   }

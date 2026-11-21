@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { calculateIQWeighted, calculateIQFull, getIQLabel, getPercentile, getCategoryResults, type AnswerRecord } from "@/lib/iq-calculator";
 import { fetchAccess, startCheckout, type Plan } from "@/lib/stripe";
 import { recordHistory } from "@/lib/stored-result";
-import { detectCountryCode, getCountryByCode, type CountryEntry } from "@/lib/leaderboard-data";
+import { detectCountryCode } from "@/lib/leaderboard-data";
+import { countryName, flag, MIN_TESTS_FOR_RANK } from "@/lib/countries";
 import { supabase } from "@/lib/supabase";
 import NavLogo from "@/app/components/NavLogo";
 
@@ -39,10 +40,12 @@ function LockedIQ({ target }: { target: number }) {
       }}>{digits[0]}</span>
       {digits.slice(1).map((_, i) => (
         <span key={i} aria-hidden="true" style={{
-          display:"inline-block", userSelect:"none",
-          color:"transparent", WebkitTextFillColor:"transparent", background:"none",
-          textShadow:"0 0 28px rgba(124,140,255,0.95)",
-        }}>0</span>
+          display:"inline-block", width:"0.62em", height:"0.72em", margin:"0 0.02em",
+          borderRadius:"0.22em", verticalAlign:"baseline",
+          background:"radial-gradient(ellipse at 50% 50%, rgba(124,140,255,0.85) 0%, rgba(91,79,255,0.45) 45%, rgba(91,79,255,0) 75%)",
+          boxShadow:"0 0 0.35em rgba(91,79,255,0.45)",
+          filter:"blur(5px)", animation:"lockedPulse 2.4s ease-in-out infinite", animationDelay:`${i*0.3}s`,
+        }} />
       ))}
     </span>
   );
@@ -135,10 +138,19 @@ function FakeRadarChart() {
 
 /* ── Leaderboard popup ───────────────────────────────────────────────────── */
 function LeaderboardPopup({ iq, onClose }: { iq: number; onClose: () => void }) {
-  const [country, setCountry] = useState<CountryEntry | null>(null);
+  const [code, setCode] = useState("");
+  const [stat, setStat] = useState<{ avg: number; count: number } | null | "none">(null);
   useEffect(() => {
-    const code = detectCountryCode();
-    if (code) setCountry(getCountryByCode(code) ?? null);
+    let c = "";
+    try { c = localStorage.getItem("user_country_code") || ""; } catch { /* ignore */ }
+    if (!c) c = detectCountryCode();
+    setCode(c);
+    if (!c) { setStat("none"); return; }
+    supabase.from("scores").select("score").eq("country", c).limit(5000).then(({ data, error }) => {
+      if (error || !data || data.length < MIN_TESTS_FOR_RANK) { setStat("none"); return; }
+      const sum = data.reduce((a, r) => a + (r as { score: number }).score, 0);
+      setStat({ avg: Math.round(sum / data.length), count: data.length });
+    });
   }, []);
   const blue  = "#5B4FFF";
   const blue2 = "rgba(91,79,255,0.16)";
@@ -147,30 +159,32 @@ function LeaderboardPopup({ iq, onClose }: { iq: number; onClose: () => void }) 
     <div style={{ position:"fixed",inset:0,zIndex:50,background:"rgba(5,10,20,0.82)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20 }}>
       <div className="animate-fade-up" style={{ maxWidth:380,width:"100%",background:"#080E1A",border:`1px solid ${blue2}`,borderRadius:10,padding:"28px 24px",textAlign:"center",boxShadow:"0 0 60px rgba(91,79,255,0.18)" }}>
         <p style={{ fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:dim,marginBottom:10 }}>Country Comparison</p>
-        {country ? (
+        {code && (
+          <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:18 }}>
+            <span style={{ fontSize:32 }}>{flag(code)}</span>
+            <p style={{ fontSize:16,fontWeight:600,color:"#E8E8F0" }}>{countryName(code)}</p>
+          </div>
+        )}
+        {stat && stat !== "none" ? (
           <>
-            <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:18 }}>
-              <span style={{ fontSize:32 }}>{country.flag}</span>
-              <div style={{ textAlign:"left" }}>
-                <p style={{ fontSize:16,fontWeight:600,color:"#E8E8F0" }}>{country.name}</p>
-              </div>
-            </div>
             <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20 }}>
               <div style={{ background:"rgba(91,79,255,0.07)",border:`1px solid ${blue2}`,borderRadius:6,padding:"12px 8px" }}>
                 <p style={{ fontSize:9,color:dim,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4 }}>Country avg</p>
-                <p style={{ fontSize:22,fontWeight:300,color:blue }}>{country.avgIQ}</p>
+                <p style={{ fontSize:22,fontWeight:300,color:blue }}>{stat.avg}</p>
               </div>
               <div style={{ background:"rgba(91,79,255,0.07)",border:`1px solid ${blue2}`,borderRadius:6,padding:"12px 8px" }}>
                 <p style={{ fontSize:9,color:dim,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4 }}>Your score</p>
-                <p style={{ fontSize:22,fontWeight:300,color:iq>=country.avgIQ?"#00D87A":"#FF9F1C" }}>{iq}</p>
+                <p style={{ fontSize:22,fontWeight:300,color:iq>=stat.avg?"#00D87A":"#FF9F1C" }}>{iq}</p>
               </div>
             </div>
             <p style={{ fontSize:12,color:dim,marginBottom:20,lineHeight:1.6 }}>
-              {iq>country.avgIQ ? `You scored ${iq-country.avgIQ} pts above your country's average — top performance!` : iq===country.avgIQ ? "You matched your country's average exactly." : `You're ${country.avgIQ-iq} pts below your country's average — keep practicing!`}
+              {iq>stat.avg ? `You scored ${iq-stat.avg} pts above the average of ${stat.count.toLocaleString()} test-takers from your country.` : iq===stat.avg ? "You matched your country's average exactly." : `You're ${stat.avg-iq} pts below your country's average on RealIQTest.`}
             </p>
           </>
         ) : (
-          <p style={{ fontSize:13,color:dim,marginBottom:20 }}>See how your score compares to 50+ countries worldwide.</p>
+          <p style={{ fontSize:13,color:dim,marginBottom:20,lineHeight:1.6 }}>
+            {stat === null ? "Loading your country's average…" : "Not enough tests from your country yet. Your score helps build its average."}
+          </p>
         )}
         <button onClick={onClose} className="btn btn-primary" style={{ width:"100%" }}>Continue to my results →</button>
       </div>
@@ -502,7 +516,7 @@ export default function ResultsPage() {
     localStorage.setItem("tests_today", String(count));
     setTestsToday(count);
     // Save to Supabase leaderboard (fire-and-forget, non-blocking)
-    const country = localStorage.getItem("user_country") || "";
+    const country = localStorage.getItem("user_country_code") || "";
     fetch("/api/save-score", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -557,6 +571,7 @@ export default function ResultsPage() {
           0%, 100% { opacity: 0.6; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.15); }
         }
+        @keyframes lockedPulse { 0%,100% { opacity:0.65; transform:scale(0.96); } 50% { opacity:1; transform:scale(1.04); } }
         @keyframes topPctIn {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }

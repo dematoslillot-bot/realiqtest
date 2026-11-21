@@ -660,9 +660,10 @@ const PILLARS = [
 ];
 
 const STEPS = [
-  { n: "01", title: "Answer 30 questions",             desc: "5 questions across each of the 6 cognitive dimensions. Visual patterns, rotations, series and sequences." },
-  { n: "02", title: "Algorithm scores your responses", desc: "Our model weights accuracy, speed and category performance against 2.4 million data points." },
-  { n: "03", title: "Receive your IQ score instantly", desc: "Free report with your overall IQ. Unlock the full premium report for €1.99." },
+  { n: "01", title: "Take the test", desc: "30 questions across 6 cognitive areas. About 15 minutes, no sign-up.", tag: "Free" },
+  { n: "02", title: "See your IQ level", desc: "Right away you see your level (for example High Average) and the first digit of your score.", tag: "Free" },
+  { n: "03", title: "Unlock your full result", desc: "Your exact IQ, percentile, strongest and weakest areas, career matches and a PDF certificate.", tag: "€1.99 once" },
+  { n: "04", title: "Train and track progress", desc: "A daily brain challenge with streaks, a monthly re-test and your IQ history chart.", tag: "Premium" },
 ];
 
 const FEATURES = [
@@ -678,9 +679,12 @@ const FEATURES = [
 
 const FREE_FEATURES    = ["Full 30-question test", "Your IQ level", "First digit of your score"];
 const PREMIUM_FEATURES = [
-  "Full 30-question test", "Exact IQ score", "Population percentile",
-  "Radar chart", "Category breakdown", "Career matches",
-  "Improvement tips", "Famous comparisons", "PDF certificate",
+  "Exact IQ score and percentile", "Radar chart of your 6 areas", "Strongest and weakest areas",
+  "Improvement tips", "Career matches", "PDF certificate",
+];
+const PRO_FEATURES = [
+  "Everything in the full report", "Daily brain challenge with streaks",
+  "Monthly re-test", "Your IQ history chart", "Cancel anytime",
 ];
 
 /* ── Ripple helper ─────────────────────────────────────────────────────── */
@@ -900,7 +904,6 @@ function RadarChart() {
 export default function Home() {
   const router = useRouter();
   const navRef = useRef<HTMLElement>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const nav = navRef.current;
@@ -941,7 +944,7 @@ export default function Home() {
     "@type": "WebSite",
     "name": "RealIQTest",
     "url": "https://realiqtest.co",
-    "description": "Free IQ test with 30 visual questions across 6 cognitive dimensions. Get your IQ score instantly.",
+    "description": "Free IQ test with 30 questions across 6 cognitive areas. See your IQ level instantly; the full report is optional.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": "https://realiqtest.co/test",
@@ -954,106 +957,50 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
 
       {/* ── Nav ── */}
-      <nav ref={navRef} style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "16px 24px",
-        background: "rgba(3,5,15,0.88)",
-        backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid transparent",
-        transition: "border-color 0.3s, background 0.3s, box-shadow 0.3s",
-      }}>
-        <button onClick={() => router.push("/")} style={{
-          background: "none", border: "none", cursor: "pointer", padding: 0,
-          fontSize: "17px", fontWeight: 600, color: "#D6E4FF",
-          letterSpacing: "-0.02em", fontFamily: "inherit",
-          display: "flex", alignItems: "center",
-        }}>
-          <BrainLogo />
-          Real<span style={{ color: blue, textShadow: `0 0 18px rgba(0,85,255,0.8)` }}>IQ</span>Test
-        </button>
-
-        <ul className="nav-links" style={{ gap: "32px", listStyle: "none", margin: 0, padding: 0 }}>
-          {[
-            { label: "The Test",     id: "pillars"      },
-            { label: "How It Works", id: "how-it-works" },
-            { label: "Leaderboard",  href: "/leaderboard" },
-            { label: "Pricing",      id: "pricing"      },
-          ].map(l => (
-            <li key={l.label}
-              onClick={() => {
-                if ("href" in l && l.href) router.push(l.href);
-                else if ("id" in l && l.id) document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" });
-              }}
-              style={{ fontSize: "13px", color: dim, cursor: "pointer", transition: "color 0.15s" }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#D6E4FF")}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = dim)}>
-              {"href" in l && l.href === "/leaderboard"
-                ? <span style={{ color: "#5599FF" }}>{l.label}</span>
-                : l.label}
-            </li>
-          ))}
-        </ul>
-
-        {/* Hamburger — mobile only */}
-        <button
-          className="hamburger"
-          aria-label="Menu"
-          onClick={() => setMenuOpen(o => !o)}
-          style={{
-            display: "none", background: "none", border: "none",
-            cursor: "pointer", padding: 6, color: "#D6E4FF",
-          }}
-        >
-          {menuOpen ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <line x1="3" y1="6"  x2="21" y2="6"/>
-              <line x1="3" y1="12" x2="21" y2="12"/>
-              <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-          )}
-        </button>
-
-        <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">Start Free</button>
-      </nav>
-
-      {/* Mobile dropdown menu */}
-      {menuOpen && (
-        <div style={{
-          position: "fixed", top: 57, left: 0, right: 0, zIndex: 49,
-          background: "rgba(3,5,15,0.97)", backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(0,85,255,0.18)",
-          padding: "12px 0 16px",
-          display: "flex", flexDirection: "column",
-        }}>
-          {[
-            { label: "The Test",     action: () => { document.getElementById("pillars")?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
-            { label: "How It Works", action: () => { document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
-            { label: "Leaderboard",  action: () => { router.push("/leaderboard"); setMenuOpen(false); }, highlight: true },
-            { label: "Pricing",      action: () => { document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
-            { label: "Start Free →", action: () => { router.push("/test"); setMenuOpen(false); }, cta: true },
-          ].map(item => (
-            <button key={item.label} onClick={item.action} style={{
-              background: item.cta ? "linear-gradient(135deg,#0055FF,#06B6D4)" : "none",
-              border: "none", cursor: "pointer", textAlign: "left",
-              padding: "13px 24px",
-              fontSize: item.cta ? "14px" : "15px",
-              fontWeight: item.cta ? 700 : 400,
-              color: item.cta ? "#fff" : item.highlight ? "#5599FF" : "#D6E4FF",
-              margin: item.cta ? "8px 16px 0" : 0,
-              borderRadius: item.cta ? 8 : 0,
-              fontFamily: "inherit",
-              borderTop: item.cta ? "none" : "1px solid rgba(0,85,255,0.08)",
-            }}>
-              {item.label}
+      <style>{`
+        .rq-nav{position:fixed;top:0;left:0;right:0;z-index:50;padding-top:env(safe-area-inset-top,0px);
+          background:linear-gradient(180deg,rgba(3,5,15,0.85),rgba(3,5,15,0));transition:background .35s, box-shadow .35s}
+        .rq-nav.nav-scrolled{background:rgba(3,5,15,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 10px 40px -20px rgba(0,85,255,0.45)}
+        .rq-nav-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;
+          padding:14px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px))}
+        .rq-nav-line{height:1px;background:linear-gradient(90deg,transparent,rgba(0,170,255,0.0) 10%,rgba(0,170,255,0.55) 50%,rgba(0,170,255,0) 90%,transparent);
+          background-size:200% 100%;animation:rqLine 6s linear infinite;opacity:0;transition:opacity .35s}
+        .rq-nav.nav-scrolled .rq-nav-line{opacity:1}
+        @keyframes rqLine{0%{background-position:100% 0}100%{background-position:-100% 0}}
+        .rq-chip{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:#8AABCC;padding:7px 12px;border:1px solid rgba(0,85,255,0.25);
+          border-radius:999px;background:rgba(5,18,45,0.55)}
+        .rq-dot{width:7px;height:7px;border-radius:50%;background:#00F5D4;box-shadow:0 0 10px #00F5D4;animation:rqDot 1.8s ease-in-out infinite}
+        @keyframes rqDot{0%,100%{opacity:.4;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+        .rq-cta{position:relative;display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:none;cursor:pointer;
+          font:700 13px/1 inherit;color:#fff;background:linear-gradient(135deg,#0055FF,#00AAFF 55%,#00F5D4);background-size:200% 200%;
+          animation:rqGrad 6s ease infinite;box-shadow:0 6px 24px rgba(0,85,255,0.45);transition:transform .15s, box-shadow .15s}
+        .rq-cta:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(0,170,255,0.55)}
+        .rq-cta svg{transition:transform .2s}.rq-cta:hover svg{transform:translateX(3px)}
+        @keyframes rqGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        @media (max-width:560px){.rq-chip{display:none}}
+        @media (prefers-reduced-motion:reduce){.rq-nav-line,.rq-dot,.rq-cta{animation:none}}
+      `}</style>
+      <nav ref={navRef} className="rq-nav">
+        <div className="rq-nav-inner">
+          <button onClick={() => router.push("/")} aria-label="RealIQTest home" style={{
+            background: "none", border: "none", cursor: "pointer", padding: 0,
+            fontSize: "17px", fontWeight: 600, color: "#D6E4FF",
+            letterSpacing: "-0.02em", fontFamily: "inherit",
+            display: "flex", alignItems: "center",
+          }}>
+            <BrainLogo />
+            Real<span style={{ color: blue, textShadow: `0 0 18px rgba(0,85,255,0.8)` }}>IQ</span>Test
+          </button>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <span className="rq-chip"><span className="rq-dot" />30 questions · ~15 min · free</span>
+            <button className="rq-cta" onClick={() => router.push("/test")}>
+              Take the test
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
-          ))}
+          </div>
         </div>
-      )}
+        <div className="rq-nav-line" />
+      </nav>
 
       {/* ── Hero ── */}
       <section style={{
@@ -1084,7 +1031,7 @@ export default function Home() {
             <div className="h1" style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"28px" }}>
               <span style={{ width:28, height:1, background:`linear-gradient(90deg, transparent, ${cyan})` }} />
               <span style={{ fontSize:10, letterSpacing:"0.26em", textTransform:"uppercase", fontWeight:600, color:cyan, textShadow:`0 0 18px rgba(0,170,255,0.9)` }}>
-                Scientifically calibrated
+                Free IQ test · 6 cognitive areas
               </span>
               <span style={{ width:28, height:1, background:`linear-gradient(90deg, ${cyan}, transparent)` }} />
             </div>
@@ -1155,19 +1102,31 @@ export default function Home() {
             </h1>
 
             <p className="h3 hero-sub">
-              30 visual questions across 6 cognitive dimensions — matrix patterns,
-              mental rotation, number series and memory sequences. Your actual score.
+              30 questions across 6 cognitive areas: matrix patterns, verbal logic,
+              mental rotation, number series, memory and speed. See your IQ level instantly.
             </p>
 
             <div className="h4 hero-ctas">
               <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">
                 Take the Test — Free
               </button>
-              <button className="btn btn-outline">View Sample Report</button>
+              <button className="btn btn-outline" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}>How it works</button>
             </div>
 
-            <p className="h4" style={{ marginTop:32, fontSize:10, letterSpacing:"0.10em", color:"#6A88AA", textShadow:"0 1px 4px rgba(0,0,0,0.9)" }}>
-              30 questions · 6 dimensions · ~15 min · No signup required
+            <style>{`
+              .rq-dims{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:30px}
+              .rq-dim{font-size:11px;letter-spacing:.06em;color:#8AABCC;padding:6px 12px;border-radius:999px;border:1px solid rgba(0,85,255,0.22);
+                background:rgba(5,18,45,0.5);animation:rqDim 7.2s ease-in-out infinite}
+              @keyframes rqDim{0%,12%{color:#fff;border-color:#00F5D4;box-shadow:0 0 18px rgba(0,245,212,0.35)}22%,100%{color:#8AABCC;border-color:rgba(0,85,255,0.22);box-shadow:none}}
+              @media (prefers-reduced-motion:reduce){.rq-dim{animation:none}}
+            `}</style>
+            <div className="h4 rq-dims" aria-label="The six areas measured">
+              {["Logic","Verbal","Spatial","Numerical","Memory","Speed"].map((d,i)=>(
+                <span key={d} className="rq-dim" style={{ animationDelay:`${i*1.2}s` }}>{d}</span>
+              ))}
+            </div>
+            <p className="h4" style={{ marginTop:18, fontSize:10, letterSpacing:"0.10em", color:"#6A88AA", textShadow:"0 1px 4px rgba(0,0,0,0.9)" }}>
+              No sign-up · Free IQ level · Exact score and full report optional
             </p>
           </div>
         </div>
@@ -1191,7 +1150,7 @@ export default function Home() {
             { value:30,   suffix:"",     label:"Questions" },
             { value:6,    suffix:"",     label:"Cognitive dimensions" },
             { value:15,   suffix:" min", label:"Average duration" },
-            { value:1.99, suffix:"€",    decimals:2, label:"Full report" },
+            { value:1.99, suffix:"€",    decimals:2, label:"Exact score & full report" },
           ].map((s, i) => (
             /* stat cells: alternate left/right entrance, 80ms stagger */
             <div key={i} className={`stat-cell ${i%2===0?"reveal-left":"reveal-right"}`}
@@ -1262,53 +1221,41 @@ export default function Home() {
 
       {/* ── How It Works ── */}
       <section className="section" id="how-it-works" style={{ background:"#050810" }}>
+        <style>{`
+          .rq-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;position:relative;margin-top:8px}
+          .rq-steps::before{content:"";position:absolute;left:6%;right:6%;top:34px;height:2px;
+            background:linear-gradient(90deg,#0055FF,#00AAFF,#00F5D4,#0055FF);background-size:300% 100%;animation:rqFlow 8s linear infinite;opacity:.55}
+          @keyframes rqFlow{0%{background-position:0 0}100%{background-position:300% 0}}
+          .rq-step{position:relative;background:rgba(5,18,45,0.7);border:1px solid rgba(0,85,255,0.18);border-radius:16px;padding:22px 18px;
+            transition:transform .2s,border-color .2s;min-width:0}
+          .rq-step:hover{transform:translateY(-4px);border-color:rgba(0,170,255,0.5)}
+          .rq-num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 12px/1 monospace;color:#fff;
+            background:linear-gradient(135deg,#0055FF,#00AAFF);box-shadow:0 0 0 6px #050810,0 0 22px rgba(0,170,255,0.6);margin-bottom:18px;position:relative;z-index:1}
+          .rq-tag{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border-radius:999px;margin-top:14px;
+            color:#00F5D4;border:1px solid rgba(0,245,212,0.35)}
+          @media (max-width:860px){.rq-steps{grid-template-columns:1fr 1fr}.rq-steps::before{display:none}}
+          @media (max-width:520px){.rq-steps{grid-template-columns:1fr}}
+          @media (prefers-reduced-motion:reduce){.rq-steps::before{animation:none}}
+        `}</style>
         <div className="container">
-          <div className="how-grid">
-            <div className="reveal">
-              <p className="label">How it works</p>
-              <h2 className="sec-title" style={{ marginBottom:48 }}>Simple process,<br />deep insights</h2>
-              <div style={{ borderTop:`1px solid ${blue2}` }}>
-                {STEPS.map((s, i) => (
-                  <div key={i} style={{ display:"flex", gap:24, padding:"28px 0", borderBottom:`1px solid ${blue2}` }}>
-                    <span style={{ fontFamily:"monospace", fontSize:22, color:i%2===0?blue:cyan, opacity:0.25, minWidth:44, lineHeight:1 }}>{s.n}</span>
-                    <div>
-                      <div style={{ fontSize:14, fontWeight:500, marginBottom:6 }}>{s.title}</div>
-                      <div style={{ fontSize:13, color:dim, lineHeight:1.65 }}>{s.desc}</div>
-                    </div>
-                  </div>
-                ))}
+          <div className="reveal sec-hd">
+            <p className="label">How it works</p>
+            <h2 className="sec-title">From first question<br />to full profile</h2>
+            <p className="sec-sub">Start free. Pay only if you want the details.</p>
+          </div>
+          <div className="rq-steps">
+            {STEPS.map((s, i) => (
+              <div key={s.n} className="rq-step reveal" style={{ transitionDelay:`${i*90}ms` }}>
+                <div className="rq-num">{s.n}</div>
+                <div style={{ fontSize:16, fontWeight:600, marginBottom:8, color:"#E8F0FF" }}>{s.title}</div>
+                <div style={{ fontSize:13, color:dim, lineHeight:1.65 }}>{s.desc}</div>
+                <span className="rq-tag">{s.tag}</span>
               </div>
-            </div>
-
-            <div className="card reveal" style={{ transitionDelay:"100ms", padding:28, boxShadow:`0 0 40px rgba(0,85,255,0.08), inset 0 1px 0 rgba(0,170,255,0.06)` }}>
-              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim, marginBottom:24 }}>Sample result</p>
-              <div style={{ fontSize:88, fontWeight:300, color:blue, lineHeight:1, marginBottom:8, letterSpacing:"-0.03em", textShadow:`0 0 50px rgba(0,85,255,0.45), 0 0 100px rgba(0,170,255,0.15)`, animation:"neon-glow 3s ease-in-out infinite" }}>127</div>
-              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim, marginBottom:12 }}>Intelligence Quotient</p>
-              <div style={{ display:"inline-block", fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", padding:"6px 16px", marginBottom:24, border:`1px solid ${blue}`, color:cyan, boxShadow:`0 0 14px rgba(0,85,255,0.25)` }}>Superior Intelligence</div>
-              <div style={{ height:3, background:blue2, position:"relative", overflow:"hidden", marginBottom:4, borderRadius:2 }}>
-                <div style={{ position:"absolute", left:0, top:0, height:"100%", width:"72%", borderRadius:2 }} className="progress-neon" />
-              </div>
-              <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, color:dim, marginBottom:24 }}>
-                <span>70</span><span>100</span><span>145+</span>
-              </div>
-              {[["Logic",88],["Verbal",75],["Spatial",70]].map(([n,w]) => (
-                <div key={String(n)} style={{ display:"flex", alignItems:"center", gap:12, fontSize:12, marginBottom:10 }}>
-                  <span style={{ width:64, textAlign:"right", color:dim, flexShrink:0 }}>{n}</span>
-                  <div style={{ flex:1, height:2, background:blue2, position:"relative", borderRadius:1 }}>
-                    <div className="progress-neon" style={{ position:"absolute", left:0, top:0, height:"100%", width:`${w}%`, borderRadius:1 }} />
-                  </div>
-                </div>
-              ))}
-              {[["Numerical",82],["Memory",65]].map(([n,w]) => (
-                <div key={String(n)} style={{ display:"flex", alignItems:"center", gap:12, fontSize:12, marginBottom:10, filter:"blur(4px)", opacity:0.15, userSelect:"none" }}>
-                  <span style={{ width:64, textAlign:"right", color:dim, flexShrink:0 }}>{n}</span>
-                  <div style={{ flex:1, height:2, background:blue2, position:"relative", borderRadius:1 }}>
-                    <div className="progress-neon" style={{ position:"absolute", left:0, top:0, height:"100%", width:`${w}%`, borderRadius:1 }} />
-                  </div>
-                </div>
-              ))}
-              <p style={{ fontSize:12, marginTop:16, color:"#6A88AA" }}>Full breakdown unlocked with Premium Report</p>
-            </div>
+            ))}
+          </div>
+          <div className="reveal" style={{ marginTop:36, display:"flex", gap:12, flexWrap:"wrap" }}>
+            <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">Start the free test</button>
+            <button onClick={() => router.push("/leaderboard")} className="btn btn-outline">See the country leaderboard</button>
           </div>
         </div>
       </section>
@@ -1373,7 +1320,7 @@ export default function Home() {
           <div className="reveal sec-hd">
             <p className="label">Premium Report</p>
             <h2 className="sec-title">Everything in the full report</h2>
-            <p className="sec-sub">One-time payment · €1.99 · Instant access</p>
+            <p className="sec-sub">€1.99 one-time · or included in Premium · instant access</p>
           </div>
           <div className="features-grid">
             {FEATURES.map((f, i) => (
@@ -1397,44 +1344,43 @@ export default function Home() {
 
       {/* ── Pricing ── */}
       <section className="section" id="pricing" style={{ background:"#050810" }}>
+        <style>{`
+          .rq-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+          .rq-plan{display:flex;flex-direction:column;gap:14px;padding:28px 24px;border-radius:18px;background:rgba(5,18,45,0.7);border:1px solid rgba(0,85,255,0.18);min-width:0}
+          .rq-plan ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;font-size:13px}
+          .rq-plan li{display:flex;gap:10px}
+          .rq-plan .btn{margin-top:auto;width:100%}
+          .rq-plan.pro{border-color:rgba(0,245,212,0.55);box-shadow:0 0 50px rgba(0,170,255,0.12)}
+          @media (max-width:900px){.rq-plans{grid-template-columns:1fr}}
+        `}</style>
         <div className="container">
           <div className="reveal sec-hd">
             <p className="label">Pricing</p>
-            <h2 className="sec-title">Free to start,<br />powerful when unlocked</h2>
+            <h2 className="sec-title">Free to start,<br />simple to unlock</h2>
+            <p className="sec-sub">No hidden subscriptions. Premium is clearly monthly and cancels in one click.</p>
           </div>
-          <div className="pricing-grid">
-            <div className="card reveal" style={{ transitionDelay:"60ms", padding:32 }}>
-              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim, marginBottom:16 }}>Basic</p>
-              <div style={{ fontSize:48, fontWeight:300, letterSpacing:"-0.03em", marginBottom:8 }}>Free</div>
-              <p style={{ fontSize:13, color:dim, lineHeight:1.65, marginBottom:28 }}>Take the full test and receive your overall IQ score instantly.</p>
-              <ul style={{ listStyle:"none", padding:0, margin:"0 0 28px", display:"flex", flexDirection:"column", gap:10 }}>
-                {FREE_FEATURES.map(f => (
-                  <li key={f} style={{ display:"flex", gap:12, fontSize:13 }}>
-                    <span style={{ color:blue }}>+</span><span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-outline" style={{ width:"100%" }}>Start Free</button>
+          <div className="rq-plans">
+            <div className="rq-plan reveal">
+              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim }}>Free</p>
+              <div style={{ fontSize:44, fontWeight:300, letterSpacing:"-0.03em" }}>€0</div>
+              <p style={{ fontSize:13, color:dim, lineHeight:1.6 }}>Take the whole test and see where you stand.</p>
+              <ul>{FREE_FEATURES.map(f => <li key={f}><span style={{ color:blue }}>+</span><span>{f}</span></li>)}</ul>
+              <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-outline">Start free</button>
             </div>
-
-            <div className="card reveal" style={{ transitionDelay:"120ms", padding:32, borderLeft:`3px solid ${blue}`, boxShadow:`0 0 40px rgba(0,85,255,0.14), 0 0 80px rgba(0,170,255,0.05)` }}>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-                <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim }}>Premium Report</p>
-                <span style={{ fontSize:10, letterSpacing:"0.10em", textTransform:"uppercase", padding:"4px 10px", background:"rgba(0,85,255,0.12)", color:cyan, border:`1px solid rgba(0,170,255,0.30)`, boxShadow:"0 0 14px rgba(0,170,255,0.15)" }}>Best value</span>
-              </div>
-              <div style={{ display:"flex", alignItems:"baseline", gap:12, marginBottom:8 }}>
-                <span style={{ fontSize:14, textDecoration:"line-through", color:dim }}>€3.99</span>
-                <span style={{ fontSize:48, fontWeight:300, letterSpacing:"-0.03em" }}>€1.99</span>
-              </div>
-              <p style={{ fontSize:13, color:dim, lineHeight:1.65, marginBottom:28 }}>Complete cognitive profile with everything you need.</p>
-              <ul style={{ listStyle:"none", padding:0, margin:"0 0 28px", display:"flex", flexDirection:"column", gap:10 }}>
-                {PREMIUM_FEATURES.map(f => (
-                  <li key={f} style={{ display:"flex", gap:12, fontSize:13 }}>
-                    <span style={{ color:cyan }}>+</span><span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary" style={{ width:"100%" }}>Get Premium Report</button>
+            <div className="rq-plan reveal" style={{ transitionDelay:"80ms" }}>
+              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim }}>Full report · one-time</p>
+              <div style={{ fontSize:44, fontWeight:300, letterSpacing:"-0.03em" }}>€1.99</div>
+              <p style={{ fontSize:13, color:dim, lineHeight:1.6 }}>Pay once after the test to see your complete result.</p>
+              <ul>{PREMIUM_FEATURES.map(f => <li key={f}><span style={{ color:cyan }}>+</span><span>{f}</span></li>)}</ul>
+              <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">Take the test first</button>
+            </div>
+            <div className="rq-plan pro reveal" style={{ transitionDelay:"160ms" }}>
+              <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:"#00F5D4" }}>Premium · monthly</p>
+              <div style={{ fontSize:44, fontWeight:300, letterSpacing:"-0.03em" }}>€4.99<span style={{ fontSize:14, color:dim }}> / month</span></div>
+              <p style={{ fontSize:13, color:dim, lineHeight:1.6 }}>For people who want to train and watch their score change.</p>
+              <ul>{PRO_FEATURES.map(f => <li key={f}><span style={{ color:"#00F5D4" }}>+</span><span>{f}</span></li>)}</ul>
+              <button onClick={() => router.push("/premium")} className="btn btn-primary">See Premium</button>
+              <p style={{ fontSize:11, color:dim }}>Renews monthly until you cancel. Cancel anytime in one click.</p>
             </div>
           </div>
         </div>
@@ -1448,7 +1394,7 @@ export default function Home() {
               Ready to discover<br />your true IQ?
             </h2>
             <p style={{ fontSize:14, color:dim, lineHeight:1.7, marginBottom:32, maxWidth:360 }}>
-              No registration required. Results in ~15 minutes. Based on standardised cognitive assessment formats.
+              No registration required. About 15 minutes. Your IQ level is free.
             </p>
             <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">Begin the Test — Free</button>
           </div>
@@ -1465,7 +1411,7 @@ export default function Home() {
                 Real<span style={{ color:blue, textShadow:`0 0 14px rgba(0,85,255,0.7)` }}>IQ</span>Test
               </span>
               <p style={{ fontSize:12, color:dim, lineHeight:1.7, maxWidth:180 }}>
-                Scientifically calibrated cognitive assessment. Free IQ test with premium report.
+                Free online IQ test with an optional full report and Premium brain training.
               </p>
             </div>
             <div>
@@ -1476,6 +1422,7 @@ export default function Home() {
                 { href:"/iq-score-ranges",       label:"IQ Score Ranges" },
                 { href:"/how-to-improve-iq",     label:"How to Improve IQ" },
                 { href:"/sample-questions",      label:"Sample Questions" },
+                { href:"/leaderboard",           label:"Country Leaderboard" },
               ].map(l => (
                 <Link key={l.href} href={l.href} style={{ display:"block", fontSize:13, color:dim, textDecoration:"none", marginBottom:6 }}>{l.label}</Link>
               ))}

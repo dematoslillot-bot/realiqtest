@@ -2,220 +2,136 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { supabase, type ScoreRow } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import NavLogo from "@/app/components/NavLogo";
+import { aggregateCountries, flag, MIN_TESTS_FOR_RANK, type CountryStat } from "@/lib/countries";
 
-const BLUE = "#0055FF"; const CYAN = "#06B6D4";
-const DIM = "#8AABCC"; const BG = "#050A14";
-const BORD = "rgba(0,85,255,0.16)"; const TEXT = "#E8F0FF";
+const BLUE = "#5B4FFF", CYAN = "#00F5D4", DIM = "#8AABCC", BG = "#03050F";
+const BORD = "rgba(91,79,255,0.18)", TEXT = "#E8F0FF", CARD = "rgba(5,18,45,0.75)", GOLD = "#F5C542";
 
-/* Country code → flag emoji */
-function flag(code: string) {
-  if (!code || code.length !== 2) return "🌍";
-  return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join("");
+async function loadAllScores(): Promise<{ country: string; score: number }[]> {
+  const out: { country: string; score: number }[] = [];
+  const page = 1000;
+  for (let i = 0; i < 30; i++) {
+    const { data, error } = await supabase.from("scores").select("country,score").range(i * page, i * page + page - 1);
+    if (error) throw error;
+    out.push(...(data ?? []));
+    if (!data || data.length < page) break;
+  }
+  return out;
 }
 
-function ScoreBar({ score }: { score: number }) {
-  const pct = Math.max(5, Math.min(98, ((score - 70) / 80) * 100));
+function Bar({ avg }: { avg: number }) {
+  const pct = Math.max(4, Math.min(100, ((avg - 70) / 75) * 100));
   return (
-    <div style={{ height: 4, background: "rgba(0,85,255,0.12)", borderRadius: 2, overflow: "hidden", flex: 1 }}>
-      <div style={{
-        height: "100%", width: `${pct}%`,
-        background: `linear-gradient(90deg, ${BLUE}, ${CYAN})`,
-        borderRadius: 2, transition: "width 1s ease",
-      }} />
-    </div>
-  );
-}
-
-function Skeleton() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} style={{
-          height: 52, borderRadius: 10,
-          background: "rgba(0,85,255,0.05)",
-          border: `1px solid ${BORD}`,
-          animation: "pulse 1.6s ease-in-out infinite",
-          animationDelay: `${i * 80}ms`,
-        }} />
-      ))}
-      <style>{`@keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }`}</style>
+    <div style={{ height: 6, background: "rgba(91,79,255,0.12)", borderRadius: 3, overflow: "hidden", flex: 1, minWidth: 40 }}>
+      <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${BLUE}, ${CYAN})`, borderRadius: 3, transition: "width 1s ease" }} />
     </div>
   );
 }
 
 export default function LeaderboardPage() {
   const router = useRouter();
-  const [rows,    setRows]    = useState<ScoreRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(false);
-  const [total,   setTotal]   = useState<number | null>(null);
+  const [stats, setStats] = useState<CountryStat[] | null>(null);
+  const [total, setTotal] = useState(0);
+  const [error, setError] = useState(false);
+  const [mine, setMine] = useState("");
 
   useEffect(() => {
-    async function load() {
-      try {
-        // Top 50 scores + total count in parallel
-        const [topRes, countRes] = await Promise.all([
-          supabase
-            .from("scores")
-            .select("*")
-            .order("score", { ascending: false })
-            .limit(50),
-          supabase
-            .from("scores")
-            .select("id", { count: "exact", head: true }),
-        ]);
-        if (topRes.error) throw topRes.error;
-        setRows(topRes.data ?? []);
-        setTotal(countRes.count ?? null);
-      } catch {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    try { setMine(localStorage.getItem("user_country_code") || ""); } catch { /* ignore */ }
+    loadAllScores()
+      .then(rows => { const s = aggregateCountries(rows); setStats(s); setTotal(s.reduce((a, c) => a + c.count, 0)); })
+      .catch(() => setError(true));
   }, []);
 
-  return (
-    <div style={{ minHeight: "100dvh", background: BG, color: TEXT, fontFamily: "'Inter',system-ui,sans-serif" }}>
-      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}`}</style>
+  const ranked = (stats ?? []).filter(s => s.count >= MIN_TESTS_FOR_RANK);
+  const pending = (stats ?? []).filter(s => s.count < MIN_TESTS_FOR_RANK);
+  const myRank = ranked.findIndex(s => s.code === mine);
 
-      {/* Nav */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 10,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "14px 24px", borderBottom: `1px solid ${BORD}`,
-        background: "rgba(5,10,20,0.95)", backdropFilter: "blur(18px)",
-      }}>
+  return (
+    <div style={{ minHeight: "100dvh", background: BG, color: TEXT }}>
+      <style>{`@keyframes lbIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}} @keyframes lbPulse{0%,100%{opacity:.45}50%{opacity:1}}`}</style>
+      <nav style={{ position:"sticky",top:0,zIndex:10,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 24px",borderBottom:`1px solid ${BORD}`,background:"rgba(3,5,15,0.92)",backdropFilter:"blur(18px)" }}>
         <NavLogo />
-        <span style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: DIM }}>Global IQ Rankings</span>
-        <button onClick={() => router.push("/test")} style={{
-          fontSize: 11, padding: "8px 18px", background: BLUE, color: "#fff",
-          border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600,
-          letterSpacing: "0.08em", textTransform: "uppercase",
-          boxShadow: "0 0 14px rgba(0,85,255,0.4)",
-        }}>Take Test</button>
+        <button className="btn btn-primary" onClick={() => router.push("/test")}>Take the test</button>
       </nav>
 
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "60px 20px 80px" }}>
-
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 48, animation: "fadeUp 0.5s ease forwards" }}>
-          <p style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: CYAN, marginBottom: 10 }}>Intelligence Rankings</p>
-          <h1 style={{ fontSize: "clamp(28px,6vw,42px)", fontWeight: 300, letterSpacing: "-0.03em", marginBottom: 16, lineHeight: 1.1, color: TEXT }}>
-            Global IQ <span style={{ color: BLUE }}>Leaderboard</span>
+      <main style={{ maxWidth: 760, margin: "0 auto", padding: "48px 20px 80px" }}>
+        <header style={{ textAlign: "center", marginBottom: 36 }}>
+          <p style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: CYAN, marginBottom: 10 }}>Country leaderboard</p>
+          <h1 style={{ fontSize: "clamp(28px,6vw,42px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 14 }}>
+            Average IQ by country
           </h1>
-          <p style={{ fontSize: 14, color: DIM, lineHeight: 1.7, maxWidth: 480, margin: "0 auto" }}>
-            Real scores from real test-takers worldwide.{" "}
-            {total !== null && (
-              <span style={{ color: CYAN, fontWeight: 600 }}>{total.toLocaleString()} scores submitted.</span>
-            )}
+          <p style={{ fontSize: 14, color: DIM, lineHeight: 1.7, maxWidth: 520, margin: "0 auto" }}>
+            Each country&apos;s average from people who took RealIQTest and chose that country.
+            {stats && <> Based on <strong style={{ color: TEXT }}>{total.toLocaleString()}</strong> tests.</>}
           </p>
-        </div>
+        </header>
 
-        {/* Error state */}
+        {mine && myRank >= 0 && (
+          <div style={{ marginBottom: 18, padding: "14px 18px", borderRadius: 12, border: `1px solid ${CYAN}`, background: "rgba(0,245,212,0.06)", fontSize: 14, textAlign: "center" }}>
+            {flag(mine)} <strong>{ranked[myRank].name}</strong> is <strong style={{ color: CYAN }}>#{myRank + 1}</strong> of {ranked.length} with an average of <strong>{ranked[myRank].avg}</strong>.
+          </div>
+        )}
+
         {error && (
-          <div style={{ background: "rgba(255,60,60,0.06)", border: "1px solid rgba(255,60,60,0.25)", borderRadius: 12, padding: "24px", textAlign: "center", marginBottom: 32 }}>
-            <p style={{ color: "#FF8C8C", fontSize: 14 }}>Failed to load leaderboard. Check your connection and try again.</p>
-            <button onClick={() => window.location.reload()} style={{ marginTop: 12, fontSize: 12, padding: "8px 20px", background: "rgba(255,60,60,0.12)", border: "1px solid rgba(255,60,60,0.3)", borderRadius: 6, cursor: "pointer", color: "#FF8C8C" }}>
-              Retry
-            </button>
+          <div style={{ padding: 18, borderRadius: 12, border: "1px solid rgba(251,113,133,0.4)", color: "#FB7185", textAlign: "center", fontSize: 14 }}>
+            The leaderboard could not load. Please refresh the page.
           </div>
         )}
 
-        {/* Loading skeleton */}
-        {loading && <Skeleton />}
-
-        {/* Empty state */}
-        {!loading && !error && rows.length === 0 && (
-          <div style={{ background: "rgba(6,14,40,0.78)", border: `1px solid ${BORD}`, backdropFilter: "blur(20px)", borderRadius: 16, padding: "56px 32px", textAlign: "center" }}>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", margin: "0 auto 24px", background: "rgba(0,85,255,0.08)", border: `1px solid rgba(0,85,255,0.25)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={CYAN} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-              </svg>
-            </div>
-            <h2 style={{ fontSize: 22, fontWeight: 600, color: TEXT, marginBottom: 12, letterSpacing: "-0.02em" }}>Be the first to claim your spot</h2>
-            <p style={{ fontSize: 14, color: DIM, lineHeight: 1.75, maxWidth: 420, margin: "0 auto 32px" }}>
-              Complete the free IQ test and your result will appear here instantly.
-            </p>
-            <button onClick={() => router.push("/test")} style={{
-              fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-              padding: "14px 36px", background: `linear-gradient(135deg,${BLUE},${CYAN})`,
-              color: "#fff", border: "none", borderRadius: 8, cursor: "pointer",
-              boxShadow: "0 0 24px rgba(0,85,255,0.5)",
-            }}>Take the Free IQ Test →</button>
-          </div>
-        )}
-
-        {/* Leaderboard table */}
-        {!loading && !error && rows.length > 0 && (
+        {!stats && !error && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {/* Header row */}
-            <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 60px 80px", gap: 12, padding: "0 16px 8px", borderBottom: `1px solid ${BORD}` }}>
-              {["#", "IQ Score", "Flag", "Date"].map(h => (
-                <span key={h} style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: DIM }}>{h}</span>
-              ))}
-            </div>
-
-            {rows.map((row, i) => {
-              const iqColor = row.score >= 130 ? "#8B5CF6" : row.score >= 120 ? CYAN : row.score >= 110 ? BLUE : DIM;
-              const dateStr = new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-              const isTop3  = i < 3;
-              return (
-                <div key={row.id} style={{
-                  display: "grid", gridTemplateColumns: "40px 1fr 60px 80px",
-                  gap: 12, padding: "14px 16px",
-                  background: isTop3 ? "rgba(0,85,255,0.07)" : "rgba(6,14,40,0.5)",
-                  border: `1px solid ${isTop3 ? "rgba(0,85,255,0.28)" : BORD}`,
-                  borderRadius: 10, alignItems: "center",
-                  animation: `fadeUp 0.4s ease forwards`,
-                  animationDelay: `${Math.min(i * 40, 600)}ms`,
-                  opacity: 0,
-                }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: i === 0 ? "#FFD700" : i === 1 ? "#C0C0C0" : i === 2 ? "#CD7F32" : DIM }}>
-                    {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
-                  </span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                    <span style={{ fontSize: 22, fontWeight: 700, color: iqColor, flexShrink: 0, filter: isTop3 ? `drop-shadow(0 0 6px ${iqColor}80)` : "none" }}>
-                      {row.score}
-                    </span>
-                    <ScoreBar score={row.score} />
-                  </div>
-                  <span style={{ fontSize: 18 }}>{flag(row.country)}</span>
-                  <span style={{ fontSize: 12, color: DIM }}>{dateStr}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Stats strip */}
-        {!loading && rows.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginTop: 32 }}>
-            {[
-              { label: "Top score", value: rows[0]?.score ?? "—" },
-              { label: "Avg score", value: rows.length ? Math.round(rows.reduce((s, r) => s + r.score, 0) / rows.length) : "—" },
-              { label: "Total tests", value: total !== null ? total.toLocaleString() : "—" },
-            ].map(({ label, value }) => (
-              <div key={label} style={{ background: "rgba(0,85,255,0.05)", border: `1px solid ${BORD}`, borderRadius: 10, padding: "16px 12px", textAlign: "center" }}>
-                <p style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: DIM, marginBottom: 6 }}>{label}</p>
-                <p style={{ fontSize: 26, fontWeight: 700, color: CYAN }}>{value}</p>
-              </div>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} style={{ height: 56, borderRadius: 12, background: CARD, border: `1px solid ${BORD}`, animation: "lbPulse 1.6s ease-in-out infinite", animationDelay: `${i * 80}ms` }} />
             ))}
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 48, flexWrap: "wrap" }}>
-          {[{href:"/rankings",l:"Full Rankings"},{href:"/what-is-iq",l:"What is IQ?"},{href:"/faq",l:"FAQ"}].map(({href,l})=>(
-            <Link key={href} href={href} style={{ fontSize: 12, color: DIM, textDecoration: "none" }}>{l}</Link>
-          ))}
+        {stats && ranked.length === 0 && (
+          <div style={{ padding: 24, borderRadius: 12, background: CARD, border: `1px solid ${BORD}`, textAlign: "center", color: DIM, fontSize: 14, lineHeight: 1.7 }}>
+            No country has {MIN_TESTS_FOR_RANK} tests yet. Take the test and pick your country to put it on the board.
+          </div>
+        )}
+
+        {ranked.length > 0 && (
+          <ol style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+            {ranked.map((s, i) => {
+              const me = s.code === mine;
+              return (
+                <li key={s.code} style={{
+                  display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", borderRadius: 12,
+                  background: me ? "rgba(0,245,212,0.07)" : CARD, border: `1px solid ${me ? CYAN : BORD}`,
+                  animation: "lbIn .45s ease both", animationDelay: `${Math.min(i, 15) * 40}ms`,
+                }}>
+                  <span style={{ width: 30, textAlign: "right", fontWeight: 800, fontVariantNumeric: "tabular-nums", color: i === 0 ? GOLD : i < 3 ? CYAN : DIM }}>{i + 1}</span>
+                  <span style={{ fontSize: 24, lineHeight: 1 }} aria-hidden="true">{flag(s.code)}</span>
+                  <div style={{ flex: "0 1 170px", minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}{me && <span style={{ color: CYAN, fontWeight: 500 }}> · you</span>}</div>
+                    <div style={{ fontSize: 11, color: DIM }}>{s.count.toLocaleString()} test{s.count === 1 ? "" : "s"}</div>
+                  </div>
+                  <Bar avg={s.avg} />
+                  <span style={{ width: 52, textAlign: "right", fontSize: 18, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{s.avg.toFixed(1)}</span>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+
+        {pending.length > 0 && (
+          <p style={{ marginTop: 18, fontSize: 12, color: DIM, lineHeight: 1.7 }}>
+            Not ranked yet (fewer than {MIN_TESTS_FOR_RANK} tests): {pending.map(p => `${flag(p.code)} ${p.name}`).join(" · ")}
+          </p>
+        )}
+
+        <p style={{ marginTop: 28, fontSize: 11, color: "#6A88AA", lineHeight: 1.7 }}>
+          These averages only reflect people who chose to take an online test on this site. They are not a scientific measure of any country&apos;s intelligence.
+        </p>
+
+        <div style={{ textAlign: "center", marginTop: 28 }}>
+          <button className="btn btn-primary" onClick={() => router.push("/test")}>Add your score for your country →</button>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

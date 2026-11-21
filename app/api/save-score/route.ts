@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 // In-memory rate limiter: 1 insert per IP per 60 seconds
 const ipLastInsert = new Map<string, number>();
 
-const VALID_COUNTRY = /^[A-Z]{0,3}$/;
+const VALID_COUNTRY = /^([A-Z]{2})?$/;   // ISO 3166-1 alpha-2, or empty
 
 export async function POST(req: NextRequest) {
   const ip =
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   }
 
   const score = Number(body.score);
-  const country = String(body.country ?? "").toUpperCase().slice(0, 3);
+  const country = String(body.country ?? "").toUpperCase().slice(0, 2);
 
   if (!Number.isInteger(score) || score < 60 || score > 148) {
     return NextResponse.json({ error: "Invalid score" }, { status: 400 });

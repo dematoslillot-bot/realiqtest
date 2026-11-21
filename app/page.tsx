@@ -1103,7 +1103,7 @@ export default function Home() {
 
             <p className="h3 hero-sub">
               30 questions across 6 cognitive areas: matrix patterns, verbal logic,
-              mental rotation, number series, memory and speed. See your IQ level instantly.
+              multi-rule pattern matrices, mental rotation, number series, memory and speed. See your IQ level instantly.
             </p>
 
             <div className="h4 hero-ctas">
@@ -1170,7 +1170,7 @@ export default function Home() {
           <div className="reveal sec-hd">
             <p className="label">What we measure</p>
             <h2 className="sec-title">Six pillars of intelligence</h2>
-            <p className="sec-sub">5 questions per dimension · 30 questions total</p>
+            <p className="sec-sub">30 questions · 6 dimensions · 6 multi-rule matrices</p>
           </div>
           <div className="pillars-grid">
             {PILLARS.map((p, i) => {

@@ -222,9 +222,9 @@ export function getCategoryResults(
   ];
   // One description per area and level, chosen from the user's real answers in that area.
   const descs: Record<"strong" | "avg" | "weak", string>[] = [
-    { strong: "You spot patterns and abstract rules quickly. Logical reasoning is one of your clear strengths.",
+    { strong: "You find the hidden rules in complex matrices quickly, even when several rules work at once. Logical reasoning is a clear strength.",
       avg:    "Your pattern and rule-finding is solid. Harder multi-rule puzzles are where you can still gain points.",
-      weak:   "Abstract pattern puzzles cost you the most points. Practising matrix puzzles is the fastest way to improve here." },
+      weak:   "Multi-rule matrix puzzles cost you the most points. Check one feature at a time (shape, size, fill, position) to improve." },
     { strong: "You handle analogies and word relationships with ease. Verbal reasoning is a strength.",
       avg:    "Your verbal reasoning is in line with your overall score. Reading widely keeps it sharp.",
       weak:   "Analogies and word relationships were harder for you. Word puzzles and reading build this skill." },

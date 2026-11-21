@@ -224,6 +224,28 @@ const ccTS = [tr(30,30,18,false), sq(30,30,8)];
 const ccTD = [tr(30,30,18,false), di(30,30,8)];
 const ccDC = [di(30,30,18,false), c(30,30,8)];
 
+
+// ── Multi-rule matrix helpers (Logical Reasoning) ───────────────────────────────────
+// Corner / centre positions inside a 60×60 cell
+const PT = { TL: [15,15], TR: [45,15], BR: [45,45], BL: [15,45], C: [30,30] } as const;
+type PK = keyof typeof PT;
+const dots = (...k: PK[]): RavenCell => k.map(n => c(PT[n][0], PT[n][1], 6));
+const CW: PK[] = ["TL","TR","BR","BL"];
+const cs2 = (ci: number, si: number): RavenCell => [c(PT[CW[ci]][0], PT[CW[ci]][1], 8), sq(PT[CW[si]][0], PT[CW[si]][1], 8, false)];
+const POS: Record<number, [number, number][]> = {
+  1: [[30,30]], 2: [[17,30],[43,30]], 3: [[15,15],[30,30],[45,45]],
+  4: [[15,15],[45,15],[15,45],[45,45]], 5: [[15,15],[45,15],[30,30],[15,45],[45,45]],
+};
+const many = (shape: "c"|"sq"|"tr", n: number, f: boolean): RavenCell =>
+  POS[n].map(([x, y]) => ({ s: shape, x, y, r: 7, f }));
+// Outlined outer shape with a small filled inner shape (inner sits lower inside triangles)
+type SK = "c" | "sq" | "tr";
+const nest = (o: SK, i: SK): RavenCell => {
+  const outer: ShapeDef = { s: o, x: 30, y: o === "tr" ? 33 : 30, r: o === "tr" ? 22 : 18, f: false };
+  const inner: ShapeDef = { s: i, x: 30, y: o === "tr" ? 37 : 30, r: o === "tr" ? 6 : 8, f: true };
+  return [outer, inner];
+};
+
 // ── SVG paths ─────────────────────────────────────────────────────────────
 
 const ARROW     = "M8,21 L8,39 L36,39 L36,51 L54,30 L36,9 L36,21 Z";
@@ -245,7 +267,7 @@ const ARROW_TRI = "M10,30 L50,10 L50,50 Z";
 
 export const ALL_QUESTIONS: Question[] = [
 
-  // ── CAT 0 · LOGICAL REASONING (5 questions, easy → hard) ──
+  // ── CAT 0 · LOGICAL REASONING (7 questions: warm-up + 6 multi-rule matrices) ──
 
   {
     cat: 0, type: "raven", diff: "easy", badge: "Heat Pattern", time: 28,
@@ -261,50 +283,32 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 0, type: "raven", diff: "medium", badge: "Matrix Reasoning", time: 35,
-    text: "Find the two rules in the rows and columns, then choose the image for the empty cell.",
+    cat: 0, type: "raven", diff: "medium", badge: "Size & Shape Matrix", time: 40,
+    text: "Three rules work at the same time. Which image completes the matrix?",
     opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "Rule 1: every cell in a row has the same number of shapes (1, 2, 3). Rule 2: each row and each column contains one circle, one square and one triangle. Row 3 already has triangles and circles, so the missing cell is three filled squares.",
+    ans: 2,
+    exp: "Shapes: each row and column has one circle, one square and one triangle. Size: big, medium, small from left to right. Fill: rows 1 and 3 are filled, row 2 is outlined. So the missing cell is a small filled square.",
     vis: {
       kind: "raven",
-      cells: [C1, S1, T1,  S2, T2, C2,  T3, C3, null],
-      optCells: [T3, S3, S2, S3o],
-    },
-  },
-
-  {
-    cat: 0, type: "raven", diff: "medium", badge: "Shape Sum", time: 35,
-    text: "A + B = C follows a rule. Apply the same rule: D + E = ?",
-    opts: ["A", "B", "C", "D"],
-    ans: 0,
-    exp: "Rule: the outer shape (outline) comes from the first shape, the inner shape (filled) comes from the second. Square outline + filled diamond = square with diamond inside.",
-    vis: {
-      kind: "shapesum",
-      exA: [c(30,30,18,false)],
-      exB: [di(30,30,11)],
-      exC: [c(30,30,18,false), di(30,30,8)],
-      qA:  [sq(30,30,18,false)],
-      qB:  [di(30,30,11)],
-      optCells: [
-        [sq(30,30,18,false), di(30,30,8)],    // A: correct (square + diamond inside)
-        [di(30,30,18,false), sq(30,30,8)],    // B: reversed (diamond outer, square inner)
-        [sq(30,30,18,false)],                  // C: outer only, no inner shape
-        [sq(30,30,18,false), c(30,30,8)],     // D: wrong inner (circle instead of diamond)
+      cells: [
+        [c(30,30,17)],        [sq(30,30,11)],       [tr(30,30,7)],
+        [sq(30,30,17,false)], [tr(30,30,11,false)], [c(30,30,7,false)],
+        [tr(30,30,17)],       [c(30,30,11)],        null,
       ],
+      optCells: [[sq(30,30,7,false)], [sq(30,30,17)], [sq(30,30,7)], [c(30,30,7)]],
     },
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Symbol Code", time: 35,
-    text: "Each symbol has a hidden value. Solve for ◆ + ■ + ●",
-    opts: ["16", "14", "18", "20"],
-    ans: 0,
-    exp: "◆+■=9, ■+●=13, ◆+●=10. Adding all three: 2(◆+■+●)=32 → ◆+■+●=16.",
+    cat: 0, type: "raven", diff: "medium", badge: "Nested Shapes", time: 45,
+    text: "Look at the outer shapes and the inner shapes separately. Which image belongs in the empty cell?",
+    opts: ["A", "B", "C", "D"],
+    ans: 1,
+    exp: "Outer shapes: every row and column has one circle, one square and one triangle, so the missing outer shape is a square. Inner shapes follow the same rule on their own, so the missing inner shape is a circle: a circle inside a square.",
     vis: {
-      kind: "symcode",
-      equations: ["◆ + ■ = 9", "■ + ● = 13", "◆ + ● = 10", "◆ + ■ + ● = ?"],
-      optVals: ["16", "14", "18", "20"],
+      kind: "raven",
+      cells: [nest("c","tr"), nest("sq","c"), nest("tr","sq"),  nest("sq","c"), nest("tr","sq"), nest("c","tr"),  nest("tr","sq"), nest("c","tr"), null],
+      optCells: [nest("c","sq"), nest("sq","c"), nest("sq","tr"), nest("tr","c")],
     },
   },
 
@@ -321,8 +325,55 @@ export const ALL_QUESTIONS: Question[] = [
     },
   },
 
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Moving Pieces", time: 45,
+    text: "The circle and the square each move in their own way. Where are they in the empty cell?",
+    opts: ["A", "B", "C", "D"],
+    ans: 3,
+    exp: "In every row the filled circle moves one corner clockwise and the empty square moves one corner anticlockwise. Row 3 continues: circle top-left, square bottom-left.",
+    vis: {
+      kind: "raven",
+      cells: [cs2(0,3), cs2(1,2), cs2(2,1),  cs2(1,0), cs2(2,3), cs2(3,2),  cs2(2,1), cs2(3,0), null],
+      optCells: [cs2(1,3), cs2(0,1), cs2(3,0), cs2(0,3)],
+    },
+  },
 
-  // ── CAT 1 · VERBAL INTELLIGENCE (5 questions, easy → hard) ──
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Count Matrix", time: 45,
+    text: "Find the rules for number, shape and fill. Which image completes the matrix?",
+    opts: ["A", "B", "C", "D"],
+    ans: 0,
+    exp: "Number: one more shape in each step to the right and down (1-2-3, 2-3-4, 3-4-5). Shape: column 1 circles, column 2 squares, column 3 triangles. Fill: filled and outlined alternate like a chessboard, so the bottom-right cell is filled. Answer: five filled triangles.",
+    vis: {
+      kind: "raven",
+      cells: [
+        many("c",1,true),  many("sq",2,false), many("tr",3,true),
+        many("c",2,false), many("sq",3,true),  many("tr",4,false),
+        many("c",3,true),  many("sq",4,false), null,
+      ],
+      optCells: [many("tr",5,true), many("tr",4,true), many("tr",5,false), many("sq",5,true)],
+    },
+  },
+
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Cancelling Dots", time: 50,
+    text: "In each row, the first two cells combine to make the third. Find the rule and complete the last row.",
+    opts: ["A", "B", "C", "D"],
+    ans: 2,
+    exp: "Dots that appear in only one of the first two cells are kept; dots that appear in both cancel out. Row 3: top-left and bottom-left only in cell 1, bottom-right only in cell 2, top-right in both (cancels). Answer: top-left, bottom-left, bottom-right.",
+    vis: {
+      kind: "raven",
+      cells: [
+        dots("TL","C"),      dots("TR","C"),  dots("TL","TR"),
+        dots("BL","BR","C"), dots("BR","TL"), dots("BL","C","TL"),
+        dots("TL","TR","BL"), dots("TR","BR"), null,
+      ],
+      optCells: [dots("TL","TR","BL","BR"), dots("TR"), dots("TL","BL","BR"), dots("TL","BL","BR","C")],
+    },
+  },
+
+
+  // ── CAT 1 · VERBAL INTELLIGENCE ──
 
   {
     cat: 1, type: "text", diff: "easy", badge: "Odd One Out", time: 20,
@@ -367,7 +418,7 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
 
-  // ── CAT 2 · SPATIAL REASONING (5 questions, easy → hard) ──
+  // ── CAT 2 · SPATIAL REASONING ──
 
   {
     cat: 2, type: "rotation", diff: "easy", badge: "Dice Net", time: 30,
@@ -440,7 +491,7 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
 
-  // ── CAT 3 · NUMERICAL ABILITY (5 questions, easy → hard) ──
+  // ── CAT 3 · NUMERICAL ABILITY ──
 
   {
     cat: 3, type: "bars", diff: "easy", badge: "Decreasing Series", time: 30,
@@ -488,16 +539,7 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
 
-  // ── CAT 4 · WORKING MEMORY (5 questions, easy → hard) ──
-
-  {
-    cat: 4, type: "memory", diff: "easy", badge: "Colour Memory", time: 30,
-    text: "What was the 4th colour in the sequence?",
-    opts: ["Yellow", "Green", "Blue", "Orange"],
-    ans: 1,
-    exp: "Sequence: Red → Orange → Yellow → Green → Blue → Purple. The 4th colour was Green.",
-    vis: { kind: "memory", colors: ["#FF3B3B","#FF8C00","#FFD700","#00D87A","#00AAFF","#9B59B6"], showMs: 2800 },
-  },
+  // ── CAT 4 · WORKING MEMORY (the 3 hardest items) ──
 
   {
     cat: 4, type: "memory", diff: "medium", badge: "Colour Count", time: 28,
@@ -506,15 +548,6 @@ export const ALL_QUESTIONS: Question[] = [
     ans: 0,
     exp: "Sequence: Blue, Red, Yellow, Purple, Red, Green — 5 distinct colours (Red appeared twice).",
     vis: { kind: "memory", colors: ["#00AAFF","#FF3B3B","#FFD700","#9B59B6","#FF3B3B","#00D87A"], showMs: 2200 },
-  },
-
-  {
-    cat: 4, type: "memory", diff: "medium", badge: "Missing Colour", time: 25,
-    text: "Which colour did NOT appear in the sequence?",
-    opts: ["Purple", "Red", "Orange", "Yellow"],
-    ans: 1,
-    exp: "Sequence: Green → Purple → Orange → Blue → Yellow. Red never appeared.",
-    vis: { kind: "memory", colors: ["#00D87A","#9B59B6","#FF8C00","#00AAFF","#FFD700"], showMs: 2400 },
   },
 
   {
@@ -536,7 +569,7 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
 
-  // ── CAT 5 · PROCESSING SPEED (5 questions, easy → hard) ──
+  // ── CAT 5 · PROCESSING SPEED ──
 
   {
     cat: 5, type: "symbols", diff: "easy", badge: "Rapid Compare", time: 10,

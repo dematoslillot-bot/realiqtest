@@ -32,7 +32,17 @@ export type VisualDef =
   | { kind: "shadow3d";    optGrids: string[] }
   | { kind: "origami" }
   | { kind: "shapesum";    exA: RavenCell; exB: RavenCell; exC: RavenCell; qA: RavenCell; qB: RavenCell; optCells: RavenCell[] }
-  | { kind: "symcode";     equations: string[];           optVals: string[] };
+  | { kind: "symcode";     equations: string[];           optVals: string[] }
+  | { kind: "patch";       art: PatchArt; hole: { x: number; y: number; w: number; h: number };
+      opts: { dx: number; dy: number; flipX?: boolean }[] };
+
+// Picture-completion patterns (Raven-style): drawn on a 200×130 board.
+// Each option shows the board seen through the hole window, shifted by (dx, dy) and/or mirrored.
+export type PatchArt =
+  | { type: "grid";   v: [number, number][]; h: [number, number][] }   // [position, line width]
+  | { type: "wedges"; bands: number }                                   // wedges converging to the right edge
+  | { type: "waves";  xs: number[]; amp0: number; ampK: number; period: number }
+  | { type: "dots";   cols: number; rows: number };
 
 export type PCell = { shape: "tri"|"sq"|"ci"; fill: "h"|"v"|"d" };
 
@@ -267,61 +277,61 @@ const ARROW_TRI = "M10,30 L50,10 L50,50 Z";
 
 export const ALL_QUESTIONS: Question[] = [
 
-  // ── CAT 0 · LOGICAL REASONING (7 questions: warm-up + 6 multi-rule matrices) ──
+  // ── CAT 0 · LOGICAL REASONING (picture completion + multi-rule matrices, all hard) ──
 
   {
-    cat: 0, type: "raven", diff: "easy", badge: "Heat Pattern", time: 28,
-    text: "Row sums and column sums are all equal. Which intensity completes the grid?",
-    opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "Each row and column sums to 6. Row 3: 1+3+?=6, so ?=2. Column 3 confirms: 3+1+?=6 → 2.",
-    vis: {
-      kind: "heatmap",
-      grid: [[2,1,3],[3,2,1],[1,3,null]],
-      optVals: [0, 1, 2, 4],
-    },
-  },
-
-  {
-    cat: 0, type: "raven", diff: "medium", badge: "Size & Shape Matrix", time: 40,
-    text: "Three rules work at the same time. Which image completes the matrix?",
-    opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "Shapes: each row and column has one circle, one square and one triangle. Size: big, medium, small from left to right. Fill: rows 1 and 3 are filled, row 2 is outlined. So the missing cell is a small filled square.",
-    vis: {
-      kind: "raven",
-      cells: [
-        [c(30,30,17)],        [sq(30,30,11)],       [tr(30,30,7)],
-        [sq(30,30,17,false)], [tr(30,30,11,false)], [c(30,30,7,false)],
-        [tr(30,30,17)],       [c(30,30,11)],        null,
-      ],
-      optCells: [[sq(30,30,7,false)], [sq(30,30,17)], [sq(30,30,7)], [c(30,30,7)]],
-    },
-  },
-
-  {
-    cat: 0, type: "raven", diff: "medium", badge: "Nested Shapes", time: 45,
-    text: "Look at the outer shapes and the inner shapes separately. Which image belongs in the empty cell?",
+    cat: 0, type: "raven", diff: "hard", badge: "Picture Completion", time: 40,
+    text: "Which piece completes the picture? Compare the thickness of every line.",
     opts: ["A", "B", "C", "D"],
     ans: 1,
-    exp: "Outer shapes: every row and column has one circle, one square and one triangle, so the missing outer shape is a square. Inner shapes follow the same rule on their own, so the missing inner shape is a circle: a circle inside a square.",
+    exp: "Vertical lines get thicker from left to right (2, 4, 6, 8, 10) and horizontal lines get thinner from top to bottom. The gap is where the 4th vertical line meets the 3rd horizontal line, so the piece must have exactly those two thicknesses.",
     vis: {
-      kind: "raven",
-      cells: [nest("c","tr"), nest("sq","c"), nest("tr","sq"),  nest("sq","c"), nest("tr","sq"), nest("c","tr"),  nest("tr","sq"), nest("c","tr"), null],
-      optCells: [nest("c","sq"), nest("sq","c"), nest("sq","tr"), nest("tr","c")],
+      kind: "patch",
+      art: { type: "grid", v: [[20,2],[55,4],[90,6],[125,8],[160,10]], h: [[20,8],[50,5],[80,3],[110,1.5]] },
+      hole: { x: 107, y: 62, w: 36, h: 36 },
+      opts: [{ dx: -35, dy: 0 }, { dx: 0, dy: 0 }, { dx: 0, dy: -30 }, { dx: 35, dy: 0 }],
     },
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Position Rotation", time: 38,
-    text: "Find the hidden rule, then choose the image that belongs in the empty cell.",
+    cat: 0, type: "raven", diff: "hard", badge: "Converging Wedges", time: 40,
+    text: "Which piece fits exactly in the gap?",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
-    exp: "The filled circle rotates 90° clockwise each step (TL→TR→BR→BL→TL). After 8 steps the cycle completes — the answer brings the filled circle back to the top-left.",
+    ans: 2,
+    exp: "Every wedge narrows towards the right edge, so near the right it is already thin. The piece must also line up with the middle band. A comes from further left (too wide), B is shifted half a band, D narrows the wrong way.",
     vis: {
-      kind: "raven",
-      cells: [qTL, qTR, qBR,  qTR, qBR, qBL,  qBR, qBL, null],
-      optCells: [qTL, qBL, qTR, qAll4],
+      kind: "patch",
+      art: { type: "wedges", bands: 5 },
+      hole: { x: 135, y: 46, w: 36, h: 36 },
+      opts: [{ dx: -100, dy: 0 }, { dx: 0, dy: -13 }, { dx: 0, dy: 0 }, { dx: 0, dy: 0, flipX: true }],
+    },
+  },
+
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Wave Field", time: 45,
+    text: "Which piece completes the waves? Check how strongly they bend and in which direction.",
+    opts: ["A", "B", "C", "D"],
+    ans: 2,
+    exp: "The waves bend more strongly the lower they go, and they all bend the same way at the same height. The piece must have the medium bend of that height and curve in the same direction as the lines just above and below the gap.",
+    vis: {
+      kind: "patch",
+      art: { type: "waves", xs: [15,45,75,105,135,165,195], amp0: 2, ampK: 0.08, period: 40 },
+      hole: { x: 87, y: 68, w: 36, h: 36 },
+      opts: [{ dx: 0, dy: 0, flipX: true }, { dx: 0, dy: 20 }, { dx: 0, dy: 0 }, { dx: 0, dy: -56 }],
+    },
+  },
+
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Dot Field", time: 50,
+    text: "Two rules shape this pattern. Which piece completes it?",
+    opts: ["A", "B", "C", "D"],
+    ans: 1,
+    exp: "Rule 1: dots get bigger from left to right. Rule 2: filled dots form diagonal stripes (every third dot in a row, moving one place each row). In the gap, only the top-left dot is filled and the right-hand dots are larger.",
+    vis: {
+      kind: "patch",
+      art: { type: "dots", cols: 8, rows: 5 },
+      hole: { x: 99, y: 52.5, w: 48, h: 50 },
+      opts: [{ dx: 24, dy: 0 }, { dx: 0, dy: 0 }, { dx: 0, dy: -25 }, { dx: 0, dy: 0, flipX: true }],
     },
   },
 
@@ -376,28 +386,29 @@ export const ALL_QUESTIONS: Question[] = [
   // ── CAT 1 · VERBAL INTELLIGENCE ──
 
   {
-    cat: 1, type: "text", diff: "easy", badge: "Odd One Out", time: 20,
+    cat: 1, type: "text", diff: "hard", badge: "Odd One Out", time: 20,
     text: "Which word does NOT belong with the others?",
-    opts: ["Violin", "Cello", "Flute", "Viola"],
+    opts: ["Benevolent", "Magnanimous", "Gregarious", "Altruistic"],
     ans: 2,
-    exp: "Violin, cello and viola are string instruments played with a bow. The flute is a wind instrument.",
+    exp: "Benevolent, magnanimous and altruistic all describe generosity and kindness towards others. Gregarious means sociable, fond of company.",
   },
 
   {
-    cat: 1, type: "analogy", diff: "medium", badge: "Analogy", time: 25,
+    cat: 1, type: "analogy", diff: "hard", badge: "Analogy", time: 25,
     text: "Complete the analogy:",
-    w1: "Thermometer", w2: "Temperature", w3: "Odometer",
-    opts: ["Speed", "Distance", "Fuel", "Time"],
-    ans: 1,
-    exp: "A thermometer measures temperature; an odometer measures the distance a vehicle has travelled (a speedometer measures speed).",
+    w1: "Ornithology", w2: "Birds", w3: "Entomology",
+    opts: ["Insects", "Fossils", "Words", "Fish"],
+    ans: 0,
+    exp: "Ornithology is the study of birds; entomology is the study of insects. (Etymology, which looks similar, is the study of word origins.)",
   },
 
   {
-    cat: 1, type: "text", diff: "medium", badge: "Deduction", time: 30,
-    text: "No bakers are lazy. Some lazy people are students. Which MUST be true?",
-    opts: ["Some students are not bakers", "No students are bakers", "Some bakers are students", "All students are lazy"],
+    cat: 1, type: "text", diff: "hard", badge: "Deduction", time: 40,
+    text: "In a club, all three statements are true. Which statement MUST also be true?",
+    opts: ["Every swimmer is a doctor", "Some pilots are not swimmers", "Some doctors are not pilots", "No pilot is a swimmer"],
     ans: 0,
-    exp: "The lazy students cannot be bakers (no baker is lazy), so at least some students are not bakers. The other options may or may not be true.",
+    exp: "Swimmers are all pilots and pilots are all doctors, so every swimmer is a doctor. The doctors who are not swimmers might or might not be pilots, so B and C are not certain, and D contradicts the statements.",
+    vis: { kind: "symcode", equations: ["Every pilot is a doctor.", "Some doctors are not swimmers.", "Every swimmer is a pilot."], optVals: [] },
   },
 
   {
@@ -421,24 +432,28 @@ export const ALL_QUESTIONS: Question[] = [
   // ── CAT 2 · SPATIAL REASONING ──
 
   {
-    cat: 2, type: "rotation", diff: "easy", badge: "Dice Net", time: 30,
-    text: "Fold this net into a cube. Which face ends up directly OPPOSITE the face showing 2 dots?",
-    opts: ["1", "3", "5", "6"],
-    ans: 3,
-    exp: "The face with 2 dots is the centre of the cross — it becomes the front. The face at the end of the chain (6 dots) folds to become the back face, directly opposite.",
-    vis: { kind: "dicenet", faces: [1, 2, 3, 4, 5, 6] },
+    cat: 2, type: "rotation", diff: "hard", badge: "Rotation, Not Mirror", time: 30,
+    text: "Which option is the SAME shape, only rotated (not flipped)?",
+    opts: ["A", "B", "C", "D"],
+    ans: 1,
+    exp: "Only B is the original shape turned 90°. A, C and D are mirror images that have also been rotated, so no amount of turning makes them match.",
+    vis: {
+      kind: "rotation", path: HOOK, showAngle: 0,
+      optAngles:  [90, 90, 180, 270],
+      optMirrors: [true, false, true, true],
+    },
   },
 
   {
-    cat: 2, type: "rotation", diff: "easy", badge: "Hidden Shape", time: 30,
-    text: "The figure on the left is formed by overlapping two shapes. Which of the four shapes below is one of the two components?",
+    cat: 2, type: "rotation", diff: "hard", badge: "Rotation, Not Mirror II", time: 30,
+    text: "Which option is the SAME shape, only rotated (not flipped)?",
     opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "The complex figure is formed by the ARROW shape overlapping the BRACKET shape. The arrow's shaft and triangular head are visible within the merged outline.",
+    ans: 2,
+    exp: "Only C is the original turned 225°. The other three are mirror images that have been rotated.",
     vis: {
-      kind: "embedded",
-      display: BRACKET + " " + ARROW,
-      optPaths: [CELTIC_Z, ARROW, CROWN_A, STEP],
+      kind: "rotation", path: CRANK, showAngle: 0,
+      optAngles:  [135, 45, 225, 315],
+      optMirrors: [true, true, false, true],
     },
   },
 
@@ -494,15 +509,6 @@ export const ALL_QUESTIONS: Question[] = [
   // ── CAT 3 · NUMERICAL ABILITY ──
 
   {
-    cat: 3, type: "bars", diff: "easy", badge: "Decreasing Series", time: 30,
-    text: "What is the missing bar value?",
-    opts: ["30", "35", "25", "40"],
-    ans: 2,
-    exp: "Gaps: −5, −10, −15, −20, −25. So 50 − 25 = 25.",
-    vis: { kind: "bars", values: [100, 95, 85, 70, 50, null], max: 110 },
-  },
-
-  {
     cat: 3, type: "bars", diff: "medium", badge: "Alternating Rule", time: 25,
     text: "Which value completes this alternating-operation series?",
     opts: ["16", "12", "18", "32"],
@@ -538,8 +544,17 @@ export const ALL_QUESTIONS: Question[] = [
     vis: { kind: "bars", values: [2, 5, 10, 17, 26, null], max: 42 },
   },
 
+  {
+    cat: 3, type: "bars", diff: "hard", badge: "Hidden Squares", time: 35,
+    text: "What is the missing value?",
+    opts: ["94", "49", "64", "81"],
+    ans: 0,
+    exp: "These are the square numbers 1, 4, 9, 16, 25, 36 written backwards: 1, 4, 9, 61, 52, 63. Next is 49 written backwards: 94.",
+    vis: { kind: "bars", values: [1, 4, 9, 61, 52, 63, null], max: 100 },
+  },
 
-  // ── CAT 4 · WORKING MEMORY (the 3 hardest items) ──
+
+  // ── CAT 4 · WORKING MEMORY ──
 
   {
     cat: 4, type: "memory", diff: "medium", badge: "Colour Count", time: 28,
@@ -570,15 +585,6 @@ export const ALL_QUESTIONS: Question[] = [
 
 
   // ── CAT 5 · PROCESSING SPEED ──
-
-  {
-    cat: 5, type: "symbols", diff: "easy", badge: "Rapid Compare", time: 10,
-    text: "Which number is the LARGEST?",
-    opts: ["0.7", "0.65", "0.709", "0.69"],
-    ans: 2,
-    exp: "Compare digit by digit: 0.709 > 0.700 > 0.690 > 0.650.",
-    vis: { kind: "symbols", target: "0.7    0.65    0.709    0.69" },
-  },
 
   {
     cat: 5, type: "symbols", diff: "medium", badge: "Rapid Calculation", time: 10,
@@ -614,6 +620,15 @@ export const ALL_QUESTIONS: Question[] = [
     ans: 2,
     exp: "Order ascending: Q < R < T < P < S. The median (3rd of 5) is T.",
     vis: { kind: "symbols", target: "S > P > T > R > Q" },
+  },
+
+  {
+    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Compare", time: 12,
+    text: "Which value is the LARGEST?",
+    opts: ["3/7", "0.43", "5/12", "0.428"],
+    ans: 1,
+    exp: "3/7 ≈ 0.4286 and 5/12 ≈ 0.4167, so the order is 0.43 > 3/7 > 0.428 > 5/12.",
+    vis: { kind: "symbols", target: "3/7    0.43    5/12    0.428" },
   },
 
 ];

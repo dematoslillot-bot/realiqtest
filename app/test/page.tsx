@@ -1,11 +1,11 @@
 "use client";
 
 import { COUNTRY_LIST, codeFromName } from "@/lib/countries";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useId } from "react";
 import NavLogo from "@/app/components/NavLogo";
 import NeuralScene from "@/app/components/NeuralScene";
 import { useRouter } from "next/navigation";
-import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell } from "@/lib/questions";
+import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell, type PatchArt } from "@/lib/questions";
 import { DIFF_WEIGHTS, type AnswerRecord } from "@/lib/iq-calculator";
 
 /* ── Design tokens ──────────────────────────────────────────────────────────── */
@@ -715,6 +715,80 @@ function SymCodeDisplay({ equations }: { equations: string[] }) {
   );
 }
 
+
+/* ── Picture completion (Raven-style "patch") ─────────────────────────── */
+
+const PATCH_W = 200, PATCH_H = 130, PATCH_INK = "#9D8FFF";
+
+function PatchArtG({ art }: { art: PatchArt }) {
+  if (art.type === "grid") {
+    return (
+      <g>
+        {art.v.map(([x, w], i) => <rect key={`v${i}`} x={x - w / 2} y={0} width={w} height={PATCH_H} fill={PATCH_INK} />)}
+        {art.h.map(([y, w], i) => <rect key={`h${i}`} x={0} y={y - w / 2} width={PATCH_W} height={w} fill={PATCH_INK} />)}
+      </g>
+    );
+  }
+  if (art.type === "wedges") {
+    const bh = PATCH_H / art.bands;
+    return (
+      <g>
+        {Array.from({ length: art.bands }).map((_, k) => (
+          <polygon key={k} points={`0,${k * bh + 2} 0,${(k + 1) * bh - 2} ${PATCH_W},${k * bh + bh / 2}`} fill={PATCH_INK} />
+        ))}
+      </g>
+    );
+  }
+  if (art.type === "waves") {
+    return (
+      <g fill="none" stroke={PATCH_INK} strokeWidth={3}>
+        {art.xs.map((x0, i) => {
+          let d = "";
+          for (let y = -4; y <= PATCH_H + 4; y += 2) {
+            const x = x0 + (art.amp0 + art.ampK * y) * Math.sin((2 * Math.PI * y) / art.period);
+            d += `${d ? "L" : "M"}${x.toFixed(2)},${y}`;
+          }
+          return <path key={i} d={d} />;
+        })}
+      </g>
+    );
+  }
+  // dots: radius grows to the right, filled dots form diagonal stripes
+  const out = [];
+  for (let r = 0; r < art.rows; r++) for (let c = 0; c < art.cols; c++) {
+    const x = 15 + 24 * c, y = 15 + 25 * r, rad = 1.5 + 0.65 * c, f = (r + c) % 3 === 0;
+    out.push(<circle key={`${r}-${c}`} cx={x} cy={y} r={rad} fill={f ? PATCH_INK : "none"} stroke={PATCH_INK} strokeWidth={1.4} />);
+  }
+  return <g>{out}</g>;
+}
+
+function PatchDisplay({ art, hole }: { art: PatchArt; hole: { x: number; y: number; w: number; h: number } }) {
+  return (
+    <svg viewBox={`0 0 ${PATCH_W} ${PATCH_H}`} style={{ width: "min(420px, 100%)", height: "auto", display: "block" }}>
+      <rect x={0} y={0} width={PATCH_W} height={PATCH_H} fill="rgba(5,18,45,0.95)" />
+      <PatchArtG art={art} />
+      <rect x={hole.x} y={hole.y} width={hole.w} height={hole.h} rx={3} fill="#060B1A" stroke="#5B4FFF" strokeWidth={1.2} strokeDasharray="4,3" />
+      <text x={hole.x + hole.w / 2} y={hole.y + hole.h / 2 + 6} textAnchor="middle" fontSize={16} fontWeight="bold" fill="#5B4FFF">?</text>
+    </svg>
+  );
+}
+
+function PatchOptionSVG({ art, hole, o }: { art: PatchArt; hole: { x: number; y: number; w: number; h: number }; o: { dx: number; dy: number; flipX?: boolean } }) {
+  const x = hole.x + o.dx, y = hole.y + o.dy, cx = x + hole.w / 2;
+  const clipId = "pc" + useId().replace(/[^a-zA-Z0-9]/g, "");
+  return (
+    <svg viewBox={`${x} ${y} ${hole.w} ${hole.h}`} style={{ height: "100%", maxWidth: "100%", aspectRatio: `${hole.w} / ${hole.h}`, display: "block" }}>
+      <defs><clipPath id={clipId}><rect x={x} y={y} width={hole.w} height={hole.h} /></clipPath></defs>
+      <g clipPath={`url(#${clipId})`}>
+        <rect x={x} y={y} width={hole.w} height={hole.h} fill="rgba(5,18,45,0.95)" />
+        <g transform={o.flipX ? `translate(${2 * cx},0) scale(-1,1)` : undefined}>
+          <PatchArtG art={art} />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 /* ── Visual question container ──────────────────────────────────────────── */
 
 function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => void }) {
@@ -759,6 +833,8 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
       return <ShapeSumDisplay exA={vis.exA} exB={vis.exB} exC={vis.exC} qA={vis.qA} qB={vis.qB} />;
     case "symcode":
       return <SymCodeDisplay equations={vis.equations} />;
+    case "patch":
+      return <PatchDisplay art={vis.art} hole={vis.hole} />;
   }
 }
 
@@ -767,6 +843,9 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
 function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: number }) {
   if (vis?.kind === "raven") {
     return <RavenCellSVG cell={vis.optCells[idx]} />;
+  }
+  if (vis?.kind === "patch") {
+    return <PatchOptionSVG art={vis.art} hole={vis.hole} o={vis.opts[idx]} />;
   }
   if (vis?.kind === "rotation") {
     return <RotationSVG path={vis.path} angle={vis.optAngles[idx]} mirror={vis.optMirrors?.[idx] ?? false} />;
@@ -1355,7 +1434,8 @@ function QuizScreen() {
   const hasVisOpts = q.vis?.kind === "raven" || q.vis?.kind === "rotation" || q.vis?.kind === "embedded"
     || q.vis?.kind === "raven2" || q.vis?.kind === "ravenrot" || q.vis?.kind === "ravenpattern" || q.vis?.kind === "topview"
     || q.vis?.kind === "clock" || q.vis?.kind === "heatmap" || q.vis?.kind === "mirror"
-    || q.vis?.kind === "binary" || q.vis?.kind === "shadow3d" || q.vis?.kind === "origami" || q.vis?.kind === "shapesum";
+    || q.vis?.kind === "binary" || q.vis?.kind === "shadow3d" || q.vis?.kind === "origami" || q.vis?.kind === "shapesum"
+    || q.vis?.kind === "patch";
 
   const keyframes = `
     @keyframes bgPulse1 { 0%,100%{opacity:0.7} 50%{opacity:0.3} }

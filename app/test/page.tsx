@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useRef, useId } from "react";
 import NavLogo from "@/app/components/NavLogo";
 import NeuralScene from "@/app/components/NeuralScene";
 import { useRouter } from "next/navigation";
-import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell, type PatchArt, type LineCell } from "@/lib/questions";
+import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell, type PatchArt, type LineCell, type CubeSym } from "@/lib/questions";
 import { DIFF_WEIGHTS, type AnswerRecord } from "@/lib/iq-calculator";
 
 /* ── Design tokens ──────────────────────────────────────────────────────────── */
@@ -834,6 +834,93 @@ function PatchOptionSVG({ art, hole, o }: { art: PatchArt; hole: { x: number; y:
   );
 }
 
+/* ── Mirror clock ───────────────────────────────────────────────────────── */
+
+function MirrorClockDisplay({ h, m }: { h: number; m: number }) {
+  const cx = 60, cy = 60, r = 52;
+  const ha = ((h % 12) / 12 + m / 720) * Math.PI * 2 - Math.PI / 2;
+  const ma = (m / 60) * Math.PI * 2 - Math.PI / 2;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+      <svg viewBox="0 0 120 120" style={{ width: "min(190px, calc(92dvh - 470px), 46vw)", height: "auto", minWidth: 120 }}>
+        <defs>
+          <linearGradient id="mirrorSheen" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="rgba(0,245,212,0.10)" /><stop offset="0.5" stopColor="rgba(0,245,212,0)" /><stop offset="1" stopColor="rgba(0,245,212,0.08)" />
+          </linearGradient>
+        </defs>
+        <rect x={2} y={2} width={116} height={116} rx={10} fill="rgba(5,18,45,0.95)" stroke="#00F5D4" strokeWidth={1.4} strokeOpacity={0.55} />
+        <g transform="translate(120,0) scale(-1,1)">
+          <circle cx={cx} cy={cy} r={r} fill="rgba(3,8,22,0.9)" stroke="#5B4FFF" strokeWidth={2} />
+          {Array.from({ length: 60 }).map((_, i) => {
+            const a = (i / 60) * Math.PI * 2 - Math.PI / 2, major = i % 5 === 0;
+            const r1 = r * (major ? 0.86 : 0.92);
+            return <line key={i} x1={cx + Math.cos(a) * r1} y1={cy + Math.sin(a) * r1} x2={cx + Math.cos(a) * r * 0.97} y2={cy + Math.sin(a) * r * 0.97}
+              stroke={major ? "#9D8FFF" : "rgba(91,79,255,0.4)"} strokeWidth={major ? 1.8 : 0.8} />;
+          })}
+          {[0, 3, 6, 9].map(i => {
+            const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+            return <line key={`q${i}`} x1={cx + Math.cos(a) * r * 0.74} y1={cy + Math.sin(a) * r * 0.74} x2={cx + Math.cos(a) * r * 0.97} y2={cy + Math.sin(a) * r * 0.97} stroke="#C9C2FF" strokeWidth={3.2} />;
+          })}
+          <line x1={cx} y1={cy} x2={cx + Math.cos(ha) * r * 0.48} y2={cy + Math.sin(ha) * r * 0.48} stroke="#EFEFF7" strokeWidth={4} strokeLinecap="round" />
+          <line x1={cx} y1={cy} x2={cx + Math.cos(ma) * r * 0.76} y2={cy + Math.sin(ma) * r * 0.76} stroke="#00F5D4" strokeWidth={2.4} strokeLinecap="round" />
+          <circle cx={cx} cy={cy} r={3.5} fill="#5B4FFF" />
+        </g>
+        <rect x={2} y={2} width={116} height={116} rx={10} fill="url(#mirrorSheen)" pointerEvents="none" />
+      </svg>
+      <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#00F5D4", opacity: 0.8 }}>Reflection</span>
+    </div>
+  );
+}
+
+/* ── Cube views ─────────────────────────────────────────────────────────── */
+
+const CUBE_INK = "#C9C2FF";
+
+function CubeSymbol({ sym }: { sym: CubeSym }) {
+  // Drawn in a 0..1 square; strokes stay the same width after the face transform.
+  const st = { vectorEffect: "non-scaling-stroke" as const };
+  switch (sym) {
+    case "circle":   return <circle cx={0.5} cy={0.5} r={0.24} fill={CUBE_INK} />;
+    case "ring":     return <circle cx={0.5} cy={0.5} r={0.25} fill="none" stroke={CUBE_INK} strokeWidth={2.4} style={st} />;
+    case "square":   return <rect x={0.28} y={0.28} width={0.44} height={0.44} fill={CUBE_INK} />;
+    case "star":     return <polygon points="0.500,0.210 0.582,0.417 0.804,0.431 0.633,0.573 0.688,0.789 0.500,0.670 0.312,0.789 0.367,0.573 0.196,0.431 0.418,0.417" fill={CUBE_INK} />;
+    case "plus":     return <path d="M0.42,0.2 H0.58 V0.42 H0.8 V0.58 H0.58 V0.8 H0.42 V0.58 H0.2 V0.42 H0.42 Z" fill={CUBE_INK} />;
+    case "triangle": return <polygon points="0.5,0.2 0.8,0.76 0.2,0.76" fill={CUBE_INK} />;
+  }
+}
+
+function CubeSVG({ view }: { view: [CubeSym, CubeSym, CubeSym] }) {
+  // Isometric cube: top, front (left-hand face) and right face.
+  const faces: { m: string; pts: string; fill: string; sym: CubeSym }[] = [
+    { m: "matrix(19,-11,19,11,11,19)", pts: "11,19 30,8 49,19 30,30", fill: "rgba(91,79,255,0.30)", sym: view[0] },
+    { m: "matrix(19,11,0,22,11,19)",   pts: "11,19 30,30 30,52 11,41", fill: "rgba(91,79,255,0.18)", sym: view[1] },
+    { m: "matrix(19,-11,0,22,30,30)",  pts: "30,30 49,19 49,41 30,52", fill: "rgba(91,79,255,0.10)", sym: view[2] },
+  ];
+  return (
+    <svg viewBox="7 5 46 50" style={{ width: "100%", height: "100%", display: "block" }}>
+      {faces.map((f, i) => (
+        <g key={i}>
+          <polygon points={f.pts} fill={f.fill} stroke="#9D8FFF" strokeWidth={1.1} strokeLinejoin="round" />
+          <g transform={f.m}><CubeSymbol sym={f.sym} /></g>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function CubeViewsDisplay({ views }: { views: [CubeSym, CubeSym, CubeSym][] }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: `repeat(${views.length},1fr)`, gap: 10, width: "min(420px, calc((92dvh - 430px) * 3), 88vw)", margin: "0 auto" }}>
+      {views.map((v, i) => (
+        <div key={i} style={{ aspectRatio: "1", border: "1px solid rgba(91,79,255,0.18)", borderRadius: 6, background: "rgba(5,18,45,0.85)", padding: 4, position: "relative" }}>
+          <CubeSVG view={v} />
+          <span style={{ position: "absolute", top: 4, left: 7, fontSize: 9, color: "#8AABCC", letterSpacing: "0.1em" }}>VIEW {i + 1}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── Visual question container ──────────────────────────────────────────── */
 
 function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => void }) {
@@ -882,6 +969,10 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
       return <PatchDisplay art={vis.art} hole={vis.hole} />;
     case "lines":
       return <LinesDisplay cells={vis.cells} />;
+    case "mirrorclock":
+      return <MirrorClockDisplay h={vis.h} m={vis.m} />;
+    case "cubeviews":
+      return <CubeViewsDisplay views={vis.views} />;
   }
 }
 
@@ -893,6 +984,14 @@ function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: n
   }
   if (vis?.kind === "lines") {
     return <LineCellSVG cell={vis.optCells[idx]} />;
+  }
+  if (vis?.kind === "cubeviews") {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 60 60">
+        <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
+        <g transform="matrix(40,0,0,40,10,10)"><CubeSymbol sym={vis.optSyms[idx]} /></g>
+      </svg>
+    );
   }
   if (vis?.kind === "patch") {
     return <PatchOptionSVG art={vis.art} hole={vis.hole} o={vis.opts[idx]} />;
@@ -1485,7 +1584,7 @@ function QuizScreen() {
     || q.vis?.kind === "raven2" || q.vis?.kind === "ravenrot" || q.vis?.kind === "ravenpattern" || q.vis?.kind === "topview"
     || q.vis?.kind === "clock" || q.vis?.kind === "heatmap" || q.vis?.kind === "mirror"
     || q.vis?.kind === "binary" || q.vis?.kind === "shadow3d" || q.vis?.kind === "origami" || q.vis?.kind === "shapesum"
-    || q.vis?.kind === "patch" || q.vis?.kind === "lines";
+    || q.vis?.kind === "patch" || q.vis?.kind === "lines" || q.vis?.kind === "cubeviews";
 
   const keyframes = `
     @keyframes bgPulse1 { 0%,100%{opacity:0.7} 50%{opacity:0.3} }

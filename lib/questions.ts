@@ -34,6 +34,8 @@ export type VisualDef =
   | { kind: "shapesum";    exA: RavenCell; exB: RavenCell; exC: RavenCell; qA: RavenCell; qB: RavenCell; optCells: RavenCell[] }
   | { kind: "symcode";     equations: string[];           optVals: string[] }
   | { kind: "lines";       cells: (LineCell | null)[];   optCells: LineCell[] }
+  | { kind: "mirrorclock"; h: number; m: number }
+  | { kind: "cubeviews";   views: [CubeSym, CubeSym, CubeSym][]; optSyms: CubeSym[] }
   | { kind: "patch";       art: PatchArt; hole: { x: number; y: number; w: number; h: number };
       opts: { dx: number; dy: number; flipX?: boolean }[] };
 
@@ -53,6 +55,9 @@ export type PatchArt =
   | { type: "wedges"; bands: number }                                   // wedges converging to the right edge
   | { type: "waves";  xs: number[]; amp0: number; ampK: number; period: number }
   | { type: "dots";   cols: number; rows: number };
+
+// Symbols on the faces of a cube; a view lists [top, front-left, right].
+export type CubeSym = "circle" | "ring" | "square" | "star" | "plus" | "triangle";
 
 export type PCell = { shape: "tri"|"sq"|"ci"; fill: "h"|"v"|"d" };
 
@@ -248,6 +253,7 @@ const ccDC = [di(30,30,18,false), c(30,30,8)];
 const L = (v: number, h: number, t: "s" | "u" | "d"): LineCell => ({ v, h, t });
 type EX = "s" | "u" | "d" | "x" | "y" | "k";
 const E = (...ex: EX[]): LineCell => ({ v: 0, h: 0, t: "s", ex });
+const LE = (v: number, ...ex: EX[]): LineCell => ({ v, h: 0, t: "s", ex });
 const R = (v: number, h: number, t: "s" | "u" | "d", rot: number, flip = false): LineCell => ({ v, h, t, ex: ["k"], rot, flip });
 
 // ── Multi-rule matrix helpers (Logical Reasoning) ───────────────────────────────────
@@ -410,16 +416,58 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
 
-  // ── CAT 1 · VERBAL INTELLIGENCE ──
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Hidden Totals", time: 60,
+    text: "Three rules link these figures. Count carefully and choose the missing figure.",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 3,
+    exp: "1) Each row and column has 1, 2 and 3 vertical strokes. 2) Each row and column has one straight, one upward and one downward kind of crossing stroke. 3) Every figure in a row has the same TOTAL number of strokes: 4 in row 1, 5 in row 2, 6 in row 3. The missing figure has 2 vertical strokes, upward curves, and 6 − 2 = 4 curves.",
+    vis: {
+      kind: "lines",
+      cells: [
+        L(1,3,"u"), L(2,2,"s"), L(3,1,"d"),
+        L(2,3,"d"), L(3,2,"u"), L(1,4,"s"),
+        L(3,3,"s"), L(1,5,"d"), null,
+      ],
+      optCells: [L(2,3,"u"), L(3,3,"u"), L(2,4,"d"), L(2,4,"u"), L(1,4,"u"), L(2,2,"u"), L(2,5,"u"), L(2,4,"s")],
+    },
+  },
 
   {
-    cat: 1, type: "text", diff: "hard", badge: "Hidden Word", time: 25,
-    text: "Which word can go in front of all three to make three new words?",
-    opts: ["PASS", "AIR", "KEY", "PATH"],
-    ans: 0,
-    exp: "PASS makes password, passport and passage. AIR works for airport but not \"airword\" or \"airage\".",
-    vis: { kind: "symbols", target: "___WORD    ___PORT    ___AGE" },
+    cat: 0, type: "raven", diff: "hard", badge: "Common Strokes", time: 60,
+    text: "In each row the first two figures combine into the third. Two rules work at once.",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 5,
+    exp: "Vertical strokes add up (1+1=2, 2+1=3, 1+2=3). Of the other strokes, only those that appear in BOTH of the first two figures are kept. Row 3: the upward curve and the falling diagonal are in both, the line and the downward curve are not. Answer: 3 vertical strokes, upward curve and falling diagonal.",
+    vis: {
+      kind: "lines",
+      cells: [
+        LE(1,"s","x","u"), LE(1,"x","u","d"), LE(2,"x","u"),
+        LE(2,"d","y","s"), LE(1,"y","s","x"), LE(3,"y","s"),
+        LE(1,"u","s","y"), LE(2,"y","u","d"), null,
+      ],
+      optCells: [LE(3,"u","s","y","d"), LE(3,"s","d"), LE(2,"u","y"), LE(3,"u"), LE(4,"u","y"), LE(3,"u","y"), LE(3,"u","d"), LE(3,"y","s")],
+    },
   },
+
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Column Logic", time: 70,
+    text: "The rules are not where you would expect them. Find them and choose the missing figure.",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 6,
+    exp: "Look down the columns, not along the rows. The number of vertical strokes is fixed per row (1, 2, 3). The other strokes combine DOWN each column: a stroke in only one of the top two figures is kept, a stroke in both cancels. Column 3: top has the line and rising diagonal; middle has the rising diagonal, falling diagonal and upward curve. The rising diagonal cancels, leaving line, falling diagonal and upward curve, with 3 vertical strokes.",
+    vis: {
+      kind: "lines",
+      cells: [
+        LE(1,"s","u"), LE(1,"d","y"), LE(1,"x","s"),
+        LE(2,"u","x"), LE(2,"s","d"), LE(2,"x","y","u"),
+        LE(3,"s","x"), LE(3,"y","s"), null,
+      ],
+      optCells: [LE(3,"x","y"), LE(3,"s","x","y","u"), LE(2,"s","y","u"), LE(3,"s","y"), LE(3,"y","u"), LE(3,"s","u","d"), LE(3,"s","y","u"), LE(4,"s","y","u")],
+    },
+  },
+
+  // ── CAT 1 · VERBAL INTELLIGENCE ──
 
   {
     cat: 1, type: "analogy", diff: "hard", badge: "Analogy", time: 25,
@@ -474,20 +522,12 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 2, type: "raven", diff: "hard", badge: "Rotation Steps", time: 55,
-    text: "Each row turns its figure by its own step. Follow the dot.",
-    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
-    ans: 0,
-    exp: "Row 1 turns 45° per step, row 2 turns 90° and row 3 turns 135°. The last figure is the row-3 figure turned 0° → 135° → 270° clockwise.",
-    vis: {
-      kind: "lines",
-      cells: [
-        R(1,1,"u",0), R(1,1,"u",45),  R(1,1,"u",90),
-        R(2,1,"d",0), R(2,1,"d",90),  R(2,1,"d",180),
-        R(1,2,"s",0), R(1,2,"s",135), null,
-      ],
-      optCells: [R(1,2,"s",270), R(1,2,"s",225), R(1,2,"s",180), R(1,2,"s",315), R(1,2,"s",90), R(1,2,"s",270,true), R(1,2,"s",135), R(1,2,"s",0)],
-    },
+    cat: 2, type: "text", diff: "hard", badge: "Mirror Clock", time: 45,
+    text: "A clock seen in a mirror (12 is at the top). What will the REAL time be 25 minutes from now?",
+    opts: ["5:05", "7:45", "4:15", "8:05"],
+    ans: 1,
+    exp: "A mirror swaps left and right, so the reflection looks like 4:40. Flip it back: the minute hand really points at 20 and the hour hand just past 7, so the real time is 7:20. 25 minutes later it is 7:45. (5:05 is what you get if you forget to un-mirror.)",
+    vis: { kind: "mirrorclock", h: 7, m: 20 },
   },
 
   {
@@ -521,19 +561,15 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 2, type: "raven", diff: "hard", badge: "Turn and Mirror", time: 55,
-    text: "Each row changes its figure in the same two steps. Which figure is missing?",
-    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
-    ans: 3,
-    exp: "From column 1 to column 2 the figure turns 90° clockwise. From column 2 to column 3 it is mirrored left to right. Watch the dot: in row 3 it goes top-left → top-right → back to top-left, while the strokes stay turned.",
+    cat: 2, type: "raven", diff: "hard", badge: "Cube Views", time: 70,
+    text: "These are three views of the SAME cube. Which symbol is on the face opposite the triangle?",
+    opts: ["A", "B", "C", "D"],
+    ans: 2,
+    exp: "The first two views show the triangle next to the circle, the square and the star, so its opposite face is either the plus or the ring. Now use the corners: in view 1 the circle (top), square (front) and triangle (right) go round one way; in view 3 the ring, plus and square must fit the same cube. Placing the ring on the left and the plus on the bottom matches view 3 exactly; the other way round gives a mirror-image cube. So the ring is opposite the triangle.",
     vis: {
-      kind: "lines",
-      cells: [
-        R(1,1,"u",0), R(1,1,"u",90), R(1,1,"u",90,true),
-        R(2,1,"d",0), R(2,1,"d",90), R(2,1,"d",90,true),
-        R(1,2,"s",0), R(1,2,"s",90), null,
-      ],
-      optCells: [R(1,2,"s",90), R(1,2,"s",270), R(1,2,"s",270,true), R(1,2,"s",90,true), R(1,2,"s",0,true), R(1,2,"s",180), R(2,2,"s",90,true), R(1,1,"s",90,true)],
+      kind: "cubeviews",
+      views: [["circle","square","triangle"], ["circle","triangle","star"], ["ring","plus","square"]],
+      optSyms: ["plus", "star", "ring", "circle"],
     },
   },
 
@@ -628,15 +664,6 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Divisibility", time: 12,
-    text: "How many of these numbers are divisible by 3?",
-    opts: ["3", "4", "5", "6"],
-    ans: 1,
-    exp: "27, 33, 51 and 75 are divisible by 3 (their digits add up to a multiple of 3). 14, 41, 62 and 88 are not.",
-    vis: { kind: "symbols", target: "14  27  33  41  51  62  75  88" },
-  },
-
-  {
     cat: 5, type: "symbols", diff: "hard", badge: "Spot the Difference", time: 10,
     text: "Which group is DIFFERENT from the other three?",
     opts: ["1st", "2nd", "3rd", "4th"],
@@ -652,15 +679,6 @@ export const ALL_QUESTIONS: Question[] = [
     ans: 0,
     exp: "D is taller than A, A is taller than B and B is taller than C, so the order is D > A > B > C. A is second.",
     vis: { kind: "symbols", target: "D taller than A · A taller than B · C shorter than B" },
-  },
-
-  {
-    cat: 5, type: "symbols", diff: "hard", badge: "Order of Operations", time: 12,
-    text: "Solve quickly:",
-    opts: ["45", "61", "29", "93"],
-    ans: 0,
-    exp: "Multiplications and powers first: 56 − 27 + 16 = 45.",
-    vis: { kind: "symbols", target: "7 × 8 − 3 × 9 + 4² = ?" },
   },
 
 ];

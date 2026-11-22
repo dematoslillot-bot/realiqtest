@@ -4,10 +4,12 @@ export type QuestionType =
   | "sequence" | "analogy" | "text" | "oddone" | "pattern";
 
 export type ShapeDef = {
-  s: "c" | "sq" | "tr" | "di";
+  s: "c" | "sq" | "tr" | "di" | "hx" | "pe" | "st" | "ln" | "ar";
   x: number; y: number;
   r: number;
-  f?: boolean;
+  f?: boolean | "g" | "z";   // filled · outline · grey (half-tone) · faint guide
+  rot?: number;              // degrees clockwise
+  ink?: "a" | "b";           // gold · cyan (default violet)
 };
 
 export type RavenCell = ShapeDef[];
@@ -35,6 +37,11 @@ export type VisualDef =
   | { kind: "symcode";     equations: string[];           optVals: string[] }
   | { kind: "lines";       cells: (LineCell | null)[];   optCells: LineCell[] }
   | { kind: "mirrorclock"; h: number; m: number }
+  | { kind: "gears";       gears: { x: number; y: number; r: number }[]; belt: { a: number; b: number; crossed: boolean }; bucketGear: number }
+  | { kind: "scales";      rows: { l: Weight[]; r: Weight[] | null }[] }
+  | { kind: "laser";       n: number; mirrors: { r: number; c: number; m: "/" | "\\" }[]; entryRow: number;
+      exits: { side: "top" | "right" | "bottom" | "left"; i: number; label: string }[] }
+  | { kind: "stroop";      words: { w: string; c: string }[] }
   | { kind: "cubeviews";   views: [CubeSym, CubeSym, CubeSym][]; optSyms: CubeSym[] }
   | { kind: "patch";       art: PatchArt; hole: { x: number; y: number; w: number; h: number };
       opts: { dx: number; dy: number; flipX?: boolean }[] };
@@ -58,6 +65,8 @@ export type PatchArt =
 
 // Symbols on the faces of a cube; a view lists [top, front-left, right].
 export type CubeSym = "circle" | "ring" | "square" | "star" | "plus" | "triangle";
+
+export type Weight = "c" | "s" | "t";   // circle, square, triangle on a balance scale
 
 export type PCell = { shape: "tri"|"sq"|"ci"; fill: "h"|"v"|"d" };
 
@@ -301,169 +310,220 @@ export const ALL_QUESTIONS: Question[] = [
   // ── CAT 0 · LOGICAL REASONING (picture completion + multi-rule matrices, all hard) ──
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Stroke Matrix", time: 60,
-    text: "Each figure is built from vertical strokes and crossing strokes. Find the rules and choose the missing figure.",
+    cat: 0, type: "raven", diff: "hard", badge: "Falling Shapes", time: 70,
+    text: "Each cell has shapes above and below a line. Find both rules and complete the matrix.",
     opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
-    ans: 5,
-    exp: "Three things vary independently, and each row and column contains each value exactly once: the number of vertical strokes (1, 2, 3), the number of crossing strokes (1, 2, 3) and their kind (straight, curving up, curving down). Row 3 is missing 2 vertical strokes, 1 crossing stroke and the upward curve.",
+    ans: 3,
+    exp: "Two rules work at once along each row. 1) Below the line you always find what was ABOVE the line in the previous cell: the shapes fall down. 2) Above the line, the third cell joins the top shapes of the first two cells, in the same order. Row 3: top = filled circle, square + circle; bottom = the circle that was on top in cell 2.",
     vis: {
-      kind: "lines",
+      kind: "raven",
       cells: [
-        L(1,1,"u"), L(2,2,"s"), L(3,3,"d"),
-        L(2,3,"d"), L(3,1,"u"), L(1,2,"s"),
-        L(3,2,"s"), L(1,3,"d"), null,
+        [{s:"ln",x:30,y:31,r:20,f:true},{s:"sq",x:30.0,y:20,r:4.5,f:false},{s:"c",x:23.5,y:42,r:4.5,f:false},{s:"c",x:36.5,y:42,r:4.5,f:false}],
+        [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:23.5,y:20,r:4.5,f:false},{s:"c",x:36.5,y:20,r:4.5,f:true},{s:"sq",x:30.0,y:42,r:4.5,f:false}],
+        [{s:"ln",x:30,y:31,r:20,f:true},{s:"sq",x:17.0,y:20,r:4.5,f:false},{s:"c",x:30.0,y:20,r:4.5,f:false},{s:"c",x:43.0,y:20,r:4.5,f:true},{s:"c",x:23.5,y:42,r:4.5,f:false},{s:"c",x:36.5,y:42,r:4.5,f:true}],
+        [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:30.0,y:20,r:4.5,f:false},{s:"sq",x:30.0,y:42,r:4.5,f:true}],
+        [{s:"ln",x:30,y:31,r:20,f:true},{s:"sq",x:23.5,y:20,r:4.5,f:true},{s:"sq",x:36.5,y:20,r:4.5,f:false},{s:"c",x:30.0,y:42,r:4.5,f:false}],
+        [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:17.0,y:20,r:4.5,f:false},{s:"sq",x:30.0,y:20,r:4.5,f:true},{s:"sq",x:43.0,y:20,r:4.5,f:false},{s:"sq",x:23.5,y:42,r:4.5,f:true},{s:"sq",x:36.5,y:42,r:4.5,f:false}],
+        [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:23.5,y:20,r:4.5,f:true},{s:"sq",x:36.5,y:20,r:4.5,f:false},{s:"c",x:30.0,y:42,r:4.5,f:false}],
+        [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:30.0,y:20,r:4.5,f:false},{s:"c",x:23.5,y:42,r:4.5,f:true},{s:"sq",x:36.5,y:42,r:4.5,f:false}],
+        null,
       ],
-      optCells: [L(2,1,"s"), L(1,1,"u"), L(2,2,"u"), L(2,1,"d"), L(3,1,"u"), L(2,1,"u"), L(2,3,"u"), L(3,2,"d")],
+      optCells: [[{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:17.0,y:20,r:4.5,f:false},{s:"c",x:30.0,y:20,r:4.5,f:true},{s:"sq",x:43.0,y:20,r:4.5,f:false},{s:"c",x:30.0,y:42,r:4.5,f:false}], [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:17.0,y:20,r:4.5,f:true},{s:"sq",x:30.0,y:20,r:4.5,f:false},{s:"c",x:43.0,y:20,r:4.5,f:false},{s:"c",x:23.5,y:42,r:4.5,f:true},{s:"sq",x:36.5,y:42,r:4.5,f:false}], [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:23.5,y:20,r:4.5,f:true},{s:"sq",x:36.5,y:20,r:4.5,f:false},{s:"c",x:30.0,y:42,r:4.5,f:false}], [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:17.0,y:20,r:4.5,f:true},{s:"sq",x:30.0,y:20,r:4.5,f:false},{s:"c",x:43.0,y:20,r:4.5,f:false},{s:"c",x:30.0,y:42,r:4.5,f:false}], [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:17.0,y:20,r:4.5,f:true},{s:"sq",x:30.0,y:20,r:4.5,f:false},{s:"c",x:43.0,y:20,r:4.5,f:false},{s:"c",x:23.5,y:42,r:4.5,f:false},{s:"c",x:36.5,y:42,r:4.5,f:false}], [{s:"ln",x:30,y:31,r:20,f:true},{s:"sq",x:17.0,y:20,r:4.5,f:false},{s:"c",x:30.0,y:20,r:4.5,f:true},{s:"c",x:43.0,y:20,r:4.5,f:false},{s:"c",x:30.0,y:42,r:4.5,f:false}], [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:17.0,y:20,r:4.5,f:true},{s:"sq",x:30.0,y:20,r:4.5,f:false},{s:"c",x:43.0,y:20,r:4.5,f:false}], [{s:"ln",x:30,y:31,r:20,f:true},{s:"c",x:23.5,y:20,r:4.5,f:true},{s:"c",x:36.5,y:20,r:4.5,f:false},{s:"c",x:30.0,y:42,r:4.5,f:false}]],
     },
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Stroke Arithmetic", time: 60,
-    text: "In each row the first two figures combine into the third. Find all the rules and choose the missing figure.",
-    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
-    ans: 2,
-    exp: "Vertical strokes add up along each row (1+1=2, 2+1=3, 1+2=3). The number of crossing strokes is the same in a whole row (1, then 2, then 3). The kind of crossing stroke appears once per row and column (straight, up, down). So the missing figure has 3 vertical strokes and 3 upward curves.",
+    cat: 0, type: "text", diff: "hard", badge: "Gear Train", time: 50,
+    text: "The big gear on the left turns the way the arrow shows. What happens to the bucket?",
+    opts: ["It goes up", "It goes down", "It does not move", "The gears jam"],
+    ans: 0,
+    exp: "Gears that touch turn opposite ways: big gear clockwise, next anticlockwise, third clockwise. The small gear at the bottom touches nothing that matters. The belt is CROSSED, so it reverses the turn again: the gear on the right goes anticlockwise, and the gear holding the rope goes clockwise. The rope hangs from its left side, which moves up when it turns clockwise, so the bucket rises.",
     vis: {
-      kind: "lines",
-      cells: [
-        L(1,1,"s"), L(1,1,"u"), L(2,1,"d"),
-        L(2,2,"u"), L(1,2,"d"), L(3,2,"s"),
-        L(1,3,"d"), L(2,3,"s"), null,
+      kind: "gears",
+      gears: [
+        { x: 50, y: 82, r: 30 }, { x: 93, y: 57, r: 20 }, { x: 133, y: 80, r: 26 },
+        { x: 126, y: 122, r: 16 }, { x: 232, y: 70, r: 22 }, { x: 246, y: 108, r: 18 },
       ],
-      optCells: [L(3,3,"s"), L(1,3,"u"), L(3,3,"u"), L(3,2,"u"), L(3,3,"d"), L(2,3,"u"), L(3,1,"u"), L(2,2,"s")],
+      belt: { a: 2, b: 4, crossed: true },
+      bucketGear: 5,
     },
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Stroke Overlay", time: 60,
-    text: "The first two figures in each row combine into the third. Find the rule.",
+    cat: 0, type: "text", diff: "hard", badge: "Balance", time: 50,
+    text: "The first two scales are balanced. How many squares balance the last one?",
+    opts: ["3", "4", "5", "6"],
+    ans: 1,
+    exp: "Scale 1: 3 circles = 2 squares, so a circle is 2/3 of a square. Scale 2: triangle = circle + square = 5/3 of a square. Last scale: 2 triangles + 1 circle = 10/3 + 2/3 = 12/3 = 4 squares. (With weights: circle 2, square 3, triangle 5 → 5+5+2 = 12 = 4 × 3.)",
+    vis: {
+      kind: "scales",
+      rows: [
+        { l: ["c", "c", "c"], r: ["s", "s"] },
+        { l: ["t"], r: ["c", "s"] },
+        { l: ["t", "t", "c"], r: null },
+      ],
+    },
+  },
+
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Built Figures", time: 60,
+    text: "Each figure is built from three parts. Find the rule for each part and choose the missing figure.",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 6,
+    exp: "Three parts change independently, and every row and every column contains each version once: the big outline (hexagon, circle, diamond), the small shape on top (circle, square, triangle) and the number of dots underneath (0, 1, 2). The missing figure is a circle with a square on top and no dots.",
+    vis: {
+      kind: "raven",
+      cells: [
+        [{s:"hx",x:30,y:31,r:15,f:false},{s:"c",x:30,y:10,r:5,f:true}],
+        [{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}],
+        [{s:"di",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true},{s:"c",x:25.5,y:53,r:2.6,f:true},{s:"c",x:34.5,y:53,r:2.6,f:true}],
+        [{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true},{s:"c",x:25.5,y:53,r:2.6,f:true},{s:"c",x:34.5,y:53,r:2.6,f:true}],
+        [{s:"di",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true}],
+        [{s:"hx",x:30,y:31,r:15,f:false},{s:"c",x:30,y:10,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}],
+        [{s:"di",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}],
+        [{s:"hx",x:30,y:31,r:15,f:false},{s:"c",x:30,y:10,r:5,f:true},{s:"c",x:25.5,y:53,r:2.6,f:true},{s:"c",x:34.5,y:53,r:2.6,f:true}],
+        null,
+      ],
+      optCells: [[{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}], [{s:"c",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true}], [{s:"hx",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true}], [{s:"c",x:30,y:31,r:15,f:false},{s:"c",x:30,y:10,r:5,f:true}], [{s:"di",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true}], [{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true},{s:"c",x:25.5,y:53,r:2.6,f:true},{s:"c",x:34.5,y:53,r:2.6,f:true}], [{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true}], [{s:"hx",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}]],
+    },
+  },
+
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Moving Pieces", time: 70,
+    text: "Three things change from cell to cell, reading left to right, row by row. What comes ninth?",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 1,
+    exp: "Read the cells like a book. The star moves one place clockwise each time. The black square jumps three places anticlockwise each time. The small shape in the middle repeats every four cells: triangle, circle, square, diamond. Cell 9: star top-left, square bottom-middle, triangle in the middle.",
+    vis: {
+      kind: "raven",
+      cells: [
+        [{s:"st",x:14,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:30,y:46,r:5,f:true},{s:"tr",x:30,y:30,r:5,f:false}],
+        [{s:"st",x:30,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:46,y:14,r:5,f:true},{s:"c",x:30,y:30,r:5,f:false}],
+        [{s:"st",x:46,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:14,y:30,r:5,f:true},{s:"sq",x:30,y:30,r:5,f:false}],
+        [{s:"st",x:46,y:30,r:6.5,f:true,ink:"b"},{s:"sq",x:46,y:46,r:5,f:true},{s:"di",x:30,y:30,r:5,f:false}],
+        [{s:"st",x:46,y:46,r:6.5,f:true,ink:"b"},{s:"sq",x:30,y:14,r:5,f:true},{s:"tr",x:30,y:30,r:5,f:false}],
+        [{s:"st",x:30,y:46,r:6.5,f:true,ink:"b"},{s:"sq",x:14,y:46,r:5,f:true},{s:"c",x:30,y:30,r:5,f:false}],
+        [{s:"st",x:14,y:46,r:6.5,f:true,ink:"b"},{s:"sq",x:46,y:30,r:5,f:true},{s:"sq",x:30,y:30,r:5,f:false}],
+        [{s:"st",x:14,y:30,r:6.5,f:true,ink:"b"},{s:"sq",x:14,y:14,r:5,f:true},{s:"di",x:30,y:30,r:5,f:false}],
+        null,
+      ],
+      optCells: [[{s:"st",x:30,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:30,y:46,r:5,f:true},{s:"tr",x:30,y:30,r:5,f:false}], [{s:"st",x:14,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:30,y:46,r:5,f:true},{s:"tr",x:30,y:30,r:5,f:false}], [{s:"st",x:14,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:46,y:14,r:5,f:true},{s:"tr",x:30,y:30,r:5,f:false}], [{s:"st",x:14,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:30,y:46,r:5,f:true},{s:"c",x:30,y:30,r:5,f:false}], [{s:"st",x:14,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:46,y:46,r:5,f:true},{s:"tr",x:30,y:30,r:5,f:false}], [{s:"st",x:14,y:30,r:6.5,f:true,ink:"b"},{s:"sq",x:30,y:46,r:5,f:true},{s:"tr",x:30,y:30,r:5,f:false}], [{s:"st",x:14,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:30,y:46,r:5,f:true},{s:"di",x:30,y:30,r:5,f:false}], [{s:"st",x:30,y:14,r:6.5,f:true,ink:"b"},{s:"sq",x:46,y:14,r:5,f:true},{s:"c",x:30,y:30,r:5,f:false}]],
+    },
+  },
+
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Counting Sides", time: 70,
+    text: "Find what each row has in common and how the shading works. Which figure is missing?",
     opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
     ans: 4,
-    exp: "Strokes that appear in only one of the first two figures are kept; strokes that appear in both cancel out. Row 3: the horizontal line and the rising diagonal appear only in figure 1, the downward curve only in figure 2, and the falling diagonal is in both, so it disappears.",
+    exp: "Add up the sides of every shape in a row: row 1 is 3+3+4+5 = 15 and row 2 is 6+3+6 = 15. Row 3 already has 5+3+3 = 11, so it needs 4 sides: a square. Shading: each row and column has one filled, one outlined and one grey figure, so the square is filled.",
     vis: {
-      kind: "lines",
+      kind: "raven",
       cells: [
-        E("s","x"),     E("x","u"), E("s","u"),
-        E("u","d","y"), E("d","s"), E("u","y","s"),
-        E("s","y","x"), E("y","d"), null,
+        [{s:"tr",x:17,y:31,r:10,f:true},{s:"tr",x:43,y:31,r:10,f:true}],
+        [{s:"sq",x:30,y:31,r:14,f:false}],
+        [{s:"pe",x:30,y:31,r:14,f:"g"}],
+        [{s:"hx",x:30,y:31,r:14,f:"g"}],
+        [{s:"tr",x:30,y:31,r:14,f:true}],
+        [{s:"hx",x:30,y:31,r:14,f:false}],
+        [{s:"pe",x:30,y:31,r:14,f:false}],
+        [{s:"tr",x:17,y:31,r:10,f:"g"},{s:"tr",x:43,y:31,r:10,f:"g"}],
+        null,
       ],
-      optCells: [E("s","x","y","d"), E("y"), E("s","x"), E("s","d"), E("s","x","d"), E("x","d"), E("s","x","d","u"), E("s","y","d")],
+      optCells: [[{s:"pe",x:30,y:31,r:14,f:true}], [{s:"sq",x:30,y:31,r:14,f:false}], [{s:"sq",x:30,y:31,r:14,f:"g"}], [{s:"tr",x:30,y:31,r:14,f:true}], [{s:"sq",x:30,y:31,r:14,f:true}], [{s:"tr",x:17,y:31,r:10,f:true},{s:"tr",x:43,y:31,r:10,f:true}], [{s:"hx",x:30,y:31,r:14,f:true}], [{s:"sq",x:17,y:31,r:10,f:true},{s:"tr",x:43,y:31,r:10,f:true}]],
     },
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Turning Strokes", time: 60,
-    text: "Find the three rules (strokes, curve, rotation) and pick the missing figure.",
+    cat: 0, type: "raven", diff: "hard", badge: "Adding Turns", time: 60,
+    text: "Each arrow points in a direction. Find how the third arrow in each row is made.",
     opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
-    ans: 6,
-    exp: "Rotation: every step to the right turns the figure 90° clockwise (watch the dot). Number of vertical strokes: 1 in row 1, 2 in row 2, 3 in row 3. Kind of curve: each row and column has one straight, one upward and one downward. The missing figure has 3 strokes and an upward curve, turned 180°.",
-    vis: {
-      kind: "lines",
-      cells: [
-        R(1,1,"u",0), R(1,1,"s",90), R(1,1,"d",180),
-        R(2,1,"d",0), R(2,1,"u",90), R(2,1,"s",180),
-        R(3,1,"s",0), R(3,1,"d",90), null,
-      ],
-      optCells: [R(3,1,"u",90), R(3,1,"u",270), R(3,1,"d",180), R(3,1,"s",180), R(2,1,"u",180), R(3,1,"u",180,true), R(3,1,"u",180), R(3,1,"u",0)],
-    },
-  },
-
-  {
-    cat: 0, type: "raven", diff: "hard", badge: "Moving Pieces", time: 45,
-    text: "The circle and the square each move in their own way. Where are they in the empty cell?",
-    opts: ["A", "B", "C", "D"],
-    ans: 3,
-    exp: "In every row the filled circle moves one corner clockwise and the empty square moves one corner anticlockwise. Row 3 continues: circle top-left, square bottom-left.",
-    vis: {
-      kind: "raven",
-      cells: [cs2(0,3), cs2(1,2), cs2(2,1),  cs2(1,0), cs2(2,3), cs2(3,2),  cs2(2,1), cs2(3,0), null],
-      optCells: [cs2(1,3), cs2(0,1), cs2(3,0), cs2(0,3)],
-    },
-  },
-
-  {
-    cat: 0, type: "raven", diff: "hard", badge: "Count Matrix", time: 45,
-    text: "Find the rules for number, shape and fill. Which image completes the matrix?",
-    opts: ["A", "B", "C", "D"],
-    ans: 0,
-    exp: "Number: one more shape in each step to the right and down (1-2-3, 2-3-4, 3-4-5). Shape: column 1 circles, column 2 squares, column 3 triangles. Fill: filled and outlined alternate like a chessboard, so the bottom-right cell is filled. Answer: five filled triangles.",
-    vis: {
-      kind: "raven",
-      cells: [
-        many("c",1,true),  many("sq",2,false), many("tr",3,true),
-        many("c",2,false), many("sq",3,true),  many("tr",4,false),
-        many("c",3,true),  many("sq",4,false), null,
-      ],
-      optCells: [many("tr",5,true), many("tr",4,true), many("tr",5,false), many("sq",5,true)],
-    },
-  },
-
-  {
-    cat: 0, type: "raven", diff: "hard", badge: "Cancelling Dots", time: 50,
-    text: "In each row, the first two cells combine to make the third. Find the rule and complete the last row.",
-    opts: ["A", "B", "C", "D"],
     ans: 2,
-    exp: "Dots that appear in only one of the first two cells are kept; dots that appear in both cancel out. Row 3: top-left and bottom-left only in cell 1, bottom-right only in cell 2, top-right in both (cancels). Answer: top-left, bottom-left, bottom-right.",
+    exp: "Measure the turn of each arrow from 'up', clockwise. In every row the third arrow's turn is the sum of the first two: 45\u00b0 + 180\u00b0 = 225\u00b0 and 90\u00b0 + 90\u00b0 = 180\u00b0. Row 3: 135\u00b0 + 45\u00b0 = 180\u00b0, so it points down. The colours appear once per row and column, so it is cyan. (If you thought the turns go up by equal steps, row 2 already breaks that rule.)",
     vis: {
       kind: "raven",
       cells: [
-        dots("TL","C"),      dots("TR","C"),  dots("TL","TR"),
-        dots("BL","BR","C"), dots("BR","TL"), dots("BL","C","TL"),
-        dots("TL","TR","BL"), dots("TR","BR"), null,
+        [{s:"ar",x:30,y:30,r:20,f:true,rot:45}],
+        [{s:"ar",x:30,y:30,r:20,f:true,rot:180,ink:"b"}],
+        [{s:"ar",x:30,y:30,r:20,f:true,rot:225,ink:"a"}],
+        [{s:"ar",x:30,y:30,r:20,f:true,rot:90,ink:"b"}],
+        [{s:"ar",x:30,y:30,r:20,f:true,rot:90,ink:"a"}],
+        [{s:"ar",x:30,y:30,r:20,f:true,rot:180}],
+        [{s:"ar",x:30,y:30,r:20,f:true,rot:135,ink:"a"}],
+        [{s:"ar",x:30,y:30,r:20,f:true,rot:45}],
+        null,
       ],
-      optCells: [dots("TL","TR","BL","BR"), dots("TR"), dots("TL","BL","BR"), dots("TL","BL","BR","C")],
+      optCells: [[{s:"ar",x:30,y:30,r:20,f:true,rot:315,ink:"b"}], [{s:"ar",x:30,y:30,r:20,f:true,rot:180}], [{s:"ar",x:30,y:30,r:20,f:true,rot:180,ink:"b"}], [{s:"ar",x:30,y:30,r:20,f:true,rot:180,ink:"a"}], [{s:"ar",x:30,y:30,r:20,f:true,rot:90,ink:"b"}], [{s:"ar",x:30,y:30,r:20,f:true,rot:0,ink:"b"}], [{s:"ar",x:30,y:30,r:20,f:true,rot:225,ink:"b"}], [{s:"ar",x:30,y:30,r:20,f:true,rot:315,ink:"a"}]],
     },
   },
 
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Hidden Totals", time: 60,
-    text: "Three rules link these figures. Count carefully and choose the missing figure.",
+    cat: 0, type: "raven", diff: "hard", badge: "Take Away", time: 60,
+    text: "In each row the first two figures produce the third. Find the rule.",
     opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
-    ans: 3,
-    exp: "1) Each row and column has 1, 2 and 3 vertical strokes. 2) Each row and column has one straight, one upward and one downward kind of crossing stroke. 3) Every figure in a row has the same TOTAL number of strokes: 4 in row 1, 5 in row 2, 6 in row 3. The missing figure has 2 vertical strokes, upward curves, and 6 − 2 = 4 curves.",
+    ans: 7,
+    exp: "The third figure keeps the dots of the first figure that do NOT appear in the second one: first minus second. It is not 'keep the dots that appear only once': in row 2 the lower-left dot of the second figure is not in the first, and it does not appear in the result. Row 3: the first has 4 dots; the lower-right and upper-left ones also appear in the second, so only the upper-right and lower-left dots are left.",
     vis: {
-      kind: "lines",
+      kind: "raven",
       cells: [
-        L(1,3,"u"), L(2,2,"s"), L(3,1,"d"),
-        L(2,3,"d"), L(3,2,"u"), L(1,4,"s"),
-        L(3,3,"s"), L(1,5,"d"), null,
+        [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:30.0,y:13.0,r:4.5,f:true},{s:"c",x:44.7,y:21.5,r:4.5,f:true},{s:"c",x:30.0,y:47.0,r:4.5,f:true},{s:"c",x:15.3,y:38.5,r:4.5,f:true}],
+        [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:44.7,y:21.5,r:4.5,f:true},{s:"c",x:15.3,y:38.5,r:4.5,f:true}],
+        [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:30.0,y:13.0,r:4.5,f:true},{s:"c",x:30.0,y:47.0,r:4.5,f:true}],
+        [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:30.0,y:13.0,r:4.5,f:true},{s:"c",x:44.7,y:38.5,r:4.5,f:true},{s:"c",x:30.0,y:47.0,r:4.5,f:true},{s:"c",x:15.3,y:21.5,r:4.5,f:true}],
+        [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:44.7,y:38.5,r:4.5,f:true},{s:"c",x:15.3,y:38.5,r:4.5,f:true}],
+        [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:30.0,y:13.0,r:4.5,f:true},{s:"c",x:30.0,y:47.0,r:4.5,f:true},{s:"c",x:15.3,y:21.5,r:4.5,f:true}],
+        [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:44.7,y:21.5,r:4.5,f:true},{s:"c",x:44.7,y:38.5,r:4.5,f:true},{s:"c",x:15.3,y:38.5,r:4.5,f:true},{s:"c",x:15.3,y:21.5,r:4.5,f:true}],
+        [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:30.0,y:13.0,r:4.5,f:true},{s:"c",x:44.7,y:38.5,r:4.5,f:true},{s:"c",x:15.3,y:21.5,r:4.5,f:true}],
+        null,
       ],
-      optCells: [L(2,3,"u"), L(3,3,"u"), L(2,4,"d"), L(2,4,"u"), L(1,4,"u"), L(2,2,"u"), L(2,5,"u"), L(2,4,"s")],
+      optCells: [[{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:30.0,y:13.0,r:4.5,f:true},{s:"c",x:44.7,y:21.5,r:4.5,f:true},{s:"c",x:15.3,y:38.5,r:4.5,f:true}], [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:44.7,y:38.5,r:4.5,f:true},{s:"c",x:15.3,y:21.5,r:4.5,f:true}], [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:30.0,y:13.0,r:4.5,f:true},{s:"c",x:44.7,y:21.5,r:4.5,f:true},{s:"c",x:44.7,y:38.5,r:4.5,f:true},{s:"c",x:15.3,y:38.5,r:4.5,f:true},{s:"c",x:15.3,y:21.5,r:4.5,f:true}], [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:44.7,y:21.5,r:4.5,f:true}], [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:15.3,y:38.5,r:4.5,f:true}], [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:44.7,y:21.5,r:4.5,f:true},{s:"c",x:44.7,y:38.5,r:4.5,f:true},{s:"c",x:15.3,y:38.5,r:4.5,f:true}], [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:30.0,y:13.0,r:4.5,f:true},{s:"c",x:30.0,y:47.0,r:4.5,f:true}], [{s:"c",x:30,y:30,r:17,f:"z"},{s:"c",x:44.7,y:21.5,r:4.5,f:true},{s:"c",x:15.3,y:38.5,r:4.5,f:true}]],
     },
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Common Strokes", time: 60,
-    text: "In each row the first two figures combine into the third. Two rules work at once.",
+    cat: 0, type: "raven", diff: "hard", badge: "Inside Out", time: 70,
+    text: "Look at how the shapes inside and outside are passed along. Which figure is missing?",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 0,
+    exp: "The shapes follow the cycle square \u2192 circle \u2192 triangle \u2192 diamond \u2192 square. In every figure the inner shape is the one after the outer shape, and the next figure to the right starts with that inner shape as its outer shape. So the missing figure is a square with a circle inside. The shading of the inner shape is filled, grey or empty once in every row and column, which makes it grey.",
+    vis: {
+      kind: "raven",
+      cells: [
+        [{s:"sq",x:30,y:30,r:21,f:false},{s:"c",x:30,y:30,r:8,f:true}],
+        [{s:"c",x:30,y:30,r:21,f:false},{s:"tr",x:30,y:30,r:8,f:"g"}],
+        [{s:"tr",x:30,y:34,r:24,f:false},{s:"di",x:30,y:37,r:8,f:false}],
+        [{s:"c",x:30,y:30,r:21,f:false},{s:"tr",x:30,y:30,r:8,f:"g"}],
+        [{s:"tr",x:30,y:34,r:24,f:false},{s:"di",x:30,y:37,r:8,f:false}],
+        [{s:"di",x:30,y:30,r:21,f:false},{s:"sq",x:30,y:30,r:8,f:true}],
+        [{s:"tr",x:30,y:34,r:24,f:false},{s:"di",x:30,y:37,r:8,f:false}],
+        [{s:"di",x:30,y:30,r:21,f:false},{s:"sq",x:30,y:30,r:8,f:true}],
+        null,
+      ],
+      optCells: [[{s:"sq",x:30,y:30,r:21,f:false},{s:"c",x:30,y:30,r:8,f:"g"}], [{s:"sq",x:30,y:30,r:21,f:false},{s:"c",x:30,y:30,r:8,f:true}], [{s:"sq",x:30,y:30,r:21,f:false},{s:"c",x:30,y:30,r:8,f:false}], [{s:"di",x:30,y:30,r:21,f:false},{s:"sq",x:30,y:30,r:8,f:"g"}], [{s:"c",x:30,y:30,r:21,f:false},{s:"tr",x:30,y:30,r:8,f:"g"}], [{s:"c",x:30,y:30,r:21,f:false},{s:"sq",x:30,y:30,r:8,f:"g"}], [{s:"sq",x:30,y:30,r:21,f:false},{s:"tr",x:30,y:30,r:8,f:"g"}], [{s:"tr",x:30,y:34,r:24,f:false},{s:"di",x:30,y:37,r:8,f:true}]],
+    },
+  },
+
+  {
+    cat: 0, type: "raven", diff: "hard", badge: "Golden Overlap", time: 70,
+    text: "In each row the first two figures combine into the third. Why are some squares gold?",
     opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
     ans: 5,
-    exp: "Vertical strokes add up (1+1=2, 2+1=3, 1+2=3). Of the other strokes, only those that appear in BOTH of the first two figures are kept. Row 3: the upward curve and the falling diagonal are in both, the line and the downward curve are not. Answer: 3 vertical strokes, upward curve and falling diagonal.",
+    exp: "The third figure puts the first two on top of each other. Squares that appear in only one of them stay purple; squares that appear in BOTH turn gold. Row 3: the left-middle and bottom-left squares are in both (gold), the top-left, centre and right-middle squares are in only one (purple).",
     vis: {
-      kind: "lines",
+      kind: "raven",
       cells: [
-        LE(1,"s","x","u"), LE(1,"x","u","d"), LE(2,"x","u"),
-        LE(2,"d","y","s"), LE(1,"y","s","x"), LE(3,"y","s"),
-        LE(1,"u","s","y"), LE(2,"y","u","d"), null,
+        [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true},{s:"sq",x:45,y:45,r:5.5,f:true}],
+        [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true},{s:"sq",x:15,y:45,r:5.5,f:true}],
+        [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:45,y:15,r:5.5,f:true},{s:"sq",x:15,y:45,r:5.5,f:true},{s:"sq",x:45,y:45,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true,ink:"a"}],
+        [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:30,y:15,r:5.5,f:true},{s:"sq",x:45,y:15,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true}],
+        [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true},{s:"sq",x:30,y:45,r:5.5,f:true}],
+        [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:45,y:15,r:5.5,f:true},{s:"sq",x:30,y:45,r:5.5,f:true},{s:"sq",x:30,y:15,r:5.5,f:true,ink:"a"},{s:"sq",x:30,y:30,r:5.5,f:true,ink:"a"}],
+        [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true},{s:"sq",x:45,y:30,r:5.5,f:true},{s:"sq",x:15,y:45,r:5.5,f:true}],
+        [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:15,y:30,r:5.5,f:true},{s:"sq",x:15,y:45,r:5.5,f:true}],
+        null,
       ],
-      optCells: [LE(3,"u","s","y","d"), LE(3,"s","d"), LE(2,"u","y"), LE(3,"u"), LE(4,"u","y"), LE(3,"u","y"), LE(3,"u","d"), LE(3,"y","s")],
-    },
-  },
-
-  {
-    cat: 0, type: "raven", diff: "hard", badge: "Column Logic", time: 70,
-    text: "The rules are not where you would expect them. Find them and choose the missing figure.",
-    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
-    ans: 6,
-    exp: "Look down the columns, not along the rows. The number of vertical strokes is fixed per row (1, 2, 3). The other strokes combine DOWN each column: a stroke in only one of the top two figures is kept, a stroke in both cancels. Column 3: top has the line and rising diagonal; middle has the rising diagonal, falling diagonal and upward curve. The rising diagonal cancels, leaving line, falling diagonal and upward curve, with 3 vertical strokes.",
-    vis: {
-      kind: "lines",
-      cells: [
-        LE(1,"s","u"), LE(1,"d","y"), LE(1,"x","s"),
-        LE(2,"u","x"), LE(2,"s","d"), LE(2,"x","y","u"),
-        LE(3,"s","x"), LE(3,"y","s"), null,
-      ],
-      optCells: [LE(3,"x","y"), LE(3,"s","x","y","u"), LE(2,"s","y","u"), LE(3,"s","y"), LE(3,"y","u"), LE(3,"s","u","d"), LE(3,"s","y","u"), LE(4,"s","y","u")],
+      optCells: [[{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:15,y:30,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true},{s:"sq",x:45,y:30,r:5.5,f:true},{s:"sq",x:15,y:45,r:5.5,f:true}], [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:true},{s:"sq",x:15,y:45,r:5.5,f:true},{s:"sq",x:15,y:15,r:5.5,f:true,ink:"a"},{s:"sq",x:30,y:30,r:5.5,f:true,ink:"a"},{s:"sq",x:45,y:30,r:5.5,f:true,ink:"a"}], [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true},{s:"sq",x:45,y:30,r:5.5,f:true}], [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:true,ink:"a"},{s:"sq",x:15,y:45,r:5.5,f:true,ink:"a"}], [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true},{s:"sq",x:45,y:30,r:5.5,f:true},{s:"sq",x:15,y:45,r:5.5,f:true},{s:"sq",x:15,y:30,r:5.5,f:true,ink:"a"}], [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true},{s:"sq",x:45,y:30,r:5.5,f:true},{s:"sq",x:15,y:30,r:5.5,f:true,ink:"a"},{s:"sq",x:15,y:45,r:5.5,f:true,ink:"a"}], [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:30,y:30,r:5.5,f:true},{s:"sq",x:45,y:30,r:5.5,f:true},{s:"sq",x:45,y:45,r:5.5,f:true},{s:"sq",x:15,y:30,r:5.5,f:true,ink:"a"},{s:"sq",x:15,y:45,r:5.5,f:true,ink:"a"}], [{s:"sq",x:15,y:15,r:5.5,f:"z"},{s:"sq",x:30,y:15,r:5.5,f:"z"},{s:"sq",x:45,y:15,r:5.5,f:"z"},{s:"sq",x:15,y:30,r:5.5,f:"z"},{s:"sq",x:30,y:30,r:5.5,f:"z"},{s:"sq",x:45,y:30,r:5.5,f:"z"},{s:"sq",x:15,y:45,r:5.5,f:"z"},{s:"sq",x:30,y:45,r:5.5,f:"z"},{s:"sq",x:45,y:45,r:5.5,f:"z"},{s:"sq",x:15,y:15,r:5.5,f:true},{s:"sq",x:45,y:30,r:5.5,f:true},{s:"sq",x:15,y:30,r:5.5,f:true,ink:"a"},{s:"sq",x:30,y:30,r:5.5,f:true,ink:"a"},{s:"sq",x:15,y:45,r:5.5,f:true,ink:"a"}]],
     },
   },
 
@@ -531,22 +591,21 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 2, type: "rotation", diff: "medium", badge: "Shadow 3D", time: 30,
-    text: "The 3D arrangement of cubes is shown. Which silhouette represents the view from directly in FRONT?",
+    cat: 2, type: "text", diff: "hard", badge: "Laser Mirrors", time: 60,
+    text: "The laser enters from the left. Mirrors reflect on both sides. Where does the beam leave the box?",
     opts: ["A", "B", "C", "D"],
-    ans: 0,
-    exp: "The arrangement has 3 cubes along the base and a 2-cube tower on the right. Viewed from the front: 3 wide at bottom, the rightmost column extends 3 units high.",
+    ans: 2,
+    exp: "Follow the beam cell by cell: right, down at the first mirror, then it zig-zags through the box, crossing its own path several times. One mirror (bottom-left corner) is never hit. The beam finally travels down column 4 and leaves through the bottom at C.",
     vis: {
-      kind: "shadow3d",
-      optGrids: [
-        // A correct: 3 wide base, right col 3 tall
-        "M6,38 h14 v14 h-14 Z M22,38 h14 v14 h-14 Z M38,38 h14 v14 h-14 Z M38,22 h14 v14 h-14 Z M38,6 h14 v14 h-14 Z",
-        // B wrong: flat 3×1
-        "M6,38 h14 v14 h-14 Z M22,38 h14 v14 h-14 Z M38,38 h14 v14 h-14 Z",
-        // C wrong: staircase ascending left-to-right
-        "M6,6 h14 v14 h-14 Z M6,22 h14 v14 h-14 Z M6,38 h14 v14 h-14 Z M22,22 h14 v14 h-14 Z M22,38 h14 v14 h-14 Z M38,38 h14 v14 h-14 Z",
-        // D wrong: 2 columns of 3 (too wide)
-        "M6,6 h14 v14 h-14 Z M6,22 h14 v14 h-14 Z M6,38 h14 v14 h-14 Z M22,6 h14 v14 h-14 Z M22,22 h14 v14 h-14 Z M22,38 h14 v14 h-14 Z",
+      kind: "laser", n: 5, entryRow: 2,
+      mirrors: [
+        { r: 0, c: 3, m: "\\" }, { r: 4, c: 1, m: "\\" }, { r: 1, c: 4, m: "\\" }, { r: 4, c: 0, m: "\\" },
+        { r: 3, c: 4, m: "/" }, { r: 4, c: 2, m: "/" }, { r: 1, c: 2, m: "/" }, { r: 3, c: 0, m: "\\" },
+        { r: 0, c: 0, m: "/" }, { r: 2, c: 1, m: "\\" },
+      ],
+      exits: [
+        { side: "top", i: 3, label: "A" }, { side: "right", i: 3, label: "B" },
+        { side: "bottom", i: 3, label: "C" }, { side: "left", i: 3, label: "D" },
       ],
     },
   },
@@ -673,12 +732,19 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Ordering", time: 15,
-    text: "Who is the SECOND tallest?",
-    opts: ["A", "B", "C", "D"],
-    ans: 0,
-    exp: "D is taller than A, A is taller than B and B is taller than C, so the order is D > A > B > C. A is second.",
-    vis: { kind: "symbols", target: "D taller than A · A taller than B · C shorter than B" },
+    cat: 5, type: "symbols", diff: "hard", badge: "Colour Clash", time: 14,
+    text: "How many words are written in the SAME colour that they name?",
+    opts: ["2", "3", "4", "5"],
+    ans: 1,
+    exp: "GREEN in green, PURPLE in purple and YELLOW in yellow: 3. Your brain reads the word faster than it names the ink colour, which is why this is harder than it looks.",
+    vis: {
+      kind: "stroop",
+      words: [
+        { w: "RED", c: "blue" }, { w: "GREEN", c: "green" }, { w: "BLUE", c: "red" },
+        { w: "YELLOW", c: "purple" }, { w: "PURPLE", c: "purple" }, { w: "RED", c: "yellow" },
+        { w: "BLUE", c: "green" }, { w: "YELLOW", c: "yellow" }, { w: "GREEN", c: "red" },
+      ],
+    },
   },
 
 ];

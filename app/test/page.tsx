@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useRef, useId } from "react";
 import NavLogo from "@/app/components/NavLogo";
 import NeuralScene from "@/app/components/NeuralScene";
 import { useRouter } from "next/navigation";
-import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell, type PatchArt, type LineCell, type CubeSym } from "@/lib/questions";
+import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell, type PatchArt, type LineCell, type CubeSym, type Weight } from "@/lib/questions";
 import { DIFF_WEIGHTS, type AnswerRecord } from "@/lib/iq-calculator";
 
 /* ── Design tokens ──────────────────────────────────────────────────────────── */
@@ -921,6 +921,157 @@ function CubeViewsDisplay({ views }: { views: [CubeSym, CubeSym, CubeSym][] }) {
   );
 }
 
+/* ── Gear train ─────────────────────────────────────────────────────────── */
+
+function gearPath(cx: number, cy: number, r: number) {
+  const n = Math.max(8, Math.round(r / 3.4)), ro = r + 2.5, ri = r - 2.5;
+  let d = "";
+  for (let k = 0; k < n; k++) {
+    const a0 = (k / n) * Math.PI * 2, step = (Math.PI * 2) / n;
+    const pts = [[ri, a0], [ro, a0 + step * 0.18], [ro, a0 + step * 0.45], [ri, a0 + step * 0.63]];
+    for (const [rr, a] of pts) d += `${d ? "L" : "M"}${(cx + rr * Math.cos(a)).toFixed(2)},${(cy + rr * Math.sin(a)).toFixed(2)}`;
+  }
+  return d + "Z";
+}
+
+function GearsDisplay({ vis }: { vis: Extract<VisualDef, { kind: "gears" }> }) {
+  const g = vis.gears, A = g[vis.belt.a], B = g[vis.belt.b], bk = g[vis.bucketGear];
+  const belt = vis.belt.crossed
+    ? [[A.x, A.y - A.r, B.x, B.y + B.r], [A.x, A.y + A.r, B.x, B.y - B.r]]
+    : [[A.x, A.y - A.r, B.x, B.y - B.r], [A.x, A.y + A.r, B.x, B.y + B.r]];
+  const d0 = g[0];
+  const ropeX = bk.x - 8;
+  return (
+    <svg viewBox="0 0 300 190" style={{ width: "min(440px, 100%)", height: "auto", maxHeight: "calc(92dvh - 420px)", minHeight: 150, display: "block" }}>
+      <style>{`@keyframes gearSpin{to{transform:rotate(360deg)}} .drive{transform-box:view-box;transform-origin:${d0.x}px ${d0.y}px;animation:gearSpin 7s linear infinite}`}</style>
+      <rect x={0} y={0} width={300} height={190} rx={8} fill="rgba(5,18,45,0.6)" />
+      {belt.map(([x1, y1, x2, y2], i) => <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#F5C542" strokeWidth={2.4} strokeLinecap="round" />)}
+      {g.map((G, i) => (
+        <g key={i} className={i === 0 ? "drive" : undefined}>
+          <path d={gearPath(G.x, G.y, G.r)} fill={i === 0 ? "rgba(0,245,212,0.25)" : "rgba(91,79,255,0.28)"} stroke={i === 0 ? "#00F5D4" : "#9D8FFF"} strokeWidth={1.3} strokeLinejoin="round" />
+          <circle cx={G.x} cy={G.y} r={G.r * 0.45} fill="rgba(3,5,15,0.9)" stroke={i === 0 ? "#00F5D4" : "#9D8FFF"} strokeWidth={1} />
+          <line x1={G.x} y1={G.y - G.r * 0.45} x2={G.x} y2={G.y + G.r * 0.45} stroke={i === 0 ? "#00F5D4" : "#9D8FFF"} strokeWidth={1} opacity={0.6} />
+          <circle cx={G.x} cy={G.y} r={2.6} fill="#E8E8F0" />
+        </g>
+      ))}
+      {/* clockwise arrow on the drive gear */}
+      <path d={`M${d0.x - d0.r - 8},${d0.y - 6} A${d0.r + 8},${d0.r + 8} 0 0 1 ${d0.x + 4},${d0.y - d0.r - 8}`} fill="none" stroke="#00F5D4" strokeWidth={2.2} />
+      <polygon points={`${d0.x + 4},${d0.y - d0.r - 13} ${d0.x + 12},${d0.y - d0.r - 8} ${d0.x + 4},${d0.y - d0.r - 3}`} fill="#00F5D4" />
+      {/* drum, rope and bucket */}
+      <circle cx={bk.x} cy={bk.y} r={8} fill="#1A2550" stroke="#E8E8F0" strokeWidth={1.4} />
+      <line x1={ropeX} y1={bk.y} x2={ropeX} y2={160} stroke="#E8E8F0" strokeWidth={1.4} />
+      <path d={`M${ropeX - 11},160 L${ropeX + 11},160 L${ropeX + 8},180 L${ropeX - 8},180 Z`} fill="#FB7185" stroke="#FFD0D8" strokeWidth={1} />
+      <path d={`M${ropeX - 11},160 Q${ropeX},150 ${ropeX + 11},160`} fill="none" stroke="#FFD0D8" strokeWidth={1} />
+    </svg>
+  );
+}
+
+/* ── Balance scales ─────────────────────────────────────────────────────── */
+
+const WEIGHT_COLOR: Record<Weight, string> = { c: "#00F5D4", s: "#9D8FFF", t: "#F5C542" };
+
+function WeightShape({ w, x, y }: { w: Weight; x: number; y: number }) {
+  const c = WEIGHT_COLOR[w];
+  if (w === "c") return <circle cx={x} cy={y - 7} r={7} fill={c} />;
+  if (w === "s") return <rect x={x - 7} y={y - 14} width={14} height={14} rx={1.5} fill={c} />;
+  return <polygon points={`${x},${y - 15} ${x + 8},${y} ${x - 8},${y}`} fill={c} />;
+}
+
+function Pan({ items, cx, y }: { items: Weight[] | null; cx: number; y: number }) {
+  const w = 74;
+  return (
+    <g>
+      <line x1={cx - w / 2 + 4} y1={y} x2={cx} y2={y - 34} stroke="#6A88AA" strokeWidth={1} />
+      <line x1={cx + w / 2 - 4} y1={y} x2={cx} y2={y - 34} stroke="#6A88AA" strokeWidth={1} />
+      <path d={`M${cx - w / 2},${y} Q${cx},${y + 9} ${cx + w / 2},${y}`} fill="rgba(91,79,255,0.25)" stroke="#9D8FFF" strokeWidth={1.4} />
+      {items === null
+        ? <text x={cx} y={y - 4} textAnchor="middle" fontSize={18} fontWeight={800} fill="#5B4FFF">?</text>
+        : items.map((it, i) => <WeightShape key={i} w={it} x={cx + (i - (items.length - 1) / 2) * 18} y={y} />)}
+    </g>
+  );
+}
+
+function ScalesDisplay({ rows }: { rows: { l: Weight[]; r: Weight[] | null }[] }) {
+  const H = 64;
+  return (
+    <svg viewBox={`0 0 260 ${rows.length * H + 6}`} style={{ width: "min(400px, 100%)", height: "auto", maxHeight: "calc(92dvh - 420px)", minHeight: 160, display: "block" }}>
+      {rows.map((row, i) => {
+        const top = i * H + 8, beamY = top + 6, panY = beamY + 38;
+        return (
+          <g key={i}>
+            <rect x={2} y={top - 6} width={256} height={H - 4} rx={6} fill="rgba(5,18,45,0.55)" stroke="rgba(91,79,255,0.15)" />
+            <line x1={58} y1={beamY} x2={202} y2={beamY} stroke="#C9C2FF" strokeWidth={3} strokeLinecap="round" />
+            <polygon points={`130,${beamY} 121,${panY + 10} 139,${panY + 10}`} fill="rgba(91,79,255,0.45)" stroke="#9D8FFF" strokeWidth={1} />
+            <circle cx={130} cy={beamY} r={3} fill="#E8E8F0" />
+            <Pan items={row.l} cx={58} y={panY} />
+            <Pan items={row.r} cx={202} y={panY} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ── Laser and mirrors ──────────────────────────────────────────────────── */
+
+function LaserDisplay({ vis }: { vis: Extract<VisualDef, { kind: "laser" }> }) {
+  const S = 34, n = vis.n, O = 30, W = O * 2 + n * S;
+  const ex = (e: { side: string; i: number }) => {
+    const m = O + e.i * S + S / 2;
+    if (e.side === "top") return [m, O - 15];
+    if (e.side === "bottom") return [m, O + n * S + 15];
+    if (e.side === "left") return [O - 15, m];
+    return [O + n * S + 15, m];
+  };
+  const ey = O + vis.entryRow * S + S / 2;
+  return (
+    <svg viewBox={`0 0 ${W} ${W}`} style={{ width: "min(330px, calc(92dvh - 420px), 88vw)", height: "auto", minWidth: 200, display: "block" }}>
+      <style>{`@keyframes beamPulse{0%,100%{opacity:.55}50%{opacity:1}}`}</style>
+      <rect x={O} y={O} width={n * S} height={n * S} fill="rgba(5,18,45,0.9)" stroke="#5B4FFF" strokeWidth={1.6} />
+      {Array.from({ length: n - 1 }).map((_, k) => (
+        <g key={k} stroke="rgba(91,79,255,0.18)" strokeWidth={1}>
+          <line x1={O + (k + 1) * S} y1={O} x2={O + (k + 1) * S} y2={O + n * S} />
+          <line x1={O} y1={O + (k + 1) * S} x2={O + n * S} y2={O + (k + 1) * S} />
+        </g>
+      ))}
+      {vis.mirrors.map((m, k) => {
+        const x = O + m.c * S, y = O + m.r * S, p = 6;
+        const [x1, y1, x2, y2] = m.m === "/" ? [x + p, y + S - p, x + S - p, y + p] : [x + p, y + p, x + S - p, y + S - p];
+        return <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#C9F7FF" strokeWidth={3.2} strokeLinecap="round" />;
+      })}
+      {/* emitter and the first stretch of beam */}
+      <rect x={2} y={ey - 7} width={16} height={14} rx={3} fill="#FB7185" />
+      <line x1={18} y1={ey} x2={O + S / 2} y2={ey} stroke="#FF4D6D" strokeWidth={2.4} style={{ animation: "beamPulse 1.4s ease-in-out infinite" }} />
+      {vis.exits.map(e => {
+        const [x, y] = ex(e);
+        return (
+          <g key={e.label}>
+            <circle cx={x} cy={y} r={10} fill="rgba(0,245,212,0.12)" stroke="#00F5D4" strokeWidth={1.3} />
+            <text x={x} y={y + 4} textAnchor="middle" fontSize={11} fontWeight={800} fill="#00F5D4">{e.label}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ── Colour clash (Stroop) ──────────────────────────────────────────────── */
+
+const STROOP: Record<string, string> = { red: "#FF4D4D", blue: "#3B9BFF", green: "#2ED47A", yellow: "#FFD23F", purple: "#B07CFF" };
+
+function StroopDisplay({ words }: { words: { w: string; c: string }[] }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, width: "min(400px, 100%)" }}>
+      {words.map((w, i) => (
+        <div key={i} style={{ padding: "14px 4px", textAlign: "center", borderRadius: 8, background: "rgba(5,18,45,0.85)", border: "1px solid rgba(91,79,255,0.18)",
+          fontSize: "clamp(15px,4.4vw,22px)", fontWeight: 800, letterSpacing: "0.04em", color: STROOP[w.c] }}>
+          {w.w}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── Visual question container ──────────────────────────────────────────── */
 
 function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => void }) {
@@ -973,6 +1124,14 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
       return <MirrorClockDisplay h={vis.h} m={vis.m} />;
     case "cubeviews":
       return <CubeViewsDisplay views={vis.views} />;
+    case "gears":
+      return <GearsDisplay vis={vis} />;
+    case "scales":
+      return <ScalesDisplay rows={vis.rows} />;
+    case "laser":
+      return <LaserDisplay vis={vis} />;
+    case "stroop":
+      return <StroopDisplay words={vis.words} />;
   }
 }
 

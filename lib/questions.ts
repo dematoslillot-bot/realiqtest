@@ -33,8 +33,13 @@ export type VisualDef =
   | { kind: "origami" }
   | { kind: "shapesum";    exA: RavenCell; exB: RavenCell; exC: RavenCell; qA: RavenCell; qB: RavenCell; optCells: RavenCell[] }
   | { kind: "symcode";     equations: string[];           optVals: string[] }
+  | { kind: "lines";       cells: (LineCell | null)[];   optCells: LineCell[] }
   | { kind: "patch";       art: PatchArt; hole: { x: number; y: number; w: number; h: number };
       opts: { dx: number; dy: number; flipX?: boolean }[] };
+
+// Stroke figures (advanced Raven style): v vertical strokes crossed by h horizontal
+// strokes of one kind — straight ("s"), arcs bulging up ("u") or arcs bulging down ("d").
+export type LineCell = { v: number; h: number; t: "s" | "u" | "d" };
 
 // Picture-completion patterns (Raven-style): drawn on a 200×130 board.
 // Each option shows the board seen through the hole window, shifted by (dx, dy) and/or mirrored.
@@ -235,6 +240,8 @@ const ccTD = [tr(30,30,18,false), di(30,30,8)];
 const ccDC = [di(30,30,18,false), c(30,30,8)];
 
 
+const L = (v: number, h: number, t: "s" | "u" | "d"): LineCell => ({ v, h, t });
+
 // ── Multi-rule matrix helpers (Logical Reasoning) ───────────────────────────────────
 // Corner / centre positions inside a 60×60 cell
 const PT = { TL: [15,15], TR: [45,15], BR: [45,45], BL: [15,45], C: [30,30] } as const;
@@ -280,30 +287,36 @@ export const ALL_QUESTIONS: Question[] = [
   // ── CAT 0 · LOGICAL REASONING (picture completion + multi-rule matrices, all hard) ──
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Picture Completion", time: 40,
-    text: "Which piece completes the picture? Compare the thickness of every line.",
-    opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "Vertical lines get thicker from left to right (2, 4, 6, 8, 10) and horizontal lines get thinner from top to bottom. The gap is where the 4th vertical line meets the 3rd horizontal line, so the piece must have exactly those two thicknesses.",
+    cat: 0, type: "raven", diff: "hard", badge: "Stroke Matrix", time: 60,
+    text: "Each figure is built from vertical strokes and crossing strokes. Find the rules and choose the missing figure.",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 5,
+    exp: "Three things vary independently, and each row and column contains each value exactly once: the number of vertical strokes (1, 2, 3), the number of crossing strokes (1, 2, 3) and their kind (straight, curving up, curving down). Row 3 is missing 2 vertical strokes, 1 crossing stroke and the upward curve.",
     vis: {
-      kind: "patch",
-      art: { type: "grid", v: [[20,2],[55,4],[90,6],[125,8],[160,10]], h: [[20,8],[50,5],[80,3],[110,1.5]] },
-      hole: { x: 107, y: 62, w: 36, h: 36 },
-      opts: [{ dx: -35, dy: 0 }, { dx: 0, dy: 0 }, { dx: 0, dy: -30 }, { dx: 35, dy: 0 }],
+      kind: "lines",
+      cells: [
+        L(1,1,"u"), L(2,2,"s"), L(3,3,"d"),
+        L(2,3,"d"), L(3,1,"u"), L(1,2,"s"),
+        L(3,2,"s"), L(1,3,"d"), null,
+      ],
+      optCells: [L(2,1,"s"), L(1,1,"u"), L(2,2,"u"), L(2,1,"d"), L(3,1,"u"), L(2,1,"u"), L(2,3,"u"), L(3,2,"d")],
     },
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Converging Wedges", time: 40,
-    text: "Which piece fits exactly in the gap?",
-    opts: ["A", "B", "C", "D"],
+    cat: 0, type: "raven", diff: "hard", badge: "Stroke Arithmetic", time: 60,
+    text: "In each row the first two figures combine into the third. Find all the rules and choose the missing figure.",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
     ans: 2,
-    exp: "Every wedge narrows towards the right edge, so near the right it is already thin. The piece must also line up with the middle band. A comes from further left (too wide), B is shifted half a band, D narrows the wrong way.",
+    exp: "Vertical strokes add up along each row (1+1=2, 2+1=3, 1+2=3). The number of crossing strokes is the same in a whole row (1, then 2, then 3). The kind of crossing stroke appears once per row and column (straight, up, down). So the missing figure has 3 vertical strokes and 3 upward curves.",
     vis: {
-      kind: "patch",
-      art: { type: "wedges", bands: 5 },
-      hole: { x: 135, y: 46, w: 36, h: 36 },
-      opts: [{ dx: -100, dy: 0 }, { dx: 0, dy: -13 }, { dx: 0, dy: 0 }, { dx: 0, dy: 0, flipX: true }],
+      kind: "lines",
+      cells: [
+        L(1,1,"s"), L(1,1,"u"), L(2,1,"d"),
+        L(2,2,"u"), L(1,2,"d"), L(3,2,"s"),
+        L(1,3,"d"), L(2,3,"s"), null,
+      ],
+      optCells: [L(3,3,"s"), L(1,3,"u"), L(3,3,"u"), L(3,2,"u"), L(3,3,"d"), L(2,3,"u"), L(3,1,"u"), L(2,2,"s")],
     },
   },
 

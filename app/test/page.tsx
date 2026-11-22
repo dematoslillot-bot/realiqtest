@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useRef, useId } from "react";
 import NavLogo from "@/app/components/NavLogo";
 import NeuralScene from "@/app/components/NeuralScene";
 import { useRouter } from "next/navigation";
-import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell, type PatchArt } from "@/lib/questions";
+import { ALL_QUESTIONS, CATEGORIES, type ShapeDef, type RavenCell, type VisualDef, type PCell, type PatchArt, type LineCell } from "@/lib/questions";
 import { DIFF_WEIGHTS, type AnswerRecord } from "@/lib/iq-calculator";
 
 /* ── Design tokens ──────────────────────────────────────────────────────────── */
@@ -716,6 +716,42 @@ function SymCodeDisplay({ equations }: { equations: string[] }) {
 }
 
 
+
+/* ── Stroke figures (advanced Raven style) ───────────────────────────── */
+
+function LineCellSVG({ cell, isQuestion = false }: { cell: LineCell | null; isQuestion?: boolean }) {
+  const ink = "#9D8FFF";
+  if (isQuestion || !cell) return <RavenCellSVG cell={null} isQuestion />;
+  const vx = (i: number) => 30 + (i - (cell.v - 1) / 2) * 8;
+  const hy = (i: number) => 30 + (i - (cell.h - 1) / 2) * 9;
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 60 60">
+      <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
+      <g stroke={ink} strokeWidth={2.4} strokeLinecap="round" fill="none">
+        {Array.from({ length: cell.v }).map((_, i) => <line key={`v${i}`} x1={vx(i)} y1={11} x2={vx(i)} y2={49} />)}
+        {Array.from({ length: cell.h }).map((_, i) => {
+          const y = hy(i);
+          if (cell.t === "s") return <line key={`h${i}`} x1={12} y1={y} x2={48} y2={y} />;
+          const bend = cell.t === "u" ? -9 : 9;
+          return <path key={`h${i}`} d={`M12,${y - bend / 2} Q30,${y + bend * 1.5} 48,${y - bend / 2}`} />;
+        })}
+      </g>
+    </svg>
+  );
+}
+
+function LinesDisplay({ cells }: { cells: (LineCell | null)[] }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4, width: "min(300px, calc(92dvh - 430px), calc(50vw))", margin: "0 auto" }}>
+      {cells.map((cell, i) => (
+        <div key={i} style={{ border: "1px solid rgba(91,79,255,0.14)", borderRadius: 3, overflow: "hidden", aspectRatio: "1" }}>
+          <LineCellSVG cell={cell} isQuestion={cell === null} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── Picture completion (Raven-style "patch") ─────────────────────────── */
 
 const PATCH_W = 200, PATCH_H = 130, PATCH_INK = "#9D8FFF";
@@ -835,6 +871,8 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
       return <SymCodeDisplay equations={vis.equations} />;
     case "patch":
       return <PatchDisplay art={vis.art} hole={vis.hole} />;
+    case "lines":
+      return <LinesDisplay cells={vis.cells} />;
   }
 }
 
@@ -843,6 +881,9 @@ function VisualDisplay({ vis, onMemReady }: { vis: VisualDef; onMemReady: () => 
 function OptionContent({ vis, opt, idx }: { vis?: VisualDef; opt: string; idx: number }) {
   if (vis?.kind === "raven") {
     return <RavenCellSVG cell={vis.optCells[idx]} />;
+  }
+  if (vis?.kind === "lines") {
+    return <LineCellSVG cell={vis.optCells[idx]} />;
   }
   if (vis?.kind === "patch") {
     return <PatchOptionSVG art={vis.art} hole={vis.hole} o={vis.opts[idx]} />;
@@ -1435,7 +1476,7 @@ function QuizScreen() {
     || q.vis?.kind === "raven2" || q.vis?.kind === "ravenrot" || q.vis?.kind === "ravenpattern" || q.vis?.kind === "topview"
     || q.vis?.kind === "clock" || q.vis?.kind === "heatmap" || q.vis?.kind === "mirror"
     || q.vis?.kind === "binary" || q.vis?.kind === "shadow3d" || q.vis?.kind === "origami" || q.vis?.kind === "shapesum"
-    || q.vis?.kind === "patch";
+    || q.vis?.kind === "patch" || q.vis?.kind === "lines";
 
   const keyframes = `
     @keyframes bgPulse1 { 0%,100%{opacity:0.7} 50%{opacity:0.3} }
@@ -1759,7 +1800,7 @@ function QuizScreen() {
           <div style={{
             width: "100%", height: "100%",
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: q.opts.length > 4 ? "repeat(4,1fr)" : "1fr 1fr",
             gridTemplateRows: "1fr 1fr",
             gap: "clamp(4px,1vw,7px)",
           }}>
@@ -1805,7 +1846,7 @@ function QuizScreen() {
                     flexShrink: 0,
                     marginBottom: hasVisOpts ? 3 : 0,
                   }}>
-                    {["A", "B", "C", "D"][i]}
+                    {"ABCDEFGH"[i]}
                   </div>
                   <div style={{
                     flex: hasVisOpts ? 1 : "auto" as "auto",

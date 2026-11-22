@@ -727,7 +727,16 @@ function LineCellSVG({ cell, isQuestion = false }: { cell: LineCell | null; isQu
   return (
     <svg width="100%" height="100%" viewBox="0 0 60 60">
       <rect x={1} y={1} width={58} height={58} rx={2} fill="rgba(5,18,45,0.9)" stroke="rgba(91,79,255,0.22)" strokeWidth={1} />
-      <g stroke={ink} strokeWidth={2.4} strokeLinecap="round" fill="none">
+      <g stroke={ink} strokeWidth={2.4} strokeLinecap="round" fill="none"
+        transform={`${cell.flip ? "translate(60,0) scale(-1,1) " : ""}rotate(${cell.rot ?? 0},30,30)`}>
+        {(cell.ex ?? []).map((e, i) => {
+          if (e === "s") return <line key={`e${i}`} x1={10} y1={30} x2={50} y2={30} />;
+          if (e === "u") return <path key={`e${i}`} d="M10,36 Q30,10 50,36" />;
+          if (e === "d") return <path key={`e${i}`} d="M10,24 Q30,50 50,24" />;
+          if (e === "x") return <line key={`e${i}`} x1={13} y1={47} x2={47} y2={13} />;
+          if (e === "y") return <line key={`e${i}`} x1={13} y1={13} x2={47} y2={47} />;
+          return <circle key={`e${i}`} cx={14} cy={14} r={3.6} fill={ink} stroke="none" />;
+        })}
         {Array.from({ length: cell.v }).map((_, i) => <line key={`v${i}`} x1={vx(i)} y1={11} x2={vx(i)} y2={49} />)}
         {Array.from({ length: cell.h }).map((_, i) => {
           const y = hy(i);

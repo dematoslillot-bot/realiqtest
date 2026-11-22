@@ -39,7 +39,12 @@ export type VisualDef =
 
 // Stroke figures (advanced Raven style): v vertical strokes crossed by h horizontal
 // strokes of one kind — straight ("s"), arcs bulging up ("u") or arcs bulging down ("d").
-export type LineCell = { v: number; h: number; t: "s" | "u" | "d" };
+export type LineCell = {
+  v: number; h: number; t: "s" | "u" | "d";
+  ex?: ("s" | "u" | "d" | "x" | "y" | "k")[];   // extra single strokes: line, arcs, diagonals, corner dot
+  rot?: number;                                  // rotate the whole figure (degrees, clockwise)
+  flip?: boolean;                                // mirror left↔right after rotating
+};
 
 // Picture-completion patterns (Raven-style): drawn on a 200×130 board.
 // Each option shows the board seen through the hole window, shifted by (dx, dy) and/or mirrored.
@@ -241,6 +246,9 @@ const ccDC = [di(30,30,18,false), c(30,30,8)];
 
 
 const L = (v: number, h: number, t: "s" | "u" | "d"): LineCell => ({ v, h, t });
+type EX = "s" | "u" | "d" | "x" | "y" | "k";
+const E = (...ex: EX[]): LineCell => ({ v: 0, h: 0, t: "s", ex });
+const R = (v: number, h: number, t: "s" | "u" | "d", rot: number, flip = false): LineCell => ({ v, h, t, ex: ["k"], rot, flip });
 
 // ── Multi-rule matrix helpers (Logical Reasoning) ───────────────────────────────────
 // Corner / centre positions inside a 60×60 cell
@@ -321,30 +329,36 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Wave Field", time: 45,
-    text: "Which piece completes the waves? Check how strongly they bend and in which direction.",
-    opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "The waves bend more strongly the lower they go, and they all bend the same way at the same height. The piece must have the medium bend of that height and curve in the same direction as the lines just above and below the gap.",
+    cat: 0, type: "raven", diff: "hard", badge: "Stroke Overlay", time: 60,
+    text: "The first two figures in each row combine into the third. Find the rule.",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 4,
+    exp: "Strokes that appear in only one of the first two figures are kept; strokes that appear in both cancel out. Row 3: the horizontal line and the rising diagonal appear only in figure 1, the downward curve only in figure 2, and the falling diagonal is in both, so it disappears.",
     vis: {
-      kind: "patch",
-      art: { type: "waves", xs: [15,45,75,105,135,165,195], amp0: 2, ampK: 0.08, period: 40 },
-      hole: { x: 87, y: 68, w: 36, h: 36 },
-      opts: [{ dx: 0, dy: 0, flipX: true }, { dx: 0, dy: 20 }, { dx: 0, dy: 0 }, { dx: 0, dy: -56 }],
+      kind: "lines",
+      cells: [
+        E("s","x"),     E("x","u"), E("s","u"),
+        E("u","d","y"), E("d","s"), E("u","y","s"),
+        E("s","y","x"), E("y","d"), null,
+      ],
+      optCells: [E("s","x","y","d"), E("y"), E("s","x"), E("s","d"), E("s","x","d"), E("x","d"), E("s","x","d","u"), E("s","y","d")],
     },
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Dot Field", time: 50,
-    text: "Two rules shape this pattern. Which piece completes it?",
-    opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "Rule 1: dots get bigger from left to right. Rule 2: filled dots form diagonal stripes (every third dot in a row, moving one place each row). In the gap, only the top-left dot is filled and the right-hand dots are larger.",
+    cat: 0, type: "raven", diff: "hard", badge: "Turning Strokes", time: 60,
+    text: "Find the three rules (strokes, curve, rotation) and pick the missing figure.",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 6,
+    exp: "Rotation: every step to the right turns the figure 90° clockwise (watch the dot). Number of vertical strokes: 1 in row 1, 2 in row 2, 3 in row 3. Kind of curve: each row and column has one straight, one upward and one downward. The missing figure has 3 strokes and an upward curve, turned 180°.",
     vis: {
-      kind: "patch",
-      art: { type: "dots", cols: 8, rows: 5 },
-      hole: { x: 99, y: 52.5, w: 48, h: 50 },
-      opts: [{ dx: 24, dy: 0 }, { dx: 0, dy: 0 }, { dx: 0, dy: -25 }, { dx: 0, dy: 0, flipX: true }],
+      kind: "lines",
+      cells: [
+        R(1,1,"u",0), R(1,1,"s",90), R(1,1,"d",180),
+        R(2,1,"d",0), R(2,1,"u",90), R(2,1,"s",180),
+        R(3,1,"s",0), R(3,1,"d",90), null,
+      ],
+      optCells: [R(3,1,"u",90), R(3,1,"u",270), R(3,1,"d",180), R(3,1,"s",180), R(2,1,"u",180), R(3,1,"u",180,true), R(3,1,"u",180), R(3,1,"u",0)],
     },
   },
 
@@ -399,11 +413,12 @@ export const ALL_QUESTIONS: Question[] = [
   // ── CAT 1 · VERBAL INTELLIGENCE ──
 
   {
-    cat: 1, type: "text", diff: "hard", badge: "Odd One Out", time: 20,
-    text: "Which word does NOT belong with the others?",
-    opts: ["Benevolent", "Magnanimous", "Gregarious", "Altruistic"],
-    ans: 2,
-    exp: "Benevolent, magnanimous and altruistic all describe generosity and kindness towards others. Gregarious means sociable, fond of company.",
+    cat: 1, type: "text", diff: "hard", badge: "Hidden Word", time: 25,
+    text: "Which word can go in front of all three to make three new words?",
+    opts: ["PASS", "AIR", "KEY", "PATH"],
+    ans: 0,
+    exp: "PASS makes password, passport and passage. AIR works for airport but not \"airword\" or \"airage\".",
+    vis: { kind: "symbols", target: "___WORD    ___PORT    ___AGE" },
   },
 
   {
@@ -434,11 +449,12 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 1, type: "text", diff: "hard", badge: "Vocabulary", time: 20,
-    text: "Which word is most nearly OPPOSITE in meaning to \"ephemeral\"?",
-    opts: ["Fragile", "Permanent", "Ancient", "Hidden"],
-    ans: 1,
-    exp: "Ephemeral means lasting a very short time. Its opposite is permanent. Ancient means very old, which is not the same as lasting forever.",
+    cat: 1, type: "text", diff: "hard", badge: "Anagram", time: 25,
+    text: "Rearrange these letters. The word you get is the name of a(n):",
+    opts: ["Ocean", "Country", "City", "Animal"],
+    ans: 0,
+    exp: "C I F A I P C rearranges to PACIFIC, an ocean.",
+    vis: { kind: "symbols", target: "C  I  F  A  I  P  C" },
   },
 
 
@@ -458,15 +474,19 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 2, type: "rotation", diff: "hard", badge: "Rotation, Not Mirror II", time: 30,
-    text: "Which option is the SAME shape, only rotated (not flipped)?",
-    opts: ["A", "B", "C", "D"],
-    ans: 2,
-    exp: "Only C is the original turned 225°. The other three are mirror images that have been rotated.",
+    cat: 2, type: "raven", diff: "hard", badge: "Rotation Steps", time: 55,
+    text: "Each row turns its figure by its own step. Follow the dot.",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 0,
+    exp: "Row 1 turns 45° per step, row 2 turns 90° and row 3 turns 135°. The last figure is the row-3 figure turned 0° → 135° → 270° clockwise.",
     vis: {
-      kind: "rotation", path: CRANK, showAngle: 0,
-      optAngles:  [135, 45, 225, 315],
-      optMirrors: [true, true, false, true],
+      kind: "lines",
+      cells: [
+        R(1,1,"u",0), R(1,1,"u",45),  R(1,1,"u",90),
+        R(2,1,"d",0), R(2,1,"d",90),  R(2,1,"d",180),
+        R(1,2,"s",0), R(1,2,"s",135), null,
+      ],
+      optCells: [R(1,2,"s",270), R(1,2,"s",225), R(1,2,"s",180), R(1,2,"s",315), R(1,2,"s",90), R(1,2,"s",270,true), R(1,2,"s",135), R(1,2,"s",0)],
     },
   },
 
@@ -501,20 +521,19 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 2, type: "rotation", diff: "hard", badge: "Mirror Image", time: 22,
-    text: "Choose the exact horizontal mirror image of this shape.",
-    opts: ["A", "B", "C", "D"],
-    ans: 1,
-    exp: "A horizontal mirror flips left↔right. Option A is vertically flipped, C is the original, D has the lower step at the wrong height. B is the correct horizontal mirror.",
+    cat: 2, type: "raven", diff: "hard", badge: "Turn and Mirror", time: 55,
+    text: "Each row changes its figure in the same two steps. Which figure is missing?",
+    opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
+    ans: 3,
+    exp: "From column 1 to column 2 the figure turns 90° clockwise. From column 2 to column 3 it is mirrored left to right. Watch the dot: in row 3 it goes top-left → top-right → back to top-left, while the strokes stay turned.",
     vis: {
-      kind: "mirror",
-      path: "M8,48 L8,24 L18,24 L18,8 L38,8 L38,20 L28,20 L28,34 L50,34 L50,48 Z",
-      optPaths: [
-        "M8,12 L8,36 L18,36 L18,52 L38,52 L38,40 L28,40 L28,26 L50,26 L50,12 Z",
-        "M52,48 L52,24 L42,24 L42,8 L22,8 L22,20 L32,20 L32,34 L10,34 L10,48 Z",
-        "M8,48 L8,24 L18,24 L18,8 L38,8 L38,20 L28,20 L28,34 L50,34 L50,48 Z",
-        "M52,48 L52,24 L42,24 L42,8 L22,8 L22,20 L32,20 L32,40 L10,40 L10,48 Z",
+      kind: "lines",
+      cells: [
+        R(1,1,"u",0), R(1,1,"u",90), R(1,1,"u",90,true),
+        R(2,1,"d",0), R(2,1,"d",90), R(2,1,"d",90,true),
+        R(1,2,"s",0), R(1,2,"s",90), null,
       ],
+      optCells: [R(1,2,"s",90), R(1,2,"s",270), R(1,2,"s",270,true), R(1,2,"s",90,true), R(1,2,"s",0,true), R(1,2,"s",180), R(2,2,"s",90,true), R(1,1,"s",90,true)],
     },
   },
 
@@ -609,39 +628,39 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 5, type: "symbols", diff: "medium", badge: "Letter Count", time: 12,
-    text: "How many times does the letter E appear?",
-    opts: ["5", "6", "7", "4"],
+    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Divisibility", time: 12,
+    text: "How many of these numbers are divisible by 3?",
+    opts: ["3", "4", "5", "6"],
     ans: 1,
-    exp: "EVEREST has 3 E's and ELEVEN has 3 E's: 6 in total.",
-    vis: { kind: "symbols", target: "EVEREST  ELEVEN" },
+    exp: "27, 33, 51 and 75 are divisible by 3 (their digits add up to a multiple of 3). 14, 41, 62 and 88 are not.",
+    vis: { kind: "symbols", target: "14  27  33  41  51  62  75  88" },
   },
 
   {
-    cat: 5, type: "symbols", diff: "medium", badge: "Rapid Scan", time: 12,
-    text: "Which number appears TWICE in this sequence?",
-    opts: ["7", "3", "9", "5"],
-    ans: 0,
-    exp: "Sequence: 3 · 7 · 5 · 2 · 7 · 9 · 1 · 4 — the number 7 appears at positions 2 and 5.",
-    vis: { kind: "symbols", target: "3  ·  7  ·  5  ·  2  ·  7  ·  9  ·  1  ·  4" },
-  },
-
-  {
-    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Deduction", time: 10,
-    text: "Which value is the MEDIAN (middle) of these five?",
-    opts: ["S", "P", "T", "R"],
+    cat: 5, type: "symbols", diff: "hard", badge: "Spot the Difference", time: 10,
+    text: "Which group is DIFFERENT from the other three?",
+    opts: ["1st", "2nd", "3rd", "4th"],
     ans: 2,
-    exp: "Order ascending: Q < R < T < P < S. The median (3rd of 5) is T.",
-    vis: { kind: "symbols", target: "S > P > T > R > Q" },
+    exp: "The 3rd group ends in Q9; the others end in 9Q.",
+    vis: { kind: "symbols", target: "7B4K9Q   7B4K9Q   7B4KQ9   7B4K9Q" },
   },
 
   {
-    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Compare", time: 12,
-    text: "Which value is the LARGEST?",
-    opts: ["3/7", "0.43", "5/12", "0.428"],
-    ans: 1,
-    exp: "3/7 ≈ 0.4286 and 5/12 ≈ 0.4167, so the order is 0.43 > 3/7 > 0.428 > 5/12.",
-    vis: { kind: "symbols", target: "3/7    0.43    5/12    0.428" },
+    cat: 5, type: "symbols", diff: "hard", badge: "Rapid Ordering", time: 15,
+    text: "Who is the SECOND tallest?",
+    opts: ["A", "B", "C", "D"],
+    ans: 0,
+    exp: "D is taller than A, A is taller than B and B is taller than C, so the order is D > A > B > C. A is second.",
+    vis: { kind: "symbols", target: "D taller than A · A taller than B · C shorter than B" },
+  },
+
+  {
+    cat: 5, type: "symbols", diff: "hard", badge: "Order of Operations", time: 12,
+    text: "Solve quickly:",
+    opts: ["45", "61", "29", "93"],
+    ans: 0,
+    exp: "Multiplications and powers first: 56 − 27 + 16 = 45.",
+    vis: { kind: "symbols", target: "7 × 8 − 3 × 9 + 4² = ?" },
   },
 
 ];

@@ -366,25 +366,19 @@ export const ALL_QUESTIONS: Question[] = [
   },
 
   {
-    cat: 0, type: "raven", diff: "hard", badge: "Built Figures", time: 60,
-    text: "Each figure is built from three parts. Find the rule for each part and choose the missing figure.",
+    cat: 0, type: "raven", diff: "hard", badge: "Column Logic", time: 70,
+    text: "The rules are not where you would expect them. Find them and choose the missing figure.",
     opts: ["A", "B", "C", "D", "E", "F", "G", "H"],
     ans: 6,
-    exp: "Three parts change independently, and every row and every column contains each version once: the big outline (hexagon, circle, diamond), the small shape on top (circle, square, triangle) and the number of dots underneath (0, 1, 2). The missing figure is a circle with a square on top and no dots.",
+    exp: "Look down the columns, not along the rows. The number of vertical strokes is fixed per row (1, 2, 3). The other strokes combine DOWN each column: a stroke in only one of the top two figures is kept, a stroke in both cancels. Column 3: top has the line and rising diagonal; middle has the rising diagonal, falling diagonal and upward curve. The rising diagonal cancels, leaving line, falling diagonal and upward curve, with 3 vertical strokes.",
     vis: {
-      kind: "raven",
+      kind: "lines",
       cells: [
-        [{s:"hx",x:30,y:31,r:15,f:false},{s:"c",x:30,y:10,r:5,f:true}],
-        [{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}],
-        [{s:"di",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true},{s:"c",x:25.5,y:53,r:2.6,f:true},{s:"c",x:34.5,y:53,r:2.6,f:true}],
-        [{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true},{s:"c",x:25.5,y:53,r:2.6,f:true},{s:"c",x:34.5,y:53,r:2.6,f:true}],
-        [{s:"di",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true}],
-        [{s:"hx",x:30,y:31,r:15,f:false},{s:"c",x:30,y:10,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}],
-        [{s:"di",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}],
-        [{s:"hx",x:30,y:31,r:15,f:false},{s:"c",x:30,y:10,r:5,f:true},{s:"c",x:25.5,y:53,r:2.6,f:true},{s:"c",x:34.5,y:53,r:2.6,f:true}],
-        null,
+        LE(1,"s","u"), LE(1,"d","y"), LE(1,"x","s"),
+        LE(2,"u","x"), LE(2,"s","d"), LE(2,"x","y","u"),
+        LE(3,"s","x"), LE(3,"y","s"), null,
       ],
-      optCells: [[{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}], [{s:"c",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true}], [{s:"hx",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true}], [{s:"c",x:30,y:31,r:15,f:false},{s:"c",x:30,y:10,r:5,f:true}], [{s:"di",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true}], [{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true},{s:"c",x:25.5,y:53,r:2.6,f:true},{s:"c",x:34.5,y:53,r:2.6,f:true}], [{s:"c",x:30,y:31,r:15,f:false},{s:"sq",x:30,y:10,r:5,f:true}], [{s:"hx",x:30,y:31,r:15,f:false},{s:"tr",x:30,y:11,r:5,f:true},{s:"c",x:30.0,y:53,r:2.6,f:true}]],
+      optCells: [LE(3,"x","y"), LE(3,"s","x","y","u"), LE(2,"s","y","u"), LE(3,"s","y"), LE(3,"y","u"), LE(3,"s","u","d"), LE(3,"s","y","u"), LE(4,"s","y","u")],
     },
   },
 

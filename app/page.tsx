@@ -1170,7 +1170,7 @@ export default function Home() {
           <div className="reveal sec-hd">
             <p className="label">What we measure</p>
             <h2 className="sec-title">Six pillars of intelligence</h2>
-            <p className="sec-sub">30 questions · 6 dimensions · 6 multi-rule matrices</p>
+            <p className="sec-sub">30 questions · 6 dimensions · 10 multi-rule matrices</p>
           </div>
           <div className="pillars-grid">
             {PILLARS.map((p, i) => {

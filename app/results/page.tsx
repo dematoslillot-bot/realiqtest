@@ -29,23 +29,60 @@ function AnimatedIQ({ target }: { target: number }) {
   return <>{display || ""}</>;
 }
 
-/* ── Locked IQ: first digit visible, the rest blurred ──────────────────── */
+/* ── Locked IQ: slot-machine roll, first digit lands, the rest stay locked ── */
+const GRAD_TEXT: React.CSSProperties = {
+  background: "linear-gradient(135deg, #5B4FFF 0%, #00F5D4 60%, #A78BFA 100%)",
+  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+};
+
 function LockedIQ({ target }: { target: number }) {
-  const digits = String(target).split("");
+  const n = String(target).length;
+  const [roll, setRoll] = useState<string[]>(() => Array(n).fill("0"));
+  const [landed, setLanded] = useState(false);
+
+  useEffect(() => {
+    const rnd = () => String(Math.floor(Math.random() * 10));
+    const t0 = performance.now(), dur = 1900;
+    let timer: ReturnType<typeof setTimeout>;
+    let done = false;
+    // Fast roll that slows down, then the first digit lands on the real value.
+    const step = () => {
+      const p = Math.min((performance.now() - t0) / dur, 1);
+      if (p < 1) {
+        setRoll(Array.from({ length: n }, rnd));
+        timer = setTimeout(step, 40 + 160 * p * p);
+      } else if (!done) {
+        done = true;
+        setLanded(true);
+      }
+    };
+    step();
+    return () => clearTimeout(timer);
+  }, [n]);
+
+  const first = landed ? String(target)[0] : roll[0];
   return (
-    <span aria-label="IQ score locked" style={{ display:"inline-flex",alignItems:"baseline" }}>
-      <span style={{
-        background:"linear-gradient(135deg, #5B4FFF 0%, #00F5D4 60%, #A78BFA 100%)",
-        WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
-      }}>{digits[0]}</span>
-      {digits.slice(1).map((_, i) => (
+    <span aria-label="IQ score locked" style={{ display: "inline-flex", alignItems: "center", gap: "0.04em" }}>
+      <span style={{ ...GRAD_TEXT, display: "inline-block", minWidth: "0.6em", textAlign: "center",
+        animation: landed ? "digitLand .45s cubic-bezier(.2,1.6,.4,1)" : undefined }}>{first}</span>
+      {roll.slice(1).map((d, i) => (
         <span key={i} aria-hidden="true" style={{
-          display:"inline-block", width:"0.62em", height:"0.72em", margin:"0 0.02em",
-          borderRadius:"0.22em", verticalAlign:"baseline",
-          background:"radial-gradient(ellipse at 50% 50%, rgba(124,140,255,0.85) 0%, rgba(91,79,255,0.45) 45%, rgba(91,79,255,0) 75%)",
-          boxShadow:"0 0 0.35em rgba(91,79,255,0.45)",
-          filter:"blur(5px)", animation:"lockedPulse 2.4s ease-in-out infinite", animationDelay:`${i*0.3}s`,
-        }} />
+          position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: "0.6em", height: "0.78em", margin: "0 0.03em", borderRadius: "0.12em", overflow: "hidden",
+          border: "0.025em solid rgba(124,140,255,0.55)",
+          background: "linear-gradient(160deg, rgba(91,79,255,0.22) 0%, rgba(5,18,45,0.9) 55%, rgba(0,245,212,0.10) 100%)",
+          boxShadow: "0 0 0.25em rgba(91,79,255,0.35), inset 0 0 0.2em rgba(0,245,212,0.12)",
+        }}>
+          <span key={landed ? "q" : "d"} style={{ fontSize: landed ? "0.5em" : "0.62em", fontWeight: 800, fontVariantNumeric: "tabular-nums",
+            color: landed ? "#9D8FFF" : "rgba(157,143,255,0.5)", textShadow: landed ? "0 0 0.3em rgba(91,79,255,0.7)" : undefined,
+            animation: landed ? "digitLand .45s cubic-bezier(.2,1.6,.4,1)" : undefined }}>{landed ? "?" : d}</span>
+          <span style={{ position: "absolute", inset: 0, background: "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.16) 50%, transparent 65%)",
+            animation: "lockShine 2.6s ease-in-out infinite", animationDelay: `${i * 0.35}s` }} />
+          <svg viewBox="0 0 24 24" style={{ position: "absolute", width: "0.16em", height: "0.16em", bottom: "0.06em", right: "0.06em", opacity: landed ? 1 : 0, transition: "opacity .3s" }}
+            fill="none" stroke="#00F5D4" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+        </span>
       ))}
     </span>
   );
@@ -571,7 +608,8 @@ export default function ResultsPage() {
           0%, 100% { opacity: 0.6; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.15); }
         }
-        @keyframes lockedPulse { 0%,100% { opacity:0.65; transform:scale(0.96); } 50% { opacity:1; transform:scale(1.04); } }
+        @keyframes lockShine { 0% { transform:translateX(-120%); } 55%,100% { transform:translateX(120%); } }
+        @keyframes digitLand { 0% { transform:translateY(-0.25em) scale(1.15); } 100% { transform:none; } }
         @keyframes topPctIn {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }

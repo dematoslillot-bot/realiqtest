@@ -19,23 +19,51 @@ const DIM_ACCENTS = ["#5B4FFF", "#A78BFA", "#00F5D4", "#FFD700", "#FF6B6B", "#FF
 
 /* ── SVG shape renderer ─────────────────────────────────────────────────── */
 
-function renderShape(sh: ShapeDef, color: string) {
-  const { s, x, y, r, f = true } = sh;
-  const fill   = f ? color : "none";
-  const stroke = f ? "none" : color;
-  const sw     = f ? 0 : 2;
+const INK = { a: "#F5C542", b: "#00F5D4" } as const;
 
-  if (s === "c")  return <circle key={`${x}${y}`} cx={x} cy={y} r={r} fill={fill} stroke={stroke} strokeWidth={sw} />;
-  if (s === "sq") return <rect key={`${x}${y}`} x={x - r} y={y - r} width={r * 2} height={r * 2} fill={fill} stroke={stroke} strokeWidth={sw} />;
-  if (s === "tr") {
-    const pts = `${x},${y - r} ${x + r * 0.87},${y + r * 0.5} ${x - r * 0.87},${y + r * 0.5}`;
-    return <polygon key={`${x}${y}`} points={pts} fill={fill} stroke={stroke} strokeWidth={sw} />;
+function polyPts(x: number, y: number, r: number, n: number, start = -90) {
+  return Array.from({ length: n }, (_, k) => {
+    const a = ((start + (360 / n) * k) * Math.PI) / 180;
+    return `${(x + r * Math.cos(a)).toFixed(2)},${(y + r * Math.sin(a)).toFixed(2)}`;
+  }).join(" ");
+}
+
+function renderShape(sh: ShapeDef, color: string) {
+  const { s, x, y, r, f = true, rot, ink } = sh;
+  const col = ink ? INK[ink] : color;
+  let fill = "none", stroke = col, sw = 2, op = 1;
+  if (f === true) { fill = col; stroke = "none"; sw = 0; }
+  else if (f === "g") { fill = col; stroke = col; sw = 1.6; }
+  else if (f === "z") { sw = 1; op = 0.22; }
+  const fillOp = f === "g" ? 0.35 : 1;
+  const p = { fill, stroke, strokeWidth: sw, fillOpacity: fillOp, opacity: op, strokeLinejoin: "round" as const };
+  const tf = rot ? `rotate(${rot},${x},${y})` : undefined;
+  let el: React.ReactNode = null;
+  if (s === "c")  el = <circle cx={x} cy={y} r={r} {...p} />;
+  else if (s === "sq") el = <rect x={x - r} y={y - r} width={r * 2} height={r * 2} {...p} />;
+  else if (s === "tr") el = <polygon points={`${x},${y - r} ${x + r * 0.87},${y + r * 0.5} ${x - r * 0.87},${y + r * 0.5}`} {...p} />;
+  else if (s === "di") el = <polygon points={`${x},${y - r} ${x + r},${y} ${x},${y + r} ${x - r},${y}`} {...p} />;
+  else if (s === "hx") el = <polygon points={polyPts(x, y, r, 6, 0)} {...p} />;
+  else if (s === "pe") el = <polygon points={polyPts(x, y, r, 5)} {...p} />;
+  else if (s === "st") {
+    const pts = Array.from({ length: 10 }, (_, k) => {
+      const rr = k % 2 ? r * 0.45 : r, a = ((-90 + 36 * k) * Math.PI) / 180;
+      return `${(x + rr * Math.cos(a)).toFixed(2)},${(y + rr * Math.sin(a)).toFixed(2)}`;
+    }).join(" ");
+    el = <polygon points={pts} {...p} />;
   }
-  if (s === "di") {
-    const pts = `${x},${y - r} ${x + r},${y} ${x},${y + r} ${x - r},${y}`;
-    return <polygon key={`${x}${y}`} points={pts} fill={fill} stroke={stroke} strokeWidth={sw} />;
+  else if (s === "ln") el = <line x1={x - r} y1={y} x2={x + r} y2={y} stroke={col} strokeWidth={2} strokeLinecap="round" />;
+  else if (s === "ar") {
+    const L = r * 0.85;
+    el = (
+      <g>
+        <line x1={x} y1={y + L} x2={x} y2={y - L + 6} stroke={col} strokeWidth={3} strokeLinecap="round" />
+        <polygon points={`${x},${y - L - 2} ${x + 7},${y - L + 9} ${x - 7},${y - L + 9}`} fill={col} />
+        <circle cx={x} cy={y + L} r={2.6} fill={col} />
+      </g>
+    );
   }
-  return null;
+  return tf ? <g transform={tf}>{el}</g> : el;
 }
 
 /* ── Raven cell SVG ─────────────────────────────────────────────────────── */

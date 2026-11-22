@@ -41,6 +41,10 @@ export const metadata: Metadata = {
   verification: {
     google: "btkTmkpyqc1ZyTRkpcVod-SR5AwkmZaXUMZE7UmyklQ",
   },
+  other: {
+    // Lets the AdSense review bot verify the site even before anyone accepts cookies.
+    "google-adsense-account": "ca-pub-1926703547029071",
+  },
 };
 
 export default function RootLayout({

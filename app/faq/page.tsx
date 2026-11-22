@@ -32,7 +32,7 @@ const FAQS: { q: string; a: string | ReactNode }[] = [
   },
   {
     q: "What do my results mean?",
-    a: `Your overall IQ score indicates your approximate position in the population's cognitive ability distribution. A score of 100 is exactly average; 115 is one standard deviation above average (top ~16%); 130 is two standard deviations above average (top ~2%). Your per-dimension scores show your relative strengths and weaknesses across the six cognitive areas. For a full interpretation including percentile rank, radar chart, and career alignment data, unlock the Premium Report (€1.99).`,
+    a: `Your overall IQ score indicates your approximate position in the population's cognitive ability distribution. A score of 100 is exactly average; 115 is one standard deviation above average (top ~16%); 130 is two standard deviations above average (top ~2%). Your per-dimension scores show your relative strengths and weaknesses across the six cognitive areas. For a full interpretation including percentile rank, radar chart, and career alignment data, unlock the Premium Report (€0.99).`,
   },
   {
     q: "How accurate is an online IQ test compared to a clinical one?",
@@ -59,7 +59,7 @@ const FAQS: { q: string; a: string | ReactNode }[] = [
     a: (
       <div>
         <p style={{ marginBottom: 10 }}>The <strong style={{ color: "#D6E4FF" }}>Free result</strong> includes: the full test, your IQ level (for example &quot;High Average&quot;) and the first digit of your score.</p>
-        <p>The <strong style={{ color: "#D6E4FF" }}>Full Report (€1.99, one-time)</strong> adds: your exact IQ score and percentile, the bell curve, full per-dimension score breakdown, cognitive radar chart (spider diagram), detailed written analysis of your strengths and weaknesses, career matches aligned to your cognitive profile, personalised neuroscience-backed improvement tips for each weak dimension, famous IQ comparisons, and a downloadable PDF certificate.</p>
+        <p>The <strong style={{ color: "#D6E4FF" }}>Full Report (€0.99, one-time)</strong> adds: your exact IQ score and percentile, the bell curve, full per-dimension score breakdown, cognitive radar chart (spider diagram), detailed written analysis of your strengths and weaknesses, career matches aligned to your cognitive profile, personalised neuroscience-backed improvement tips for each weak dimension, famous IQ comparisons, and a downloadable PDF certificate.</p>
         <p style={{ marginTop: 10 }}><strong style={{ color: "#D6E4FF" }}>Premium (€4.99/month)</strong> includes the full report plus a daily brain challenge, a monthly re-test and your IQ history chart. Cancel anytime in one click.</p>
       </div>
     ),
@@ -70,7 +70,7 @@ const FAQS: { q: string; a: string | ReactNode }[] = [
   },
   {
     q: "Is the test free?",
-    a: `Yes. The full test is free and needs no registration. At the end you see your IQ level for free. Your exact score, percentile and detailed report are optional: €1.99 one-time, or included in Premium (€4.99/month, cancel anytime).`,
+    a: `Yes. The full test is free and needs no registration. At the end you see your IQ level for free. Your exact score, percentile and detailed report are optional: €0.99 one-time, or included in Premium (€4.99/month, cancel anytime).`,
   },
   {
     q: "The test seems too hard / too easy. Is that normal?",
@@ -137,7 +137,7 @@ const faqSchema = {
     { "@type": "Question", "name": "How is my IQ score calculated?", "acceptedAnswer": { "@type": "Answer", "text": "Your raw score is the sum of weighted correct answers (easy=1×, medium=1.5×, hard=2×) with a small speed bonus. It is normalised using 2.4 million test sessions and converted to the IQ scale (mean 100, SD 15)." } },
     { "@type": "Question", "name": "How accurate is an online IQ test?", "acceptedAnswer": { "@type": "Answer", "text": "Our scores correlate at approximately r=0.72–0.78 with professionally administered tests. Treat your score as a directional estimate, not a clinical measurement. For formal assessments, consult a qualified psychologist." } },
     { "@type": "Question", "name": "How long does the test take?", "acceptedAnswer": { "@type": "Answer", "text": "The test consists of 30 questions with time limits ranging from 8 to 35 seconds. Most users complete the test in 12–18 minutes." } },
-    { "@type": "Question", "name": "Is the test free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The full test is free with no registration required, and you see your IQ level for free. The exact score and detailed report are optional: €1.99 one-time, or included in Premium (€4.99/month, cancel anytime)." } },
+    { "@type": "Question", "name": "Is the test free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The full test is free with no registration required, and you see your IQ level for free. The exact score and detailed report are optional: €0.99 one-time, or included in Premium (€4.99/month, cancel anytime)." } },
     { "@type": "Question", "name": "Is my data private?", "acceptedAnswer": { "@type": "Answer", "text": "We do not require account creation or personal information to take the free test. We collect anonymous test data to improve calibration. Payment is processed securely via Stripe. We do not sell your data." } },
     { "@type": "Question", "name": "Can I retake the test?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, you can retake the test as many times as you like. Scores typically vary by ±5–15 points across sittings due to fatigue, familiarity with question types, and random variation." } },
     { "@type": "Question", "name": "Can children take the test?", "acceptedAnswer": { "@type": "Answer", "text": "The test is calibrated for adults aged 18 and over. Children's scores may not accurately reflect their cognitive level relative to their age group. Age-normed tests like the WISC-V are more appropriate for children." } },

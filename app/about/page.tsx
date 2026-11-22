@@ -43,7 +43,7 @@ export default function AboutPage() {
           RealIQTest was created with a single goal: to give everyone access to a high-quality, scientifically grounded IQ assessment — without the £300-per-hour clinical fee or a three-month waiting list. We believe that understanding your cognitive strengths is a powerful tool for personal and professional growth, and that access to this knowledge should not be gated by your income or location.
         </p>
         <p style={{ marginBottom: 16 }}>
-          Our test is entirely free to complete. You pay only if you choose to unlock the detailed premium report — a one-time fee of €1.99 that grants you a full breakdown of your performance across every cognitive dimension, a radar chart, career alignment data, and personalised improvement tips.
+          Our test is entirely free to complete. You pay only if you choose to unlock the detailed premium report — a one-time fee of €0.99 that grants you a full breakdown of your performance across every cognitive dimension, a radar chart, career alignment data, and personalised improvement tips.
         </p>
         <p style={{ marginBottom: 16 }}>
           We are not affiliated with any clinical institution, nor do we offer clinical diagnoses. What we offer is a carefully constructed psychometric instrument that produces scores highly correlated with traditional IQ assessments when taken under honest, focused conditions.

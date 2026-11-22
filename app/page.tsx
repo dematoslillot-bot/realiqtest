@@ -662,7 +662,7 @@ const PILLARS = [
 const STEPS = [
   { n: "01", title: "Take the test", desc: "30 questions across 6 cognitive areas. About 15 minutes, no sign-up.", tag: "Free" },
   { n: "02", title: "See your IQ level", desc: "Right away you see your level (for example High Average) and the first digit of your score.", tag: "Free" },
-  { n: "03", title: "Unlock your full result", desc: "Your exact IQ, percentile, strongest and weakest areas, career matches and a PDF certificate.", tag: "€1.99 once" },
+  { n: "03", title: "Unlock your full result", desc: "Your exact IQ, percentile, strongest and weakest areas, career matches and a PDF certificate.", tag: "€0.99 once" },
   { n: "04", title: "Train and track progress", desc: "A daily brain challenge with streaks, a monthly re-test and your IQ history chart.", tag: "Premium" },
 ];
 
@@ -1150,7 +1150,7 @@ export default function Home() {
             { value:30,   suffix:"",     label:"Questions" },
             { value:6,    suffix:"",     label:"Cognitive dimensions" },
             { value:15,   suffix:" min", label:"Average duration" },
-            { value:1.99, suffix:"€",    decimals:2, label:"Exact score & full report" },
+            { value:0.99, suffix:"€",    decimals:2, label:"Exact score & full report" },
           ].map((s, i) => (
             /* stat cells: alternate left/right entrance, 80ms stagger */
             <div key={i} className={`stat-cell ${i%2===0?"reveal-left":"reveal-right"}`}
@@ -1320,7 +1320,7 @@ export default function Home() {
           <div className="reveal sec-hd">
             <p className="label">Premium Report</p>
             <h2 className="sec-title">Everything in the full report</h2>
-            <p className="sec-sub">€1.99 one-time · or included in Premium · instant access</p>
+            <p className="sec-sub">€0.99 one-time · or included in Premium · instant access</p>
           </div>
           <div className="features-grid">
             {FEATURES.map((f, i) => (
@@ -1369,7 +1369,7 @@ export default function Home() {
             </div>
             <div className="rq-plan reveal" style={{ transitionDelay:"80ms" }}>
               <p style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:dim }}>Full report · one-time</p>
-              <div style={{ fontSize:44, fontWeight:300, letterSpacing:"-0.03em" }}>€1.99</div>
+              <div style={{ fontSize:44, fontWeight:300, letterSpacing:"-0.03em" }}>€0.99</div>
               <p style={{ fontSize:13, color:dim, lineHeight:1.6 }}>Pay once after the test to see your complete result.</p>
               <ul>{PREMIUM_FEATURES.map(f => <li key={f}><span style={{ color:cyan }}>+</span><span>{f}</span></li>)}</ul>
               <button onClick={(e) => { addRipple(e); router.push("/test"); }} className="btn btn-primary">Take the test first</button>

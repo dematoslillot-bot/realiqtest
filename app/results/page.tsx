@@ -836,7 +836,7 @@ export default function ResultsPage() {
               <div style={{ border:"1px solid rgba(91,79,255,0.35)",borderRadius:12,padding:18,background:"rgba(5,18,45,0.6)",display:"flex",flexDirection:"column",gap:12 }}>
                 <div>
                   <p style={{ fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",color:dim }}>Full report · one-time</p>
-                  <p style={{ fontSize:32,fontWeight:800,color:"#EFEFF7",letterSpacing:"-0.03em" }}>€1.99</p>
+                  <p style={{ fontSize:32,fontWeight:800,color:"#EFEFF7",letterSpacing:"-0.03em" }}>€0.99</p>
                 </div>
                 <div style={{ display:"flex",flexDirection:"column",gap:7 }}>
                   {["Exact IQ score and percentile","Breakdown of your 6 cognitive areas","Improvement tips for each area","Career matches for your profile","Downloadable PDF certificate"].map((item,i)=>(
@@ -844,7 +844,7 @@ export default function ResultsPage() {
                   ))}
                 </div>
                 <button onClick={() => buy("report")} disabled={!!buying} className="btn btn-outline" style={{ marginTop:"auto",width:"100%" }}>
-                  {buying === "report" ? "Opening secure checkout…" : "Unlock for €1.99"}
+                  {buying === "report" ? "Opening secure checkout…" : "Unlock for €0.99"}
                 </button>
               </div>
 

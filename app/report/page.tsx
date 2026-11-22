@@ -794,7 +794,7 @@ function ReportInner() {
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <p style={{fontSize:10,letterSpacing:"0.16em",textTransform:"uppercase",color:DIM_C}}>Full report — one-time payment</p>
               <span style={{fontSize:32,fontWeight:800,background:`linear-gradient(135deg,${B},${CYAN})`,
-                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>€1.99</span>
+                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>€0.99</span>
               <label style={{display:"flex",alignItems:"flex-start",gap:10,padding:12,borderRadius:8,cursor:"pointer",
                 border:`1px solid ${BORD}`,background:"rgba(0,85,255,0.05)"}}>
                 <input id="consent" type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)} style={{marginTop:2,accentColor:B}}/>
@@ -805,7 +805,7 @@ function ReportInner() {
               <button onClick={()=>handlePay("report")} disabled={!!buying}
                 style={{width:"100%",padding:"16px 20px",background:"linear-gradient(135deg,#0055FF 0%,#0099CC 50%,#06B6D4 100%)",
                   border:"none",borderRadius:10,fontSize:16,fontWeight:800,color:"#fff",cursor:"pointer",opacity:buying?0.6:1}}>
-                {buying==="report"?"Opening secure checkout…":"Unlock my full report — €1.99"}
+                {buying==="report"?"Opening secure checkout…":"Unlock my full report — €0.99"}
               </button>
             </div>
 

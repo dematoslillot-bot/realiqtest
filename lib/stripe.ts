@@ -1,5 +1,5 @@
 // Client-side helpers for starting a Stripe Checkout.
-export const REPORT_PRICE = 1.99;
+export const REPORT_PRICE = 0.99;
 export const PREMIUM_PRICE = 4.99;
 export const CURRENCY = "eur";
 

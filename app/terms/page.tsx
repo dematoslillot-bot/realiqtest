@@ -52,7 +52,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="4. Premium report — purchase terms">
-          <p><strong>4.1 What you receive:</strong> Upon successful payment of €1.99, you receive immediate access to a detailed digital Premium Report for the test attempt associated with your payment session. This report includes category breakdowns, a radar chart, career matches, improvement tips, famous IQ comparisons, and a downloadable certificate.</p>
+          <p><strong>4.1 What you receive:</strong> Upon successful payment of €0.99, you receive immediate access to a detailed digital Premium Report for the test attempt associated with your payment session. This report includes category breakdowns, a radar chart, career matches, improvement tips, famous IQ comparisons, and a downloadable certificate.</p>
           <p style={{ marginTop: 10 }}><strong>4.2 Digital product:</strong> The Premium Report is a digital product delivered immediately upon purchase. By completing your purchase, you explicitly consent to immediate access and acknowledge that your right of withdrawal under EU consumer law is therefore lost upon delivery.</p>
           <p style={{ marginTop: 10 }}><strong>4.3 Refunds:</strong> Because the Premium Report is a digital product with immediate access, we do not offer refunds once the report has been delivered, except where:</p>
           <ul>
@@ -93,7 +93,7 @@ export default function TermsPage() {
             <li>Any loss of data, revenue, or profits.</li>
             <li>Any decisions made in reliance on your IQ score or report.</li>
           </ul>
-          <p style={{ marginTop: 10 }}>In any case, our total liability to you for any claim arising from the Service shall not exceed the amount you paid us in the 12 months preceding the claim (which, in most cases, is €1.99).</p>
+          <p style={{ marginTop: 10 }}>In any case, our total liability to you for any claim arising from the Service shall not exceed the amount you paid us in the 12 months preceding the claim (which, in most cases, is €0.99).</p>
         </Section>
 
         <Section title="9. Disclaimer of warranties">

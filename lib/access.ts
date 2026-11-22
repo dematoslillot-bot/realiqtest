@@ -4,7 +4,7 @@ import crypto from "crypto";
 import Stripe from "stripe";
 import type { NextRequest } from "next/server";
 
-export const REPORT_PRICE_CENTS = 199;   // one-time full report
+export const REPORT_PRICE_CENTS = 99;    // one-time full report
 export const PREMIUM_PRICE_CENTS = 499;  // Premium, per month
 export const CURRENCY = "eur";
 
@@ -70,6 +70,19 @@ export function clearSubscriptionCache(subId: string) {
   subCache.delete(subId);
 }
 
+const legacyCache = new Map<string, boolean>();
+async function legacyReportPaid(sessionId: string): Promise<boolean> {
+  if (legacyCache.has(sessionId)) return legacyCache.get(sessionId)!;
+  try {
+    const sess = await stripeClient().checkout.sessions.retrieve(sessionId);
+    const ok = sess.payment_status === "paid" && sess.metadata?.product === "premium_report";
+    legacyCache.set(sessionId, ok);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 export interface AccessState {
   report: boolean;     // paid the one-time report
   premium: boolean;    // active Premium subscription
@@ -81,7 +94,14 @@ export async function getAccess(req: NextRequest): Promise<AccessState> {
   const reportVal = verify(req.cookies.get(REPORT_COOKIE)?.value);
   const premiumVal = verify(req.cookies.get(PREMIUM_COOKIE)?.value);
 
-  const report = !!reportVal && reportVal.startsWith("r:");
+  let report = !!reportVal && reportVal.startsWith("r:");
+
+  // Backward compatibility: cookies set before the signed format held the raw Checkout
+  // session id. Accept them only after Stripe confirms that session was really paid.
+  const rawReport = req.cookies.get(REPORT_COOKIE)?.value;
+  if (!report && rawReport && /^cs_(live|test)_[A-Za-z0-9]+$/.test(rawReport)) {
+    report = await legacyReportPaid(rawReport);
+  }
   let premium = false;
   let subscriptionId: string | null = null;
   let cancelAt: number | null = null;
